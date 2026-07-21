@@ -1,0 +1,12 @@
+{
+  "name": "bibles-pkf-decode",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Decode a PKF (Proskomma succinct docSet) file into readable USFM text. Sample client solution for reading cdn.bibel.wiki/pkf/ content.",
+  "bin": { "pkf-decode": "./decode.mjs" },
+  "dependencies": {
+    "proskomma-core": "0.11.3",
+    "fflate": "0.8.3"
+  }
+}

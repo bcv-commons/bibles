@@ -1,0 +1,4 @@
+# Crosswalk for the catm->eng map. catm reuses org's (Hebrew/MT) baseline rows directly
+# (see tvtms-catm-to-eng.baseline.tsv header) since catm ~= org for the books both cover.
+# No renames/drops needed; the in-range + shape-reconstruction guards record any residual
+# catm/org divergence in exceptions[] (currently just 1CH 12:41).

@@ -1,0 +1,37 @@
+# ---------------------------------------------------------------------------
+# Tooling — always ignore, never source
+# ---------------------------------------------------------------------------
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+
+# ---------------------------------------------------------------------------
+# Local secrets
+# ---------------------------------------------------------------------------
+.env
+
+# ---------------------------------------------------------------------------
+# Internal working data — entirely gitignored, entirely rebuildable
+# (fetched from DBT/PKF/helloAO APIs, or computed by the comparison
+# pipeline). See pipeline/paths.py for the constants scripts use to reach
+# this instead of hardcoding the path.
+# ---------------------------------------------------------------------------
+internal-data/
+
+# ---------------------------------------------------------------------------
+# Generated build output — rebuilt via `make dbt-metadata`, never edited
+# by hand.
+# ---------------------------------------------------------------------------
+export/
+
+# ---------------------------------------------------------------------------
+# Local-only, not for publication
+# ---------------------------------------------------------------------------
+CLAUDE.local.md
+examples/
+bak/
+
+# Everything under data/ (data/vrs/, data/version-exclude.toml) is real,
+# hand-curated source data and stays tracked.

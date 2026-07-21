@@ -1,0 +1,22 @@
+# Filesets to exclude from alignment and/or export
+# These have known quality issues (e.g., text/audio mismatch)
+#
+# Format: [ISO.DISTINCT_ID]
+# reason = "why excluded"
+# scope = "align" (default) or "all"
+#
+# scope = "align" — skip alignment and template export of alignment data,
+#                    but still export as text-only/audio-only in ALL-langs
+# scope = "all"   — skip everywhere, don't export at all
+
+[fra.FRALSN]
+reason = "Audio is 1978 Segond revision, text is Ostervald — systematic mismatch, 100% low quality"
+scope = "align"
+
+[fra.FRAPDV]
+reason = "Cross-source merge with FRNO96 text — same mismatch issue as FRALSN"
+scope = "align"
+
+[fra.FRALSG]
+reason = "FRNLSV text fileset returns 404 for all books — broken DBT entry"
+scope = "align"

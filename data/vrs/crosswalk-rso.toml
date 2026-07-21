@@ -1,0 +1,5 @@
+# Crosswalk for the TVTMS-derived rso->eng map. rso = Greek base + Slavonic overrides,
+# but our rso.vrs follows KJV/MT order for the protocanon (Synodal), so the strongs-aligner
+# already dropped the inapplicable LXX-order rows and validated every source_ref against
+# rso.vrs. No book renames/drops needed; the in-range + shape-reconstruction guards run,
+# and the lone 1KI 5:18->5:32 eng-recension row is recorded in exceptions[].

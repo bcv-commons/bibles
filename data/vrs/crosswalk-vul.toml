@@ -1,0 +1,5 @@
+# Crosswalk for the TVTMS-derived vul->eng map. The strongs-aligner baseline already
+# uses our book codes and validated every source_ref against vul.vrs (protestant-OT
+# whitelist; Esther/Daniel additions excluded), so no book renames/drops are needed.
+# generate_vrs_map.py still runs the in-range + shape-reconstruction guards and records
+# any residual out-of-shape rows in exceptions[].

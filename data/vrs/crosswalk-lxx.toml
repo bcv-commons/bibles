@@ -1,0 +1,58 @@
+# Cross-scheme book crosswalk for TVTMS-derived verse mappings.
+# TVTMS uses Protestant/standard book codes on the SOURCE side of its LXX rows
+# (DAN, NEH, 2ES, ODA, EST); our `lxx` scheme organizes these the correct LXX
+# way (DAG, EZR-folded, MAN as its own book). This table maps TVTMS source codes
+# -> our lxx codes so the published map keys on our schemes.
+#
+# Consumed by generate_vrs_map.py. See internal-docs/vrs-cross-scheme-mappings.md
+# and example/plan-docs/vrs-reconciliation/README.md (the requester handover).
+
+# --- CONFIRMED (decisions #2/#5 + requester README) ---
+
+# Daniel: TVTMS `DAN` -> our `DAG` (Daniel + Greek additions). Whole-book rename.
+[book.DAN]
+to = "DAG"
+
+# Nehemiah folded into 2 Esdras: LXX numbers Neh as EZR ch 11-23.
+# our EZR has 23 chapters = eng EZR(10) + NEH(13); offset = +10.
+[book.NEH]
+to = "EZR"
+chapter_offset = 10
+
+# Prayer of Manasseh: TVTMS extends 2 Chronicles with a chapter 37 -> MAN.
+# Requester flag: our scheme already has a separate MAN book — keep it, so map
+# the source-side 2CH ch37 onto MAN ch1 (NOT a whole-book rename of 2CH).
+[book."2CH"]
+to = "MAN"
+only_chapter = 37
+to_chapter = 1
+
+# Drop from the lxx->eng map — books that are not Greek-LXX source:
+#  - NT artifacts from the requester's extract's scheme filter (not LXX->KJV).
+#  - EST: Hebrew Esther; our lxx has no EST book (EST belongs to a heb/org->eng
+#    map). Confirms the requester's EST-vs-ESG split.
+#  - ODA: the Odes are excerpts of other books; Ode 12 = Prayer of Manasseh, so all
+#    15 rows duplicate our 2CH37->MAN mapping. Don't publish a 2nd source for MAN.
+#  - 2ES: source numbering (7:106, the lost 70 verses) is the LATIN apocalyptic
+#    2 Esdras / 4 Ezra — not Greek-LXX canon. Belongs in vul->eng. (Requester confirmed.)
+#  - ESG: the baseline's 112 ESG rows are a broken extraction (their single-verse
+#    filter dropped the `!`-subverse addition rows). Drop them here; the correct
+#    ESG mapping is supplied separately from esg_greekintegrated.tsv (see below).
+[drop]
+books = ["PHP", "ROM", "2CO", "3JN", "EST", "ODA", "2ES", "ESG"]
+
+# --- ESG supplement (replaces the dropped baseline ESG rows) ---
+# Reconciled lxx-ESG -> eng-ESG map. NOTE: TVTMS GreekIntegrated is a DIFFERENT
+# edition than our eng-ESG for the addition-heavy chapters (GI ch5=22/ch8=38 vs our
+# 28/39), so we can't GI-derive those. This file holds the verified/confirmed rows;
+# each is checked against our shapes AND shape-reconstruction (max target == eng ch
+# length). ch5 pending our eng-ESG per-verse positions (interleaved Addition D).
+[esg]
+mapping = "data/vrs/esg-lxx-to-eng.tsv"
+# DECIDED (both projects, 2026-07-14): ESG 5 is a documented gap, deferred — NOT a
+# blocker. Addition D is edition-variable (TVTMS carries 3 D layouts: 22/30/7, none
+# == our 28), so TVTMS cannot supply our ch5 positions. Low value (deuterocanon,
+# never an NT-quotation target, low-traffic). Falls out for free if/when we ever
+# fingerprint the eng-ESG edition per-verse; until then, 14 verses in ESG 5 are
+# left unmapped with this note rather than mapped to garbage.
+documented_gaps = ["ESG 5:1-14 (Addition D interleaved; edition-variable; deferred until eng-ESG per-verse fingerprint)"]

@@ -1,0 +1,38 @@
+# Reconciled lxx-ESG (Hebrew numbering) -> eng-ESG (embedded) verse map.
+# Owned, derived from TVTMS + requester's shape-reconstruction verification.
+# ch1,ch3: VERIFIED by requester (reproduce eng-ESG shape exactly).
+# ch8: CONFIRMED here via shape-reconstruction — Addition E is one contiguous block
+#      after Hebrew 8:12; eng ch8 = 12 core + 22 (E) + 5 core = 39, so 8:13-17 -> 8:35-39.
+# ch4,ch10: identity (Additions C/F append after the Hebrew core — no shift).
+# ch2,6,7,9: no additions.
+# ch5: PENDING — Addition D is interleaved and our eng-ESG (28v) differs from TVTMS
+#      GreekIntegrated (22v); needs our eng-ESG per-verse positions for Hebrew 5:1-14.
+source_ref	standard_ref	action
+ESG 1:2	ESG 1:19	Renumber verse
+ESG 1:3	ESG 1:20	Renumber verse
+ESG 1:4	ESG 1:21	Renumber verse
+ESG 1:5	ESG 1:22	Renumber verse
+ESG 1:6	ESG 1:23	Renumber verse
+ESG 1:7	ESG 1:24	Renumber verse
+ESG 1:8	ESG 1:25	Renumber verse
+ESG 1:9	ESG 1:26	Renumber verse
+ESG 1:10	ESG 1:27	Renumber verse
+ESG 1:11	ESG 1:28	Renumber verse
+ESG 1:12	ESG 1:29	Renumber verse
+ESG 1:13	ESG 1:30	Renumber verse
+ESG 1:14	ESG 1:31	Renumber verse
+ESG 1:15	ESG 1:32	Renumber verse
+ESG 1:16	ESG 1:33	Renumber verse
+ESG 1:17	ESG 1:34	Renumber verse
+ESG 1:18	ESG 1:35	Renumber verse
+ESG 1:19	ESG 1:36	Renumber verse
+ESG 1:20	ESG 1:37	Renumber verse
+ESG 1:21	ESG 1:38	Renumber verse
+ESG 1:22	ESG 1:39	Renumber verse
+ESG 3:14	ESG 3:21	Renumber verse
+ESG 3:15	ESG 3:22	Renumber verse
+ESG 8:13	ESG 8:35	Renumber verse
+ESG 8:14	ESG 8:36	Renumber verse
+ESG 8:15	ESG 8:37	Renumber verse
+ESG 8:16	ESG 8:38	Renumber verse
+ESG 8:17	ESG 8:39	Renumber verse
