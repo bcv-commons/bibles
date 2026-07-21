@@ -52,8 +52,9 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_pkf_dbt import extract_pkf_chapter, dbt_samples, compare  # noqa: E402
-from confirm_text_availability import fetch_catalog  # noqa: E402
 from fill_dbt_text_samples import fetch_pkf_manifest  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
+from confirm_text_availability import fetch_catalog  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import PKF_DBT_COMPARISON_FILE, TEXT_DIR  # noqa: E402
 

@@ -1,6 +1,5 @@
 PYTHON := .venv/bin/python
 CORE := pipeline/core
-RESEARCH := pipeline/comparison-and-research
 
 .PHONY: all dbt-metadata versification vrs vrs-map version-info \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
@@ -27,7 +26,7 @@ help: ## Show available targets
 	@echo "  Data fetch"
 	@echo "  ──────────"
 	@echo "  make cache            Fetch API data (helloAO + DBS)"
-	@echo "  make align-pull       Pull new audio-sync align/ output into data/align-cache/"
+	@echo "  make align-pull       Pull new audio-sync align/ output into internal-data/align-cache/"
 	@echo "  make align-pull-dry   Dry-run align pull (no writes)"
 	@echo ""
 	@echo "  Pass extra args via ARGS, e.g.:"
@@ -92,11 +91,11 @@ cache: ## Fetch API data (helloAO + DBS) into api-cache/
 	$(PYTHON) $(CORE)/fetch_helloao_cache.py
 	$(PYTHON) $(CORE)/fetch_dbs_cache.py
 
-align-pull: ## Pull new audio-sync align/ output (Contract B) into data/align-cache/
-	$(PYTHON) $(RESEARCH)/pull_align_cache.py
+align-pull: ## Pull new audio-sync align/ output (Contract B) into internal-data/align-cache/
+	$(PYTHON) $(CORE)/pull_align_cache.py
 
 align-pull-dry: ## Dry-run align pull (no writes)
-	$(PYTHON) $(RESEARCH)/pull_align_cache.py --dry-run
+	$(PYTHON) $(CORE)/pull_align_cache.py --dry-run
 
 # ---------------------------------------------------------------------------
 # Housekeeping

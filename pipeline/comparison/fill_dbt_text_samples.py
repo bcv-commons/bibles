@@ -35,7 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "core"))
 import download_language_content as dl  # noqa: E402
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import fetch_catalog, resolve_fileset  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, TEXT_DIR, TEXT_FILL_LOG_FILE  # noqa: E402

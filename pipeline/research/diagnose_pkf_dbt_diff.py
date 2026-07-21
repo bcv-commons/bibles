@@ -90,7 +90,7 @@ import tempfile
 from collections import Counter
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "comparison"))
 from batch_compare_pkf_dbt import rclone_env  # noqa: E402
 from compare_pkf_dbt import (  # noqa: E402
     extract_pkf_chapter,

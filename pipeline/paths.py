@@ -46,7 +46,7 @@ LEGACY_TIMING_DIR = INTERNAL_DATA / "legacy-timing-data"
 ALIGN_CACHE_DIR = INTERNAL_DATA / "align-cache"
 ALIGN_INGESTED_FILE = INTERNAL_DATA / ".align-ingested.json"
 
-# PKF/DBT/helloAO comparison-pilot outputs (pipeline/comparison-and-research/).
+# PKF/DBT/helloAO comparison-pilot outputs (pipeline/comparison/, pipeline/research/).
 COMPARISON_RESULTS_DIR = INTERNAL_DATA / "comparison-results"
 PKF_DBT_COMPARISON_FILE = COMPARISON_RESULTS_DIR / "pkf-dbt-comparison.json"
 PKF_DBT_COMPARISON_WORDS_FILE = COMPARISON_RESULTS_DIR / "pkf-dbt-comparison-words.json"
