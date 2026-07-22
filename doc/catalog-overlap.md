@@ -105,6 +105,47 @@ comparison confirms it.
   covered it — e.g. a DBT version that's the sole DBT edition for that
   language, in a language with no other source to compare against either.
 
+## Why NT and OT can disagree about the same-looking editions
+
+A client flagged what looked like a bug: `BSB`/`AAB`/`eng_msb` cluster
+together in NT but not in OT (this specific case is now fixed — see below),
+and asked why other same-named-looking groups (WEB, Wycliffe Modern) don't
+always merge consistently across both canons either. Two of the three
+patterns behind that report are permanent, by-design behavior, not bugs —
+worth knowing before assuming a mismatch is an error:
+
+- **NT and OT are separately probed and separately clustered.** Every
+  relationship in this file comes from comparing one specific chapter
+  (`probes` above) — a real match in NT says nothing about OT, and vice
+  versa. Two ids can be an exact NT duplicate and a genuinely different OT
+  edition at the same time (confirmed case: DBT's `ENGWM1` is byte-identical
+  to `ENGWEB`/`ENGWWH` in NT but only ~0.90 similar to them in OT — a real
+  difference in the underlying editions, not a comparison error). Don't
+  assume a merge (or a `likely`/`closest` value) in one canon implies
+  anything about the other.
+- **The 1.0 merge threshold is exact, never inferred.** A score of 0.997 is
+  not "close enough" — it stays a separate entry with a `near_identical`
+  relationship instead of being folded into the matching cluster. This is
+  deliberate: identity here means *verified byte-for-byte equal after
+  normalization*, not "a human would call these the same edition." Expect
+  to see near-duplicate pairs sitting just outside a cluster they look like
+  they should be in.
+- **`closest` is the single highest-scoring relationship actually found, not
+  the best same-named-family match.** If an edition doesn't score highly
+  against anything, `closest` can point to a completely differently-named
+  edition that simply scored higher than the "obvious" sibling (confirmed
+  case: `eng_wyc2017`'s NT `closest` is a Douay-Rheims translation, not
+  `eng_wyc2018`, because that's what actually scored highest — `eng_wyc2017`
+  isn't a strong match for anything in this dataset). A low or
+  unexpected-looking `closest` usually means genuinely low similarity was
+  found everywhere, not a data error.
+
+The `BSB`/`AAB`/`eng_msb` case itself *was* a real, now-fixed gap: the
+helloAO-vs-helloAO same-source leg had never been run for OT at all, so OT
+singletons fell back to weaker cross-source signals instead of the direct
+same-source comparison. All helloAO-vs-helloAO and DBT-vs-DBT comparisons
+now cover both canons.
+
 ## Top-level fields
 
 - **`probes`** — which chapter(s) each comparison was actually based on.

@@ -9,10 +9,10 @@ word delimiter) as a second, independent signal alongside the char-level
 score already on record, to help decide how to classify/publish the
 `near_identical`/`uncertain`/`distinct` tiers.
 
-Same fetch/decode/cleanup/resumable shape as batch_compare_pkf_dbt.py
-(imports its rclone/candidate-fetch plumbing directly — that infrastructure
-isn't "the method," so reusing it doesn't touch the validated comparison
-logic in either script).
+Same fetch/decode/cleanup/resumable shape the old batch_compare_pkf_dbt.py
+had (rclone plumbing now lives in fetch_sources.py, shared by the unified
+compare_all.py pipeline — that infrastructure isn't "the method," so
+reusing it doesn't touch the validated comparison logic in either script).
 
 Usage:
     python3 scripts/batch_compare_pkf_dbt_words.py [--limit N]
@@ -26,7 +26,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from batch_compare_pkf_dbt import rclone_env  # noqa: E402
+from fetch_sources import rclone_env  # noqa: E402
 from compare_pkf_dbt_words import (  # noqa: E402
     compare_words,
     dbt_samples_words,

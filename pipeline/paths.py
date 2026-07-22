@@ -57,6 +57,12 @@ PKF_HELLOAO_DIAGNOSIS_FILE = COMPARISON_RESULTS_DIR / "pkf-helloao-diagnosis.jso
 TEXT_AVAILABILITY_FILE = COMPARISON_RESULTS_DIR / "text-availability.json"
 TEXT_FILL_LOG_FILE = COMPARISON_RESULTS_DIR / "text-fill-log.json"
 
+# Unified comparison pipeline (pipeline/comparison/compare_all.py,
+# pipeline/research/diagnose_all.py) — replaces the five separate
+# per-leg comparison/diagnosis files above with one of each.
+ALL_COMPARISONS_FILE = COMPARISON_RESULTS_DIR / "all-comparisons.json"
+ALL_DIAGNOSIS_FILE = COMPARISON_RESULTS_DIR / "all-diagnosis.json"
+
 # ---------------------------------------------------------------------------
 # Generated build output — rebuilt via `make dbt-metadata`, gitignored,
 # never edited by hand.
