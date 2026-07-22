@@ -35,12 +35,17 @@ how to fetch actual content from them, and the default priority order
 (`pkf` → `helloao` → `dbt`) `catalog-index.json`/`catalog-overlap.json`
 use when a client just wants one good default without deciding for itself.
 
-## A working code example
+## Runnable code examples
+
+**[`examples/`](examples/)** — small Python and JavaScript scripts that
+actually fetch content: reading `catalog-index.json`/`catalog-overlap.json`,
+pulling a chapter from DBT or helloAO, and downloading a `.pkf` file. No
+packages to install. Start there if you want to see real output quickly.
 
 **[`tools/pkf-decode/`](../tools/pkf-decode/)** — a real, runnable decoder
 that turns a `.pkf` file (the format PKF publishes) into plain USFM text.
-If you're looking for a concrete "how do I actually turn this into
-readable verses" example, start there.
+`examples/fetch_pkf.js`/`.py` only download the file; this is the actual
+decode step.
 
 ## Audio, video, pictures
 

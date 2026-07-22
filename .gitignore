@@ -28,10 +28,15 @@ export/
 
 # ---------------------------------------------------------------------------
 # Local-only, not for publication
+#
+# Anchored to the repo root (leading /) — a bare "examples/" would match
+# ANY directory named "examples" anywhere in the tree, which silently
+# swallowed the brand-new, definitely-should-be-tracked doc/examples/
+# until this was caught and fixed.
 # ---------------------------------------------------------------------------
-CLAUDE.local.md
-examples/
-bak/
+/CLAUDE.local.md
+/examples/
+/bak/
 
 # Everything under data/ (data/vrs/, data/version-exclude.toml) is real,
 # hand-curated source data and stays tracked.
