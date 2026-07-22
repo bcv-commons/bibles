@@ -20,6 +20,18 @@ grouped into one cluster; everything else gets its own entry with a single
 "closest relative" and a taxonomy category explaining *why* it's separate,
 instead of a wall of raw scores against every other version.
 
+Built from **five** comparison legs, not just cross-source ones: PKF-vs-DBT,
+helloAO-vs-DBT, PKF-vs-helloAO, and two same-source legs — DBT's own
+multiple native versions against each other, and helloAO's own multiple
+translations against each other. The same-source legs matter because a
+single source can independently publish more than one edition of the same
+underlying translation (e.g. DBT's `SPAERV`/`SPAWTC`, which are an exact
+duplicate of each other) — without comparing a source against itself, a
+bare singleton from that source got no "closest relative" reference at all,
+even when one existed. This is the direct fix for `spa`'s `SPARVC`
+("Reina Valera 1909"), which now correctly shows a `dialect_variant`
+relationship to `SPNR02` (see the example below).
+
 ## Shape
 
 ```json
@@ -37,12 +49,22 @@ instead of a wall of raw scores against every other version.
                     "pkf_source_ref": "bsn_C01", "default": "pkf:BSNPKF"}],
 
     ["spa", "nt", {"ids": ["dbt:SPNR02", "helloao:spa_r09"], "default": "helloao:spa_r09"}],
-    ["spa", "nt", {"ids": ["dbt:SPABDA"]}],
+    ["spa", "nt", {"ids": ["dbt:SPAERV", "dbt:SPAWTC"], "default": "dbt:SPAERV"}],
+    ["spa", "nt", {"ids": ["dbt:SPARVC"], "likely": "dialect_variant",
+                    "closest": "dbt:SPNR02", "score": 0.9394}],
     ["spa", "nt", {"ids": ["helloao:spa_onbv"], "likely": "distinct_translation",
                     "closest": "dbt:SPANTV", "score": 0.7163}]
   ]
 }
 ```
+
+`dbt:SPAERV`/`dbt:SPAWTC` are a DBT-vs-DBT same-source cluster — an exact
+duplicate found by comparing DBT against itself, with no other source
+involved at all. `dbt:SPARVC` is a DBT-only singleton whose `closest`
+reference (`dbt:SPNR02`) also comes from that same-source leg — this is the
+case a client originally flagged: `SPARVC`'s name ("Reina Valera 1909")
+suggested it might be another RV-family variant, and the same-source
+comparison confirms it.
 
 ## Row format
 
@@ -71,16 +93,17 @@ instead of a wall of raw scores against every other version.
   non-identical single-member clusters. `closest` is the single most
   informative relationship this item has (highest score among whatever
   was actually compared — not always vs. DBT; e.g. a PKF item's closest
-  relative could be a helloAO translation instead). `likely` is either the
-  fine-grained taxonomy (`orthography_convention` / `phonemic_distinction`
-  / `dialect_variant` / `source_duplication` / `distinct_translation` —
-  computed per language/pair by a diagnosis pass, see `pipeline/research/`)
-  or, where no diagnosis has run for that specific relationship, the
-  coarser score-bucket tier (`near_identical` ≥0.98 / `uncertain` ≥0.5 /
-  `distinct` <0.5). A plain DBT-only singleton never gets `closest` — that
-  field always lives on the *other* item explaining its relationship to
-  DBT, not the reverse (read the sibling cluster for that language instead
-  of expecting DBT rows to carry it symmetrically).
+  relative could be a helloAO translation instead, or a DBT item's closest
+  relative could be another DBT version, via the same-source leg). `likely`
+  is either the fine-grained taxonomy (`orthography_convention` /
+  `phonemic_distinction` / `dialect_variant` / `source_duplication` /
+  `distinct_translation` — computed per language/pair by a diagnosis pass,
+  see `pipeline/research/`) or, where no diagnosis has run for that
+  specific relationship, the coarser score-bucket tier (`near_identical`
+  ≥0.98 / `uncertain` ≥0.5 / `distinct` <0.5). A singleton only omits
+  `closest` entirely when NO comparison (cross-source or same-source) ever
+  covered it — e.g. a DBT version that's the sole DBT edition for that
+  language, in a language with no other source to compare against either.
 
 ## Top-level fields
 

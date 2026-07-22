@@ -1,13 +1,19 @@
 #!/usr/bin/env python3
-"""Merge all three comparison legs (PKF-vs-DBT, helloAO-vs-DBT, PKF-vs-
-helloAO) into the unified publish artifact — cluster form. Replaces the
-earlier per-source-row design (which forced a client to manually dedupe a
-"wall" of raw comparison scores — e.g. spa/nt had 15 rows and ~50 individual
-score tuples for one language) with one row per GENUINELY DISTINCT option:
-identical items (score==1.0, verified by real text comparison, never
-guessed) are grouped into one cluster; everything else stays its own
-cluster, carrying a single "closest relative" + taxonomy category instead
-of a full comparison matrix.
+"""Merge all five comparison legs (PKF-vs-DBT, helloAO-vs-DBT, PKF-vs-
+helloAO, DBT-vs-DBT, helloAO-vs-helloAO) into the unified publish artifact —
+cluster form. The two same-source legs (DBT's own multiple native versions
+against each other, helloAO's own multiple translations against each other)
+close a gap a client flagged directly: a bare singleton DBT or helloAO id
+used to get NO "closest relative" reference at all, even when a same-source
+duplicate or near-duplicate existed (e.g. spa's SPAERV/SPAWTC, an exact DBT-
+vs-DBT duplicate, was invisible until these two legs were added). Replaces
+the earlier per-source-row design (which forced a client to manually dedupe
+a "wall" of raw comparison scores — e.g. spa/nt had 15 rows and ~50
+individual score tuples for one language) with one row per GENUINELY
+DISTINCT option: identical items (score==1.0, verified by real text
+comparison, never guessed) are grouped into one cluster; everything else
+stays its own cluster, carrying a single "closest relative" + taxonomy
+category instead of a full comparison matrix.
 
 Row shape:
     [iso, canon, cluster]
@@ -28,12 +34,18 @@ but nothing structurally guarantees that stays true forever, so this
 script never relies on a bare id being unambiguous.
 
 Clustering: union-find over every score==1.0 relationship found across all
-three legs — PKF-vs-DBT, helloAO-vs-DBT (best-match only, one edge per
-helloAO id), PKF-vs-helloAO (best-match only). A cluster's "default" is
-the highest-priority source PRESENT in that specific cluster, not assumed.
+five legs — PKF-vs-DBT, helloAO-vs-DBT (best-match only, one edge per
+helloAO id), PKF-vs-helloAO (best-match only), DBT-vs-DBT (same-source,
+best-match only, one edge per DBT version within its (iso,canon) group),
+helloAO-vs-helloAO (same-source, best-match only, one edge per helloAO
+translation within its group). A cluster's "default" is the
+highest-priority source PRESENT in that specific cluster, not assumed —
+the same-source legs never introduce a new source into a cluster, so they
+only ever affect which existing members get merged together.
 
 "likely" values: the full taxonomy from diagnose_pkf_dbt_diff.py /
-diagnose_helloao_dbt_diff.py / diagnose_pkf_helloao_diff.py where a
+diagnose_helloao_dbt_diff.py / diagnose_pkf_helloao_diff.py /
+diagnose_dbt_dbt_diff.py / diagnose_helloao_helloao_diff.py where a
 diagnosis was run (single best-match only, per language/pair — see those
 scripts); falls back to the coarser 4-tier score bucket
 (near_identical/uncertain/distinct) for any relationship a diagnosis
@@ -87,6 +99,31 @@ def merge_helloao_dbt():
     return out
 
 
+def load_same_source(filename, id_key):
+    """(iso, canon) -> {"a|b": score, ...} for a same-source comparison
+    file (dbt-dbt-comparison.json / helloao-helloao-comparison.json)."""
+    out = {}
+    for entry in load(filename).values():
+        if entry.get("status") != "compared":
+            continue
+        out[(entry["iso"], entry["canon"])] = entry.get("scores", {})
+    return out
+
+
+def best_partner_in_group(group_scores: dict, item: str):
+    """Given a {"a|b": score} dict for one (iso,canon) group, find item's
+    single highest-scoring partner. Returns (partner, score) or (None, None)."""
+    best_score, best_partner = -1, None
+    for pair, score in group_scores.items():
+        a, b = pair.split("|")
+        if item not in (a, b) or score is None:
+            continue
+        other = b if a == item else a
+        if score > best_score:
+            best_score, best_partner = score, other
+    return (best_partner, best_score) if best_partner else (None, None)
+
+
 class UnionFind:
     def __init__(self):
         self.parent = {}
@@ -138,6 +175,11 @@ def main():
     hao_dbt = merge_helloao_dbt()
     diag_hao_dbt = load("helloao-dbt-diagnosis.json")  # keyed "iso:canon:helloao_id"
 
+    dbt_dbt = load_same_source("dbt-dbt-comparison.json", "versions_fetched")
+    diag_dbt_dbt = load("dbt-dbt-diagnosis.json")  # keyed "iso:canon:a|b"
+    hao_hao = load_same_source("helloao-helloao-comparison.json", "translations_fetched")
+    diag_hao_hao = load("helloao-helloao-diagnosis.json")  # keyed "iso:canon:a|b"
+
     def pkf_dbt_entry(iso, canon):
         if canon == "nt":
             return pkf_dbt_nt.get(iso)
@@ -171,6 +213,14 @@ def main():
         if score == 1.0:
             return "identical"
         entry = diag_pkf_hao.get(f"{iso}:{canon}")
+        if entry and entry.get("category"):
+            return entry["category"].replace("likely_", "")
+        return tier(score)
+
+    def same_source_likely(diag_dict, iso, canon, a, b, score):
+        if score == 1.0:
+            return "identical"
+        entry = diag_dict.get(f"{iso}:{canon}:{a}|{b}") or diag_dict.get(f"{iso}:{canon}:{b}|{a}")
         if entry and entry.get("category"):
             return entry["category"].replace("likely_", "")
         return tier(score)
@@ -220,6 +270,23 @@ def main():
             ph = pkf_hao_entry(iso, canon)
             if pkf_node and ph and ph.get("status") == "compared" and ph["best_score"] == 1.0:
                 uf.union(pkf_node, f"helloao:{ph['best_match']}")
+
+            # DBT-vs-DBT identical edges (same-source — DBT's own multiple
+            # native versions against each other, e.g. spa's SPAERV/SPAWTC)
+            dbt_group = dbt_dbt.get((iso, canon), {})
+            for pair, score in dbt_group.items():
+                if score == 1.0:
+                    a, b = pair.split("|")
+                    uf.union(f"dbt:{a}", f"dbt:{b}")
+
+            # helloAO-vs-helloAO identical edges (same-source — helloAO's
+            # own multiple translations against each other, e.g. eng's WEB
+            # family under several catalog ids)
+            hao_group = hao_hao.get((iso, canon), {})
+            for pair, score in hao_group.items():
+                if score == 1.0:
+                    a, b = pair.split("|")
+                    uf.union(f"helloao:{a}", f"helloao:{b}")
 
             clusters = {}
             for n in sorted(nodes):
@@ -278,7 +345,22 @@ def main():
                         if hscore is not None:
                             likely = pkf_hao_likely(iso, canon, hscore) if ph.get("best_match") == mid else tier(hscore)
                             candidates.append((f"pkf:{iso.upper()}PKF", likely, hscore))
-                # dbt singletons: no "closest" — see module docstring.
+                    hao_partner, hao_score = best_partner_in_group(hao_hao.get((iso, canon), {}), mid)
+                    if hao_partner:
+                        candidates.append((f"helloao:{hao_partner}",
+                                            same_source_likely(diag_hao_hao, iso, canon, mid, hao_partner, hao_score),
+                                            hao_score))
+                elif source == "dbt":
+                    # Previously no candidate source at all for a bare DBT
+                    # version — a client asking "is SPARVC verified distinct
+                    # from anything?" got no answer. Now checked directly
+                    # against DBT's own other native versions for this
+                    # language (same-source leg, batch_compare_dbt_dbt.py).
+                    dbt_partner, dbt_score = best_partner_in_group(dbt_dbt.get((iso, canon), {}), mid)
+                    if dbt_partner:
+                        candidates.append((f"dbt:{dbt_partner}",
+                                            same_source_likely(diag_dbt_dbt, iso, canon, mid, dbt_partner, dbt_score),
+                                            dbt_score))
 
                 if candidates:
                     ref, likely, score = max(candidates, key=lambda c: c[2])

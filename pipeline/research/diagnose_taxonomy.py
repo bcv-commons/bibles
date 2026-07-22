@@ -43,6 +43,17 @@ from collections import Counter
 SELF_DUP_MIN_LEN = 30
 SELF_DUP_MAX_HUNKS = 5
 ORTHO_MAX_PAIRS = 5
+# A genuine orthography-convention case (a handful of consistent letter
+# substitutions) should still leave the texts substantially similar
+# overall. Without this floor, two texts in ENTIRELY different scripts
+# (found via urd_gvh [Devanagari] vs urd_gvr [Latin transliteration],
+# score 0.0) collapse into a single whole-text "hunk" that trivially
+# satisfies "few distinct pairs cover most hunks" — misclassified as
+# orthography_convention when it's really just "completely different
+# script, not comparable at all". Confirmed as a real (not hypothetical)
+# bug: reached already-published data before this was caught
+# (helloao-dbt-diagnosis.json's rif:nt:rif_tti, score 0.0009).
+ORTHO_SCORE_FLOOR = 0.5
 DIALECT_SCORE_FLOOR = 0.85
 
 # Pairs already manually confirmed (via linguistic cross-check, not a
@@ -152,7 +163,7 @@ def classify(score: float, a_chars: str, b_chars: str, compare_fn) -> dict:
             result["category"] = "likely_phonemic_distinction"
         return result
 
-    if n_pairs_80 <= ORTHO_MAX_PAIRS and n_pairs_80 > 0:
+    if n_pairs_80 <= ORTHO_MAX_PAIRS and n_pairs_80 > 0 and score >= ORTHO_SCORE_FLOOR:
         result["category"] = "likely_orthography_convention"
     elif score >= DIALECT_SCORE_FLOOR:
         result["category"] = "likely_dialect_variant"
