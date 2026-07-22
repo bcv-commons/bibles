@@ -81,7 +81,6 @@ Resumable: writes incrementally, skips isos already recorded on rerun.
 Usage:
     python3 scripts/diagnose_pkf_dbt_diff.py [--limit N]
 """
-import difflib
 import json
 import shutil
 import subprocess
@@ -91,7 +90,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "comparison"))
-from batch_compare_pkf_dbt import rclone_env  # noqa: E402
+from batch_compare_pkf_dbt import rclone_env, candidate_isos  # noqa: E402
 from compare_pkf_dbt import (  # noqa: E402
     extract_pkf_chapter,
     dbt_samples,
@@ -105,169 +104,62 @@ from paths import (  # noqa: E402
     PKF_DBT_COMPARISON_DIAGNOSIS_FILE,
 )
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from diagnose_taxonomy import classify as _classify_generic  # noqa: E402
+
 CHAR_RESULTS_PATH = PKF_DBT_COMPARISON_FILE
 WORD_RESULTS_PATH = PKF_DBT_COMPARISON_WORDS_FILE
 OUT_PATH = PKF_DBT_COMPARISON_DIAGNOSIS_FILE
 BOOK, CHAPTER = "REV", 15
 
-_SELF_DUP_MIN_LEN = 30   # normalized chars — calibrated against the 82-language run: the two
-                          # confirmed genuine cases (des, mpx) both had 60-char repeats, while
-                          # a first pass at 15 chars also flagged 10 more languages with only
-                          # 15-19 char repeats — almost certainly coincidental short-sequence
-                          # recurrence in short, morphologically repetitive texts (agglutinative
-                          # languages reusing common morphemes), not real duplication. 30 sits
-                          # clearly between the two clusters.
-_ORTHO_MAX_PAIRS = 5     # <= this many distinct pairs covering 80% of hunks => orthography convention
-_DIALECT_SCORE_FLOOR = 0.85
 _WORD_GAP_THRESHOLD = 0.15
-
-# Pairs already manually confirmed (via linguistic cross-check, not a
-# substitution test alone) to be genuine phonemic distinctions rather than
-# encoding bugs — see CLAUDE.local.md. Checked here so re-encountering the
-# exact same pair in a new language doesn't need re-litigating.
-_KNOWN_PHONEMIC_PAIRS = {frozenset({"ʉ", "u"})}
 
 
 def candidates_to_diagnose() -> dict:
     """iso -> pkf filename, for every language whose best-match score in the
     char-level pass is < 1.0. Single best-match only, per the scoping rule.
-    Reuses the exact "pkf_file" the char-level pass already recorded, rather
-    than re-deriving it — for niy (multiple collections), the char-level
-    pass already disambiguated empirically; re-deriving independently could
-    silently pick a different collection and diagnose the wrong text."""
+
+    Prefers the exact "pkf_file" the char-level pass already recorded,
+    rather than re-deriving it — for niy (multiple collections), the
+    char-level pass already disambiguated empirically; re-deriving
+    independently could silently pick a different collection and diagnose
+    the wrong text. But most of the 80-language population predates that
+    field being added to batch_compare_pkf_dbt.py's output (single-
+    collection languages only, no ambiguity risk) — for those, fall back
+    to re-deriving via candidate_isos(), instead of silently dropping them
+    from the candidate set (found via a byte-identical-output check after
+    extracting diagnose_taxonomy.py: only 2 of 80 languages were being
+    diagnosed, not 80 — this fallback restores the other 78)."""
     char_results = json.loads(CHAR_RESULTS_PATH.read_text())
-    return {
-        iso: r["pkf_file"] for iso, r in char_results.items()
-        if r.get("status") == "compared" and r.get("best_score", 1.0) < 1.0 and r.get("pkf_file")
+    todo_isos = {
+        iso for iso, r in char_results.items()
+        if r.get("status") == "compared" and r.get("best_score", 1.0) < 1.0
     }
-
-
-def diff_opcodes(pkf_chars: str, dbt_chars: str):
-    sm = difflib.SequenceMatcher(a=pkf_chars, b=dbt_chars, autojunk=False)
-    return [op for op in sm.get_opcodes() if op[0] != "equal"]
-
-
-def pair_counter(pkf_chars: str, dbt_chars: str, opcodes) -> Counter:
-    return Counter((pkf_chars[i1:i2], dbt_chars[j1:j2]) for _, i1, i2, j1, j2 in opcodes)
-
-
-def distinct_pairs_for_80pct(pairs: Counter, total_hunks: int) -> int:
-    if not total_hunks:
-        return 0
-    covered = 0
-    for i, (_, count) in enumerate(pairs.most_common(), start=1):
-        covered += count
-        if covered / total_hunks >= 0.8:
-            return i
-    return len(pairs)
-
-
-def substitution_test(pkf_chars: str, dbt_chars: str, pair: tuple) -> float:
-    """Force the dominant (pkf_fragment, dbt_fragment) pair to be treated as
-    equivalent by rewriting the PKF side's occurrences of pkf_fragment to
-    dbt_fragment, then re-score. A near-1.0 result means that one pair fully
-    explains the gap (homoglyph bug); anything short of that means it
-    doesn't (phonemic distinction) — mechanical, not a guess, mirrors the
-    manual substitution tests done throughout the pilot."""
-    pkf_frag, dbt_frag = pair
-    if not pkf_frag and not dbt_frag:
-        return compare(pkf_chars, dbt_chars)
-    forced = pkf_chars.replace(pkf_frag, dbt_frag) if pkf_frag else pkf_chars
-    return compare(forced, dbt_chars)
-
-
-_SELF_DUP_MAX_HUNKS = 5   # calibrated against the 82-language run: the two confirmed genuine
-                          # cases (des, mpx) are both single-hunk diffs where the duplication
-                          # explains nearly the whole gap. A first pass with no hunk-count gate
-                          # also flagged gdr/ntp/xav (147/234/177 hunks) — texts that are simply
-                          # very different overall, where a 30-40 char coincidental repeat
-                          # somewhere in a large diff is noise, not the actual explanation.
-
-
-def find_self_duplication(pkf_chars: str, dbt_chars: str, opcodes) -> dict | None:
-    """A large hunk whose content also reappears elsewhere in its OWN source
-    (excluding the hunk's own span) — the des pattern (a duplicated sentence
-    inside PKF's own digitized text). Only meaningful when the whole diff is
-    simple (few hunks) — see _SELF_DUP_MAX_HUNKS."""
-    if len(opcodes) > _SELF_DUP_MAX_HUNKS:
-        return None
-    for tag, i1, i2, j1, j2 in opcodes:
-        if tag in ("delete", "replace") and (i2 - i1) >= _SELF_DUP_MIN_LEN:
-            chunk = pkf_chars[i1:i2]
-            rest = pkf_chars[:i1] + pkf_chars[i2:]
-            if chunk in rest:
-                return {"side": "pkf", "chunk": chunk[:60]}
-        if tag in ("insert", "replace") and (j2 - j1) >= _SELF_DUP_MIN_LEN:
-            chunk = dbt_chars[j1:j2]
-            rest = dbt_chars[:j1] + dbt_chars[j2:]
-            if chunk in rest:
-                return {"side": "dbt", "chunk": chunk[:60]}
-    return None
-
-
-def sample_hunks(pkf_chars: str, dbt_chars: str, opcodes, n: int = 3) -> list:
-    ranked = sorted(opcodes, key=lambda op: max(op[2] - op[1], op[4] - op[3]), reverse=True)
-    out = []
-    for tag, i1, i2, j1, j2 in ranked[:n]:
-        out.append({
-            "tag": tag,
-            "pkf_fragment": pkf_chars[i1:i2][:40],
-            "dbt_fragment": dbt_chars[j1:j2][:40],
-        })
+    out = {}
+    missing_pkf_file = [iso for iso in todo_isos if not char_results[iso].get("pkf_file")]
+    fallback = candidate_isos() if missing_pkf_file else {}
+    for iso in todo_isos:
+        pkf_file = char_results[iso].get("pkf_file")
+        if not pkf_file and iso in fallback:
+            pkf_file = fallback[iso]["pkf_files"][0]
+        if pkf_file:
+            out[iso] = pkf_file
     return out
 
 
 def classify(iso: str, score: float, pkf_chars: str, dbt_chars: str, word_results: dict) -> dict:
-    opcodes = diff_opcodes(pkf_chars, dbt_chars)
-    n_hunks = len(opcodes)
-    pairs = pair_counter(pkf_chars, dbt_chars, opcodes)
-    top_pair, top_count = (pairs.most_common(1)[0] if pairs else ((None, None), 0))
-    dominant_fraction = (top_count / n_hunks) if n_hunks else 0.0
-    n_pairs_80 = distinct_pairs_for_80pct(pairs, n_hunks)
-
-    result = {
-        "best_score": round(score, 4),
-        "diff_hunks": n_hunks,
-        "dominant_pair_fraction": round(dominant_fraction, 3),
-        "distinct_pairs_for_80pct": n_pairs_80,
-        "sample_diffs": sample_hunks(pkf_chars, dbt_chars, opcodes),
-    }
-
-    dup = find_self_duplication(pkf_chars, dbt_chars, opcodes)
-    if dup:
-        result["category"] = "likely_source_duplication"
-        result["self_duplication"] = dup
-        _add_word_gap_note(iso, result, word_results)
-        return result
-
-    if dominant_fraction >= 0.8 and n_hunks >= 3:
-        test_score = substitution_test(pkf_chars, dbt_chars, top_pair)
-        result["substitution_test_pair"] = list(top_pair)
-        result["substitution_test_score"] = round(test_score, 4)
-        if frozenset(top_pair) in _KNOWN_PHONEMIC_PAIRS:
-            result["category"] = "likely_phonemic_distinction"
-            result["note"] = "pair matches an already-confirmed genuine distinction, not re-litigated"
-        elif test_score >= 0.999:
-            # Reaching ~1.0 is necessary but NOT sufficient evidence of a
-            # bug (see module docstring — false positive on bsn/gvc/tue
-            # during validation). Flag for human review, don't assert.
-            result["category"] = "single_pair_dominant_ambiguous"
-        else:
-            # Safe automated call: the pair does NOT fully explain the gap,
-            # so it can't be a simple encoding swap.
-            result["category"] = "likely_phonemic_distinction"
-        _add_word_gap_note(iso, result, word_results)
-        return result
-
-    if n_pairs_80 <= _ORTHO_MAX_PAIRS and n_pairs_80 > 0:
-        result["category"] = "likely_orthography_convention"
-    elif score >= _DIALECT_SCORE_FLOOR:
-        result["category"] = "likely_dialect_variant"
-    elif n_hunks > 0:
-        result["category"] = "likely_distinct_translation"
-    else:
-        result["category"] = "unclassified"
-
+    """Thin wrapper around diagnose_taxonomy.classify() — translates the
+    shared module's generic a/b field names back to pkf/dbt for exact
+    backward compatibility with this file's already-published output shape
+    (data/pkf-dbt-comparison-diagnosis.json), then adds the word-gap note
+    (PKF-vs-DBT specific: relies on the word-level second-opinion pass,
+    which only exists for this comparison, not the helloAO ones)."""
+    result = _classify_generic(score, pkf_chars, dbt_chars, compare)
+    for d in result.get("sample_diffs", []):
+        d["pkf_fragment"] = d.pop("a_fragment")
+        d["dbt_fragment"] = d.pop("b_fragment")
+    if result.get("self_duplication"):
+        result["self_duplication"]["side"] = {"a": "pkf", "b": "dbt"}[result["self_duplication"]["side"]]
     _add_word_gap_note(iso, result, word_results)
     return result
 
