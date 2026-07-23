@@ -146,6 +146,28 @@ singletons fell back to weaker cross-source signals instead of the direct
 same-source comparison. All helloAO-vs-helloAO and DBT-vs-DBT comparisons
 now cover both canons.
 
+## An id can disappear entirely, not just become unreachable
+
+A catalog-known DBT id that's never been positively confirmed reachable
+(e.g. `AUSWBT`, which 404s every time it's tried) still gets a bare
+placeholder row (`{"ids": ["dbt:AUSWBT"]}`) — "we know the catalog lists
+this, we just have no data on it." But a client (2026-07-23) caught a
+different case: `BENBIB` (Bengali) had been verified byte-identical to
+`BNGDIP` from a real, locally-sampled fetch — then went offline on DBT's
+side sometime after that sample was taken, while comparisons kept trusting
+the (now-stale) cached sample and continued reporting it as a live,
+verified duplicate. `pipeline/comparison/verify_samples.py` re-checks a
+previously-sampled id against DBT's live API and, if it's confirmed dead,
+removes it from the comparison data entirely — no placeholder, unlike
+`AUSWBT`. The reasoning: a never-confirmed id is honestly represented by an
+empty placeholder ("might exist, we don't know"), but a *formerly-verified,
+now-confirmed-gone* id would be misrepresented by one ("still might be an
+option") — so it's fully excluded instead. If a `default`/`closest`
+reference elsewhere in the file ever points at an id with no row of its own
+at all, this is the most likely explanation (rather than a broken
+reference): run `verify_samples.py --id <ID>` to check whether it's since
+gone offline.
+
 ## Top-level fields
 
 - **`probes`** — which chapter(s) each comparison was actually based on.
