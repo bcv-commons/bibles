@@ -47,12 +47,24 @@ that turns a `.pkf` file (the format PKF publishes) into plain USFM text.
 `examples/fetch_pkf.js`/`.py` only download the file; this is the actual
 decode step.
 
+## DBT's own text/audio fileset routing
+
+If you already know you want DBT specifically (not comparing across
+sources), **[`catalog-text.json`](catalog-text.md)** and
+**[`catalog-audio.json`](catalog-audio.md)** give you DBT's real fileset
+ids directly — "given this DBT version, which fileset(s) actually carry
+its text/audio, in what format(s)." Narrower and more mechanical than
+`catalog-index.json`/`catalog-overlap.json` above; most integrations
+should start with those two instead and only reach for these when you
+need DBT's own routing detail.
+
 ## Audio, video, pictures
 
-- **Audio** — currently DBT is the only source with published audio.
-  A dedicated audio-sync pipeline is being built in a separate repo; once
+- **Audio** — currently DBT is the only source with published audio
+  (see `catalog-audio.json` above for its own fileset routing). A
+  dedicated audio-sync pipeline is being built in a separate repo; once
   it publishes, this doc and the catalog files will be extended to cover
-  it. Not yet reflected in `catalog-index.json`.
+  it.
 - **Video, pictures** — not yet covered by anything published here.
 
 ## New, first-published-here texts
