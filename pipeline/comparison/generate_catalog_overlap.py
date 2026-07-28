@@ -17,9 +17,7 @@ but not the new one was confirmed to be a strict subset of a row in the
 new output (i.e. a merge/expansion, never a loss) — zero unexplained
 differences across the whole 3026-(iso,canon) population.
 
-Row shape and semantics are UNCHANGED from the original generator — see
-doc/catalog-overlap.md for the published contract. This file only changed
-HOW the same output is computed, not the output shape itself:
+Row shape — see doc/catalog-overlap.md for the full published contract:
     [iso, canon, cluster]
   cluster = {
     "ids": ["dbt:<id>", "helloao:<id>", "pkf:<id>", ...],
@@ -27,7 +25,16 @@ HOW the same output is computed, not the output shape itself:
     "likely": "...",          # only for non-identical singletons
     "closest": "source:id",
     "score": 0.0,
+    "reachable": False,           # only present (and only ever False) on a
+                                   # fetch-failed/confirmed-removed placeholder
+    "confirmed_removed": True,    # only alongside reachable:False, for ids
+                                   # verify_samples.py positively confirmed gone
   }
+`reachable`/`confirmed_removed` were added 2026-07-28 after a client
+flagged a real ambiguity: a bare `{"ids": [...]}` row with no likely/closest
+could mean "fetched fine, nothing to compare against" OR "failed to fetch
+entirely" — indistinguishable without an explicit signal (see the `wlo`
+case in doc/catalog-overlap.md).
 
 One narrow piece of legacy behavior IS preserved rather than dropped: a
 small (4-language) PKF-vs-DBT OT refinement pass using PSA 51 as a second,
@@ -146,16 +153,29 @@ def main():
         scores = entry.get("scores", {})
         pkf_source_ref = entry.get("pkf_source_ref")
 
-        # ids_failed still get a bare placeholder row — a catalog-known id
-        # that failed to fetch (e.g. eng's AUSWBT, a real, persistent 404)
-        # is not the same as an id that never existed; the original
-        # generator built its node set from catalog/manifest presence
-        # directly (independent of fetch success), so clients checking
-        # "does this id exist at all" via catalog-overlap.json could
-        # already rely on seeing it. Dropping it silently here would be a
-        # real regression, not a simplification.
+        # ids_failed and ids_removed both get a placeholder row, EXPLICITLY
+        # marked unreachable — a client flagged (2026-07-28, the `wlo`
+        # case) that a bare `{"ids": [...]}` row with no explanation is
+        # indistinguishable from "successfully fetched, just nothing to
+        # compare against" (e.g. wlo's helloao:wlo_wbt, whose only sibling
+        # dbt:WLOWTG failed to fetch) — a client has no way to tell "this
+        # edition is fine" from "this edition is currently broken" without
+        # an honest signal. `reachable: false` is that signal.
+        #
+        # ids_removed (verify_samples.py's confirmed-permanently-gone
+        # bucket, e.g. BENBIB) gets the SAME reachable:false treatment,
+        # not silent exclusion as originally designed — a positively
+        # confirmed removal is exactly the kind of "the other one is not
+        # OK" information a client needs, and silently vanishing it is no
+        # more informative than the ambiguous bare-row problem this fixes.
+        # `confirmed_removed: true` additionally distinguishes "positively
+        # verified gone" (won't come back without a new fetch) from a
+        # plain `ids_failed` entry (could be transient; compare_all.py
+        # retries these automatically on its next run).
         for fid in sorted(entry.get("ids_failed", [])):
-            rows.append([iso, canon, {"ids": [fid]}])
+            rows.append([iso, canon, {"ids": [fid], "reachable": False}])
+        for fid in sorted(entry.get("ids_removed", [])):
+            rows.append([iso, canon, {"ids": [fid], "reachable": False, "confirmed_removed": True}])
 
         uf = UnionFind()
         for n in ids_fetched:

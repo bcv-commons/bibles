@@ -100,10 +100,44 @@ comparison confirms it.
   `distinct_translation` — computed per language/pair by a diagnosis pass,
   see `pipeline/research/`) or, where no diagnosis has run for that
   specific relationship, the coarser score-bucket tier (`near_identical`
-  ≥0.98 / `uncertain` ≥0.5 / `distinct` <0.5). A singleton only omits
-  `closest` entirely when NO comparison (cross-source or same-source) ever
-  covered it — e.g. a DBT version that's the sole DBT edition for that
-  language, in a language with no other source to compare against either.
+  ≥0.98 / `uncertain` ≥0.5 / `distinct` <0.5). A singleton omits `closest`
+  for two DIFFERENT reasons, distinguished by `reachable` (below) — either
+  genuinely nothing existed to compare it against (e.g. the sole DBT
+  edition for a language with no other source at all), or the id itself
+  couldn't be fetched at all, so no comparison was even attempted.
+- **`cluster.reachable`** — only present, and only ever `false`, on a
+  singleton where the id's text could not be fetched — never present when
+  the id *was* successfully fetched (whether compared or left an isolated
+  singleton for lack of a partner). Added 2026-07-28 after a client caught
+  a real ambiguity: without this field, a bare `{"ids": [...]}` row didn't
+  say whether that edition was actually fine (just nothing to compare
+  against) or currently broken. See `pipeline/comparison/verify_samples.py`
+  and the worked example below.
+- **`cluster.confirmed_removed`** — only present alongside
+  `reachable: false`, for an id `verify_samples.py` positively re-verified
+  as gone (previously had real, locally-sampled content; now confirmed
+  dead via a live re-check) — as opposed to a plain `reachable: false` with
+  no `confirmed_removed`, which just means "failed this run" and may be
+  transient (`compare_all.py` retries these automatically next run).
+
+## Worked example: a confirmed-broken edition next to a confirmed-fine one
+
+A client (2026-07-28) flagged `wlo` (Wolio): both its only two known
+editions, `dbt:WLOWTG` and `helloao:wlo_wbt`, showed as bare
+`{"ids": [...]}` rows with no way to tell which one (if either) was
+actually usable. The real cause: `dbt:WLOWTG`'s live fetch fails (a
+persistent 404, confirmed by hand), so `helloao:wlo_wbt` — otherwise its
+only possible comparison partner — has nothing to compare against either.
+Now:
+
+```json
+["wlo", "nt", {"ids": ["dbt:WLOWTG"], "reachable": false}]
+["wlo", "nt", {"ids": ["helloao:wlo_wbt"]}]
+```
+
+`dbt:WLOWTG`'s `reachable: false` says plainly "this one doesn't work
+right now." `helloao:wlo_wbt` carrying no such field says the opposite —
+it fetched fine, there's just no sibling to compare it against.
 
 ## Why NT and OT can disagree about the same-looking editions
 
@@ -146,27 +180,29 @@ singletons fell back to weaker cross-source signals instead of the direct
 same-source comparison. All helloAO-vs-helloAO and DBT-vs-DBT comparisons
 now cover both canons.
 
-## An id can disappear entirely, not just become unreachable
+## Two shades of `reachable: false`
 
 A catalog-known DBT id that's never been positively confirmed reachable
-(e.g. `AUSWBT`, which 404s every time it's tried) still gets a bare
-placeholder row (`{"ids": ["dbt:AUSWBT"]}`) — "we know the catalog lists
-this, we just have no data on it." But a client (2026-07-23) caught a
-different case: `BENBIB` (Bengali) had been verified byte-identical to
-`BNGDIP` from a real, locally-sampled fetch — then went offline on DBT's
-side sometime after that sample was taken, while comparisons kept trusting
-the (now-stale) cached sample and continued reporting it as a live,
-verified duplicate. `pipeline/comparison/verify_samples.py` re-checks a
-previously-sampled id against DBT's live API and, if it's confirmed dead,
-removes it from the comparison data entirely — no placeholder, unlike
-`AUSWBT`. The reasoning: a never-confirmed id is honestly represented by an
-empty placeholder ("might exist, we don't know"), but a *formerly-verified,
-now-confirmed-gone* id would be misrepresented by one ("still might be an
-option") — so it's fully excluded instead. If a `default`/`closest`
-reference elsewhere in the file ever points at an id with no row of its own
-at all, this is the most likely explanation (rather than a broken
-reference): run `verify_samples.py --id <ID>` to check whether it's since
-gone offline.
+(e.g. `AUSWBT`, which 404s every time it's tried) gets a bare placeholder
+row with `reachable: false` and no `confirmed_removed` — "we know the
+catalog lists this, but we've never gotten real content from it, and this
+run failed too." A different case, caught by a client (2026-07-23):
+`BENBIB` (Bengali) had been verified byte-identical to `BNGDIP` from a
+real, locally-sampled fetch — then went offline on DBT's side sometime
+after that sample was taken, while comparisons kept trusting the
+(now-stale) cached sample and continued reporting it as a live, verified
+duplicate. `pipeline/comparison/verify_samples.py` re-checks a
+previously-sampled id against DBT's live API; if confirmed dead, it prunes
+the stale sample and marks the id `reachable: false, confirmed_removed:
+true` — a stronger, positive statement than a plain `ids_failed` entry
+("this specific edition was verified real, and has since been verified
+gone," not just "didn't work this run, might be transient"). An earlier
+version of this pipeline fully excluded confirmed-removed ids instead of
+showing them — changed after the same 2026-07-28 `wlo` feedback that added
+`reachable` in the first place: silently vanishing a once-real id is just
+as uninformative as an unmarked bare row, for the same reason. Run
+`verify_samples.py --id <ID>` to (re-)check whether a specific id has gone
+offline.
 
 ## Top-level fields
 
