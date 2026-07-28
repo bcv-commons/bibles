@@ -18,8 +18,16 @@ Row shape: [iso, canon_tag, source, count?]
   canon_tag) pair; omitted when exactly 1 (the overwhelming majority).
 
 Per-source completeness signal:
-  - DBT: exact, straight from its own catalog canon tags (nt/ntp/ot/otp) —
-    no inference needed, DBT already distinguishes this itself.
+  - DBT: canon tags (nt/ntp/ot/otp) come straight from DBT's own catalog,
+    no inference needed there — but a "d" row is only emitted when
+    resolve_fileset() confirms the row has independently fetchable text of
+    its own. Some DBT catalog rows are external-source POINTERS
+    (t:helloao:<id> / t:ebible:<id>) — DBT's metadata references another
+    source's text rather than hosting its own. Counting those as a real
+    "d" source used to make catalog-index.json say "2 sources" for a
+    language where catalog-overlap.json correctly had nothing (DBT
+    contributed no independently comparable candidate) — fixed 2026-07-28
+    after a client hit this exact contradiction across both files.
   - helloAO: exact, verified against each translation's real book list
     (data/helloao-book-completeness.json, built from downloads/helloao/
     <id>/books.json via fetch_helloao_cache.py --samples) — checks all 27
@@ -49,6 +57,8 @@ from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, DOWNLOADS, EXPORT, HELLOAO_BOOK_COMPLETENESS_FILE  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
+from confirm_text_availability import resolve_fileset  # noqa: E402
 
 OT_BOOKS = {"GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI",
             "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER",
@@ -66,8 +76,23 @@ def dbt_rows():
     counts = defaultdict(int)
     for row in catalog["versions"]:
         iso, canon = row[0], row[2]
-        if not any(f.split(":", 1)[0] in ("t", "T") for f in row[3:]):
+        text_spec = next((f for f in row[3:] if f.split(":", 1)[0] in ("t", "T")), None)
+        if not text_spec:
             continue  # audio-only row — text pointer only for now, audio owned by another repo
+        # A `t:`/`T:` tag existing is NOT enough on its own — some DBT rows
+        # are external-source POINTERS (t:helloao:<id> / t:ebible:<id>),
+        # meaning DBT's own catalog has no independently fetchable text at
+        # all for this row, just a reference to another source's text.
+        # resolve_fileset() (the same check compare_all.py already uses to
+        # build real candidates) returns None for these — reusing it here
+        # closes a real client-facing gap (2026-07-28): 22 languages showed
+        # "2 sources" in this index (DBT + helloAO) while catalog-overlap.json
+        # correctly had nothing at all for them, because DBT's "source" was
+        # never independently comparable in the first place. Fixing the
+        # count here to match what's ACTUALLY fetchable removes the
+        # contradiction instead of requiring a client to learn about it.
+        if not resolve_fileset(row[1], text_spec):
+            continue
         counts[(iso, canon, "d")] += 1
     return counts
 

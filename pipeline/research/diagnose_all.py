@@ -22,7 +22,10 @@ Resumable: writes incrementally, skips pairs already recorded on rerun.
 Book/chapter is derived per-pair from its own canon (REV 15 for nt, PSA 117
 for ot) — never a single global default, since a single run here processes
 candidates from BOTH canons at once (unlike compare_all.py, which is
-deliberately one-canon-per-invocation).
+deliberately one-canon-per-invocation). For an OT group that used
+compare_all.py's PSA51 fallback (see its OT_FALLBACK), re-fetching MUST
+also use PSA51, not the plain PSA117 default — read from the comparison
+entry's own recorded `probe` field, never assumed.
 
 Usage:
     python3 diagnose_all.py [--limit N]
@@ -92,18 +95,11 @@ def fetch_for_id(sid: str, iso: str, canon: str, book: str, chapter: int,
 
 
 BOOK_FOR_CANON = {"nt": ("REV", 15), "ot": ("PSA", 117)}
+OT_FALLBACK = ("PSA", 51)
 
 
-def process_one(iso: str, canon: str, a: str, b: str, recorded_score: float,
+def process_one(iso: str, canon: str, a: str, b: str, recorded_score: float, book: str, chapter: int,
                  catalog: dict, pkf_source_ref: str | None, env: dict, bucket: str, tmpdir: Path) -> dict:
-    # A single diagnose_all.py run processes candidates from BOTH canons at
-    # once (it reads the whole unified all-comparisons.json, unlike
-    # compare_all.py which is deliberately one-canon-per-invocation) — so
-    # book/chapter MUST be derived per-pair from its own canon, never a
-    # single global default. Using one book for every pair regardless of
-    # canon is exactly the bug that corrupted the old dbt-dbt OT leg
-    # (REV 15 silently applied to "ot" entries) — never repeat that here.
-    book, chapter = BOOK_FOR_CANON[canon]
     text_a = fetch_for_id(a, iso, canon, book, chapter, catalog, pkf_source_ref, env, bucket, tmpdir)
     text_b = fetch_for_id(b, iso, canon, book, chapter, catalog, pkf_source_ref, env, bucket, tmpdir)
     for p in tmpdir.iterdir():
@@ -129,6 +125,17 @@ def main():
 
     comparisons = json.loads(IN_PATH.read_text())
     pkf_refs = {f"{v['iso']}:{v['canon']}": v.get("pkf_source_ref") for v in comparisons.values()}
+    # A comparison group may have used the PSA51 fallback (compare_all.py's
+    # OT_FALLBACK, see its module docstring) instead of the default PSA117 —
+    # re-fetching for diagnosis MUST use whichever probe the actual
+    # comparison used, or the re-fetch fails for a group that genuinely
+    # compared fine (found 2026-07-28: 7 pairs incorrectly came back
+    # "no_text" here despite real scores on record, because this always
+    # defaulted to PSA117 regardless of what compare_all.py actually used).
+    probe_by_group = {
+        f"{v['iso']}:{v['canon']}": OT_FALLBACK if v.get("probe") == "PSA51" else BOOK_FOR_CANON[v["canon"]]
+        for v in comparisons.values()
+    }
     catalog = json.loads((API_CACHE / "dbt-catalog.json").read_text())
 
     candidates = best_match_pairs()
@@ -150,8 +157,9 @@ def main():
         for i, (iso, canon, pair) in enumerate(todo, 1):
             a, b = pair
             pkf_source_ref = pkf_refs.get(f"{iso}:{canon}")
+            book, chapter = probe_by_group.get(f"{iso}:{canon}", BOOK_FOR_CANON[canon])
             try:
-                entry = process_one(iso, canon, a, b, candidates[(iso, canon, pair)],
+                entry = process_one(iso, canon, a, b, candidates[(iso, canon, pair)], book, chapter,
                                      catalog, pkf_source_ref, env, bucket, tmpdir)
             except Exception as e:
                 entry = {"status": "error", "error": str(e)[:200]}

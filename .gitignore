@@ -37,6 +37,18 @@ export/
 /CLAUDE.local.md
 /examples/
 /bak/
+/internal-docs/
+
+# Mistakenly copied into the repo root by MONO during the 2026-07-28
+# catalog ownership handover (before MONO discovered this repo's real
+# structure lives in internal-data/ + pipeline/core/) — same
+# rebuildable-cache/generated-output category as internal-data/ and
+# export/ above, just at the wrong path. Pending proper reconciliation
+# (examples/bibles-catalog-ownership-handover.md §1) — gitignored in the
+# meantime so 656M+54M of duplicate/generated data doesn't get committed
+# by accident.
+/api-cache/
+/sorted/
 
 # Everything under data/ (data/vrs/, data/version-exclude.toml) is real,
 # hand-curated source data and stays tracked.

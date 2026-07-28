@@ -1,0 +1,9576 @@
+{
+  "dbt": [
+    {
+      "id": "XO1BSG",
+      "iso": "xon"
+    },
+    {
+      "id": "XONDPI",
+      "iso": "xon"
+    },
+    {
+      "id": "MDVWYI",
+      "iso": "mdv"
+    },
+    {
+      "id": "KAPIBTP",
+      "iso": "kap"
+    },
+    {
+      "id": "AUSWBTP",
+      "iso": "eng"
+    },
+    {
+      "id": "ENGNLH",
+      "iso": "eng"
+    },
+    {
+      "id": "EN1WEB",
+      "iso": "eng"
+    },
+    {
+      "id": "AUSWBT",
+      "iso": "eng"
+    },
+    {
+      "id": "ENGCSB",
+      "iso": "eng"
+    },
+    {
+      "id": "ENGESH",
+      "iso": "eng"
+    },
+    {
+      "id": "KDFWBT",
+      "iso": "kdf"
+    },
+    {
+      "id": "ABQIBTP",
+      "iso": "abq"
+    },
+    {
+      "id": "ABQIBT",
+      "iso": "abq"
+    },
+    {
+      "id": "VJKIEM",
+      "iso": "vjk"
+    },
+    {
+      "id": "BQIBMVP",
+      "iso": "bqi"
+    },
+    {
+      "id": "AKLWYI",
+      "iso": "akl"
+    },
+    {
+      "id": "ONNWBT",
+      "iso": "onn"
+    },
+    {
+      "id": "BRADPI",
+      "iso": "bra"
+    },
+    {
+      "id": "IKHMLT",
+      "iso": "ikh"
+    },
+    {
+      "id": "QUBWTC",
+      "iso": "qub"
+    },
+    {
+      "id": "MDQCET",
+      "iso": "mdq"
+    },
+    {
+      "id": "OKXMLT",
+      "iso": "okx"
+    },
+    {
+      "id": "EBKFSS",
+      "iso": "ebk"
+    },
+    {
+      "id": "SUOWSV",
+      "iso": "suo"
+    },
+    {
+      "id": "YUASBM",
+      "iso": "yua"
+    },
+    {
+      "id": "CATBSS",
+      "iso": "cat"
+    },
+    {
+      "id": "KKLYPM",
+      "iso": "kkl"
+    },
+    {
+      "id": "MHSUBB",
+      "iso": "mhs"
+    },
+    {
+      "id": "BQGADP",
+      "iso": "bqg"
+    },
+    {
+      "id": "BQGADL",
+      "iso": "bqg"
+    },
+    {
+      "id": "XERJMNP",
+      "iso": "xer"
+    },
+    {
+      "id": "ZOMBSM",
+      "iso": "zom"
+    },
+    {
+      "id": "KDHABT",
+      "iso": "kdh"
+    },
+    {
+      "id": "KDHABTP",
+      "iso": "kdh"
+    },
+    {
+      "id": "SYMANT",
+      "iso": "sym"
+    },
+    {
+      "id": "TELGMI",
+      "iso": "tel"
+    },
+    {
+      "id": "TELDPI",
+      "iso": "tel"
+    },
+    {
+      "id": "TCWWTC",
+      "iso": "tel"
+    },
+    {
+      "id": "CKOGIL",
+      "iso": "cko"
+    },
+    {
+      "id": "SPPAPL",
+      "iso": "spp"
+    },
+    {
+      "id": "SPPAPLP",
+      "iso": "spp"
+    },
+    {
+      "id": "NXDCET",
+      "iso": "nxd"
+    },
+    {
+      "id": "MBAPAG",
+      "iso": "mba"
+    },
+    {
+      "id": "RONC28",
+      "iso": "ron"
+    },
+    {
+      "id": "RONTWF",
+      "iso": "ron"
+    },
+    {
+      "id": "RONRBS",
+      "iso": "ron"
+    },
+    {
+      "id": "RONWFW",
+      "iso": "ron"
+    },
+    {
+      "id": "SUKTBL",
+      "iso": "sua"
+    },
+    {
+      "id": "GAGIB1P",
+      "iso": "gag"
+    },
+    {
+      "id": "MGPMTS",
+      "iso": "mgp"
+    },
+    {
+      "id": "BWYANV",
+      "iso": "bwy"
+    },
+    {
+      "id": "BWYANT",
+      "iso": "bwy"
+    },
+    {
+      "id": "IHINBT",
+      "iso": "ihi"
+    },
+    {
+      "id": "KM1KLA",
+      "iso": "kmr"
+    },
+    {
+      "id": "KM2IBT",
+      "iso": "kmr"
+    },
+    {
+      "id": "GBHWYB",
+      "iso": "gbh"
+    },
+    {
+      "id": "KAYALE",
+      "iso": "kay"
+    },
+    {
+      "id": "GAUWIN",
+      "iso": "gau"
+    },
+    {
+      "id": "PIOWYI",
+      "iso": "pio"
+    },
+    {
+      "id": "KBDIBTP",
+      "iso": "kbd"
+    },
+    {
+      "id": "BQRKTD",
+      "iso": "bqr"
+    },
+    {
+      "id": "KAKNTM",
+      "iso": "kak"
+    },
+    {
+      "id": "NXQNVS",
+      "iso": "nxq"
+    },
+    {
+      "id": "MBTSUM",
+      "iso": "mbt"
+    },
+    {
+      "id": "MDMWYI",
+      "iso": "mdm"
+    },
+    {
+      "id": "SYXCIE",
+      "iso": "syx"
+    },
+    {
+      "id": "IKTCBS",
+      "iso": "ikt"
+    },
+    {
+      "id": "MNXLAIN2DA-opus32",
+      "iso": "mnx"
+    },
+    {
+      "id": "MNXLAIN2DA-opus64",
+      "iso": "mnx"
+    },
+    {
+      "id": "GHOWBTP",
+      "iso": "gho"
+    },
+    {
+      "id": "AMIBST",
+      "iso": "ami"
+    },
+    {
+      "id": "KBCWYI",
+      "iso": "kbc"
+    },
+    {
+      "id": "ABMTSCP",
+      "iso": "abm"
+    },
+    {
+      "id": "MGEATA",
+      "iso": "mge"
+    },
+    {
+      "id": "NQKWYI",
+      "iso": "nqk"
+    },
+    {
+      "id": "QUYBSP",
+      "iso": "quy"
+    },
+    {
+      "id": "CKTNVS",
+      "iso": "ckt"
+    },
+    {
+      "id": "CKTNVSP",
+      "iso": "ckt"
+    },
+    {
+      "id": "TEWBTT",
+      "iso": "tew"
+    },
+    {
+      "id": "TEWBTTP",
+      "iso": "tew"
+    },
+    {
+      "id": "KNANBT",
+      "iso": "kna"
+    },
+    {
+      "id": "IKZWBT",
+      "iso": "ikz"
+    },
+    {
+      "id": "RILWBTP",
+      "iso": "ril"
+    },
+    {
+      "id": "RILWBT",
+      "iso": "ril"
+    },
+    {
+      "id": "MBZTBLP",
+      "iso": "mbz"
+    },
+    {
+      "id": "IBGPBS",
+      "iso": "ibg"
+    },
+    {
+      "id": "PFEDPI",
+      "iso": "pfe"
+    },
+    {
+      "id": "GGBNHG",
+      "iso": "ggb"
+    },
+    {
+      "id": "AGUAEMP",
+      "iso": "agu"
+    },
+    {
+      "id": "AGUAEM",
+      "iso": "agu"
+    },
+    {
+      "id": "USSWBT",
+      "iso": "uss"
+    },
+    {
+      "id": "MDDDPI",
+      "iso": "mdd"
+    },
+    {
+      "id": "UZNMKV",
+      "iso": "uzn"
+    },
+    {
+      "id": "MMYWYI",
+      "iso": "mmy"
+    },
+    {
+      "id": "DWRTB1",
+      "iso": "dwr"
+    },
+    {
+      "id": "MARDPI",
+      "iso": "mar"
+    },
+    {
+      "id": "KDTWYI",
+      "iso": "kdt"
+    },
+    {
+      "id": "KDTWYIP",
+      "iso": "kdt"
+    },
+    {
+      "id": "SSCWYI",
+      "iso": "ssc"
+    },
+    {
+      "id": "EKYWBT",
+      "iso": "eky"
+    },
+    {
+      "id": "MHUWINP",
+      "iso": "mhu"
+    },
+    {
+      "id": "BQAWYI",
+      "iso": "bqa"
+    },
+    {
+      "id": "XDNPIT",
+      "iso": "kdn"
+    },
+    {
+      "id": "MGQWYI",
+      "iso": "mgq"
+    },
+    {
+      "id": "POEWYIP",
+      "iso": "poe"
+    },
+    {
+      "id": "AHKBIVP",
+      "iso": "ahk"
+    },
+    {
+      "id": "TCSWYIP",
+      "iso": "tcs"
+    },
+    {
+      "id": "TCSWYI",
+      "iso": "tcs"
+    },
+    {
+      "id": "ENOLAI",
+      "iso": "eno"
+    },
+    {
+      "id": "QVEPBS",
+      "iso": "qve"
+    },
+    {
+      "id": "KBPCIF",
+      "iso": "kbp"
+    },
+    {
+      "id": "KMTWBT",
+      "iso": "kmt"
+    },
+    {
+      "id": "GNEGCB",
+      "iso": "gne"
+    },
+    {
+      "id": "OMIWYI",
+      "iso": "omi"
+    },
+    {
+      "id": "CBSBSP",
+      "iso": "cbs"
+    },
+    {
+      "id": "CDJDPI",
+      "iso": "cdj"
+    },
+    {
+      "id": "IDDWYT",
+      "iso": "idd"
+    },
+    {
+      "id": "IDDWYBP",
+      "iso": "idd"
+    },
+    {
+      "id": "PCIIEM",
+      "iso": "pci"
+    },
+    {
+      "id": "BRICAB",
+      "iso": "bri"
+    },
+    {
+      "id": "TLYKSV",
+      "iso": "tly"
+    },
+    {
+      "id": "TLYITV",
+      "iso": "tly"
+    },
+    {
+      "id": "QUCAEM",
+      "iso": "quc"
+    },
+    {
+      "id": "QU1LSM",
+      "iso": "quc"
+    },
+    {
+      "id": "QUCBSG",
+      "iso": "quc"
+    },
+    {
+      "id": "QUCAEMP",
+      "iso": "quc"
+    },
+    {
+      "id": "QUJPMC",
+      "iso": "quc"
+    },
+    {
+      "id": "NXLWYI",
+      "iso": "nxl"
+    },
+    {
+      "id": "NXLWYIP",
+      "iso": "nxl"
+    },
+    {
+      "id": "ENAPBTP",
+      "iso": "ena"
+    },
+    {
+      "id": "TEDWSV",
+      "iso": "ted"
+    },
+    {
+      "id": "TEDWSVP",
+      "iso": "ted"
+    },
+    {
+      "id": "TIOWBT",
+      "iso": "tio"
+    },
+    {
+      "id": "KBYWBA",
+      "iso": "kby"
+    },
+    {
+      "id": "KBYWBT",
+      "iso": "kby"
+    },
+    {
+      "id": "ADNUBB",
+      "iso": "adn"
+    },
+    {
+      "id": "SUNLAI",
+      "iso": "sun"
+    },
+    {
+      "id": "CNQWBT",
+      "iso": "cnq"
+    },
+    {
+      "id": "TCZIEM",
+      "iso": "tcz"
+    },
+    {
+      "id": "TCZIEMP",
+      "iso": "tcz"
+    },
+    {
+      "id": "CGTCBT",
+      "iso": "tcz"
+    },
+    {
+      "id": "SYBTAP",
+      "iso": "syb"
+    },
+    {
+      "id": "PCGNLCP",
+      "iso": "pcg"
+    },
+    {
+      "id": "PCGNLC",
+      "iso": "pcg"
+    },
+    {
+      "id": "ZLMKSV",
+      "iso": "zlm"
+    },
+    {
+      "id": "ZLMGFA",
+      "iso": "zlm"
+    },
+    {
+      "id": "MDWBSC",
+      "iso": "mdw"
+    },
+    {
+      "id": "VIEBDV",
+      "iso": "vie"
+    },
+    {
+      "id": "VIEBIB",
+      "iso": "vie"
+    },
+    {
+      "id": "VIEBMG",
+      "iso": "vie"
+    },
+    {
+      "id": "ADIBOKP",
+      "iso": "adi"
+    },
+    {
+      "id": "ADIBOK",
+      "iso": "adi"
+    },
+    {
+      "id": "ABPWBTP",
+      "iso": "abp"
+    },
+    {
+      "id": "CARCLA",
+      "iso": "car"
+    },
+    {
+      "id": "CARLAN",
+      "iso": "car"
+    },
+    {
+      "id": "BRUNXB",
+      "iso": "bru"
+    },
+    {
+      "id": "KNGACB",
+      "iso": "kng"
+    },
+    {
+      "id": "KNGACT",
+      "iso": "kng"
+    },
+    {
+      "id": "AA1WBT",
+      "iso": "kmh"
+    },
+    {
+      "id": "AAHWBT",
+      "iso": "kmh"
+    },
+    {
+      "id": "MNWPDV",
+      "iso": "mnw"
+    },
+    {
+      "id": "MGJTSCP",
+      "iso": "mgj"
+    },
+    {
+      "id": "PLVGPA",
+      "iso": "plv"
+    },
+    {
+      "id": "TB1WPT",
+      "iso": "plv"
+    },
+    {
+      "id": "SYWWBT",
+      "iso": "syw"
+    },
+    {
+      "id": "MKFLBT",
+      "iso": "mkf"
+    },
+    {
+      "id": "TODPBTP",
+      "iso": "tod"
+    },
+    {
+      "id": "TODPBV",
+      "iso": "tod"
+    },
+    {
+      "id": "SSEWYI",
+      "iso": "sse"
+    },
+    {
+      "id": "EKENBT",
+      "iso": "eke"
+    },
+    {
+      "id": "NTUWYI",
+      "iso": "ntu"
+    },
+    {
+      "id": "TOMLAI",
+      "iso": "tom"
+    },
+    {
+      "id": "GASDPI",
+      "iso": "gas"
+    },
+    {
+      "id": "HWCWYI",
+      "iso": "hwc"
+    },
+    {
+      "id": "INDASV",
+      "iso": "ind"
+    },
+    {
+      "id": "INDALA",
+      "iso": "ind"
+    },
+    {
+      "id": "KIKBSK",
+      "iso": "kam"
+    },
+    {
+      "id": "ENIMLT",
+      "iso": "ibo"
+    },
+    {
+      "id": "EKKDPI",
+      "iso": "ekk"
+    },
+    {
+      "id": "BWJANT",
+      "iso": "bwj"
+    },
+    {
+      "id": "GATNTM",
+      "iso": "gat"
+    },
+    {
+      "id": "JWIMFG",
+      "iso": "jwi"
+    },
+    {
+      "id": "LROECS",
+      "iso": "lro"
+    },
+    {
+      "id": "KNNWFW",
+      "iso": "knn"
+    },
+    {
+      "id": "TEXWYIP",
+      "iso": "tex"
+    },
+    {
+      "id": "TEXWYI",
+      "iso": "tex"
+    },
+    {
+      "id": "FRNPDV",
+      "iso": "fra"
+    },
+    {
+      "id": "FRNTLS",
+      "iso": "fra"
+    },
+    {
+      "id": "FRNPDC",
+      "iso": "fra"
+    },
+    {
+      "id": "FRNLSN",
+      "iso": "fra"
+    },
+    {
+      "id": "MBUNBT",
+      "iso": "mbu"
+    },
+    {
+      "id": "TTYGID",
+      "iso": "tty"
+    },
+    {
+      "id": "KYVDPI",
+      "iso": "kyv"
+    },
+    {
+      "id": "SHDBSZ",
+      "iso": "sna"
+    },
+    {
+      "id": "LEWLAI",
+      "iso": "lew"
+    },
+    {
+      "id": "LEWKTDP",
+      "iso": "lew"
+    },
+    {
+      "id": "LEWKTD",
+      "iso": "lew"
+    },
+    {
+      "id": "LEWKDVP",
+      "iso": "lew"
+    },
+    {
+      "id": "LEWKDV",
+      "iso": "lew"
+    },
+    {
+      "id": "ZRSWYI",
+      "iso": "zrs"
+    },
+    {
+      "id": "MUMPNGP",
+      "iso": "mum"
+    },
+    {
+      "id": "MUMPNG",
+      "iso": "mum"
+    },
+    {
+      "id": "BLYGMO",
+      "iso": "bly"
+    },
+    {
+      "id": "GUCTBL",
+      "iso": "guc"
+    },
+    {
+      "id": "WMSWBT",
+      "iso": "wms"
+    },
+    {
+      "id": "TQOPNG",
+      "iso": "tqo"
+    },
+    {
+      "id": "LOEYMP",
+      "iso": "loe"
+    },
+    {
+      "id": "NLGWBT",
+      "iso": "nlg"
+    },
+    {
+      "id": "APBWYI",
+      "iso": "apb"
+    },
+    {
+      "id": "YALDPI",
+      "iso": "yal"
+    },
+    {
+      "id": "MZNMWVP",
+      "iso": "mzn"
+    },
+    {
+      "id": "MZNMWV",
+      "iso": "mzn"
+    },
+    {
+      "id": "MZNMEV",
+      "iso": "mzn"
+    },
+    {
+      "id": "MZNMEVP",
+      "iso": "mzn"
+    },
+    {
+      "id": "KSCTAP",
+      "iso": "ksc"
+    },
+    {
+      "id": "ASMDPI",
+      "iso": "asm"
+    },
+    {
+      "id": "MYAGBI",
+      "iso": "mya"
+    },
+    {
+      "id": "HIOSWW",
+      "iso": "hio"
+    },
+    {
+      "id": "LIRNHG",
+      "iso": "lir"
+    },
+    {
+      "id": "KUSTBL",
+      "iso": "kus"
+    },
+    {
+      "id": "YBJNBT",
+      "iso": "ybj"
+    },
+    {
+      "id": "DIQWYIP",
+      "iso": "diq"
+    },
+    {
+      "id": "DIQWYI",
+      "iso": "diq"
+    },
+    {
+      "id": "DOHITD",
+      "iso": "doh"
+    },
+    {
+      "id": "WAVNBT",
+      "iso": "wav"
+    },
+    {
+      "id": "JIBNBT",
+      "iso": "jib"
+    },
+    {
+      "id": "UKINLC",
+      "iso": "uki"
+    },
+    {
+      "id": "PRSPAM",
+      "iso": "prs"
+    },
+    {
+      "id": "IZZTBL",
+      "iso": "izz"
+    },
+    {
+      "id": "XTNTBL",
+      "iso": "xtn"
+    },
+    {
+      "id": "BFBDPI",
+      "iso": "bfb"
+    },
+    {
+      "id": "UNXDPI",
+      "iso": "unx"
+    },
+    {
+      "id": "JENNBTP",
+      "iso": "jen"
+    },
+    {
+      "id": "QAAWIN",
+      "iso": "qaa"
+    },
+    {
+      "id": "LOLCET",
+      "iso": "lol"
+    },
+    {
+      "id": "LOLTEC",
+      "iso": "lol"
+    },
+    {
+      "id": "LOLDEC",
+      "iso": "lol"
+    },
+    {
+      "id": "LOLCEL",
+      "iso": "lol"
+    },
+    {
+      "id": "LOLCTE",
+      "iso": "lol"
+    },
+    {
+      "id": "PRTETSP",
+      "iso": "prt"
+    },
+    {
+      "id": "PRTETS",
+      "iso": "prt"
+    },
+    {
+      "id": "RW1WYI",
+      "iso": "rwo"
+    },
+    {
+      "id": "GUJDPI",
+      "iso": "guj"
+    },
+    {
+      "id": "GUJWTC",
+      "iso": "guj"
+    },
+    {
+      "id": "DIVWYI",
+      "iso": "div"
+    },
+    {
+      "id": "DIVWYIP",
+      "iso": "div"
+    },
+    {
+      "id": "HOCIEM",
+      "iso": "hoc"
+    },
+    {
+      "id": "SDHWBTP",
+      "iso": "sdh"
+    },
+    {
+      "id": "SDHWBT",
+      "iso": "sdh"
+    },
+    {
+      "id": "MZRGPA",
+      "iso": "mzr"
+    },
+    {
+      "id": "MZRGPAP",
+      "iso": "mzr"
+    },
+    {
+      "id": "HCHWYI",
+      "iso": "hch"
+    },
+    {
+      "id": "TTBHBL",
+      "iso": "ttb"
+    },
+    {
+      "id": "BLBBSP",
+      "iso": "blb"
+    },
+    {
+      "id": "MUVNLC",
+      "iso": "muv"
+    },
+    {
+      "id": "MUVNLCP",
+      "iso": "muv"
+    },
+    {
+      "id": "SDOCAK",
+      "iso": "sdo"
+    },
+    {
+      "id": "BFWNLC",
+      "iso": "bfw"
+    },
+    {
+      "id": "SAYGCB",
+      "iso": "say"
+    },
+    {
+      "id": "KYJWBT",
+      "iso": "kyj"
+    },
+    {
+      "id": "HLBDPI",
+      "iso": "hlb"
+    },
+    {
+      "id": "HLBMSS",
+      "iso": "hlb"
+    },
+    {
+      "id": "HLBWFW",
+      "iso": "hlb"
+    },
+    {
+      "id": "HLBMSSP",
+      "iso": "hlb"
+    },
+    {
+      "id": "LEBWFW",
+      "iso": "leb"
+    },
+    {
+      "id": "UKRUBS",
+      "iso": "ukr"
+    },
+    {
+      "id": "UKRBIB",
+      "iso": "ukr"
+    },
+    {
+      "id": "BEQABC",
+      "iso": "beq"
+    },
+    {
+      "id": "JERLDT",
+      "iso": "jer"
+    },
+    {
+      "id": "BCOWBTP",
+      "iso": "bco"
+    },
+    {
+      "id": "KPYIBTP",
+      "iso": "kpy"
+    },
+    {
+      "id": "CULMNT",
+      "iso": "cul"
+    },
+    {
+      "id": "DOTLDB",
+      "iso": "dot"
+    },
+    {
+      "id": "DOTLBT",
+      "iso": "dot"
+    },
+    {
+      "id": "DOTLBD",
+      "iso": "dot"
+    },
+    {
+      "id": "DOTDBT",
+      "iso": "dot"
+    },
+    {
+      "id": "DOTBLD",
+      "iso": "dot"
+    },
+    {
+      "id": "BLKCLV",
+      "iso": "blk"
+    },
+    {
+      "id": "DEFKLV",
+      "iso": "def"
+    },
+    {
+      "id": "DEFKLVP",
+      "iso": "def"
+    },
+    {
+      "id": "YMRWIN",
+      "iso": "ymr"
+    },
+    {
+      "id": "GYZGCB",
+      "iso": "gyz"
+    },
+    {
+      "id": "BO1CAP",
+      "iso": "bod"
+    },
+    {
+      "id": "BODNVS",
+      "iso": "bod"
+    },
+    {
+      "id": "BODSVN",
+      "iso": "bod"
+    },
+    {
+      "id": "HOJIEM",
+      "iso": "hoj"
+    },
+    {
+      "id": "LINRDC",
+      "iso": "lin"
+    },
+    {
+      "id": "LINDPI",
+      "iso": "lin"
+    },
+    {
+      "id": "SDADPI",
+      "iso": "sda"
+    },
+    {
+      "id": "SDASUL",
+      "iso": "sda"
+    },
+    {
+      "id": "LOLETC",
+      "iso": "ksv"
+    },
+    {
+      "id": "NIYWYI",
+      "iso": "niy"
+    },
+    {
+      "id": "KPCLAN",
+      "iso": "kpc"
+    },
+    {
+      "id": "KPCCLA",
+      "iso": "kpc"
+    },
+    {
+      "id": "CUVCAB",
+      "iso": "cuv"
+    },
+    {
+      "id": "TTQWBT",
+      "iso": "ttq"
+    },
+    {
+      "id": "TTQWBB",
+      "iso": "ttq"
+    },
+    {
+      "id": "HBRHMT",
+      "iso": "heb"
+    },
+    {
+      "id": "BELBSB",
+      "iso": "bel"
+    },
+    {
+      "id": "TWYLAI",
+      "iso": "twy"
+    },
+    {
+      "id": "NCLTBLP",
+      "iso": "ncl"
+    },
+    {
+      "id": "SKXLAI",
+      "iso": "skx"
+    },
+    {
+      "id": "HINBIB",
+      "iso": "hin"
+    },
+    {
+      "id": "HNDSKV",
+      "iso": "hin"
+    },
+    {
+      "id": "HINCET",
+      "iso": "hin"
+    },
+    {
+      "id": "HINDPI",
+      "iso": "hin"
+    },
+    {
+      "id": "HINBCS",
+      "iso": "hin"
+    },
+    {
+      "id": "HNDWTC",
+      "iso": "hin"
+    },
+    {
+      "id": "HINOHC",
+      "iso": "hin"
+    },
+    {
+      "id": "HOWNVS",
+      "iso": "how"
+    },
+    {
+      "id": "LEXWBTP",
+      "iso": "lex"
+    },
+    {
+      "id": "UDLWBT",
+      "iso": "udl"
+    },
+    {
+      "id": "GULKJV",
+      "iso": "gul"
+    },
+    {
+      "id": "EVNIBTP",
+      "iso": "evn"
+    },
+    {
+      "id": "ZTLWBT",
+      "iso": "ztl"
+    },
+    {
+      "id": "YAMNBT",
+      "iso": "yam"
+    },
+    {
+      "id": "KPMUBS",
+      "iso": "kpm"
+    },
+    {
+      "id": "CUXQTO",
+      "iso": "cux"
+    },
+    {
+      "id": "APCSMV",
+      "iso": "apc"
+    },
+    {
+      "id": "NCEWBTP",
+      "iso": "nce"
+    },
+    {
+      "id": "XTATBLP",
+      "iso": "xta"
+    },
+    {
+      "id": "XTAWBT",
+      "iso": "xta"
+    },
+    {
+      "id": "PWMGPA",
+      "iso": "pwm"
+    },
+    {
+      "id": "PWMGPAP",
+      "iso": "pwm"
+    },
+    {
+      "id": "HIGNBT",
+      "iso": "hig"
+    },
+    {
+      "id": "SBLTBL",
+      "iso": "sbl"
+    },
+    {
+      "id": "APDSWW",
+      "iso": "apd"
+    },
+    {
+      "id": "NOIWFW",
+      "iso": "noi"
+    },
+    {
+      "id": "NOIDPI",
+      "iso": "noi"
+    },
+    {
+      "id": "TXSPPA",
+      "iso": "txs"
+    },
+    {
+      "id": "TXSPPAP",
+      "iso": "txs"
+    },
+    {
+      "id": "SBKWBT",
+      "iso": "sbk"
+    },
+    {
+      "id": "GERL12",
+      "iso": "deu"
+    },
+    {
+      "id": "GERD71",
+      "iso": "deu"
+    },
+    {
+      "id": "GERD05",
+      "iso": "deu"
+    },
+    {
+      "id": "YAXTWF",
+      "iso": "yax"
+    },
+    {
+      "id": "LEDDRC",
+      "iso": "led"
+    },
+    {
+      "id": "KYEGIL",
+      "iso": "kye"
+    },
+    {
+      "id": "MPHASV",
+      "iso": "mph"
+    },
+    {
+      "id": "MPHASVP",
+      "iso": "mph"
+    },
+    {
+      "id": "TXATBLP",
+      "iso": "txa"
+    },
+    {
+      "id": "TWEUBB",
+      "iso": "twe"
+    },
+    {
+      "id": "TWEUBBP",
+      "iso": "twe"
+    },
+    {
+      "id": "NFAUBBP",
+      "iso": "nfa"
+    },
+    {
+      "id": "NFAUBBP1DA-opus64",
+      "iso": "nfa"
+    },
+    {
+      "id": "NFAUBBP1DA-opus32",
+      "iso": "nfa"
+    },
+    {
+      "id": "KYBTAP",
+      "iso": "kyb"
+    },
+    {
+      "id": "AYLELAP",
+      "iso": "ayl"
+    },
+    {
+      "id": "RWRDPI",
+      "iso": "rwr"
+    },
+    {
+      "id": "ZRGWIN",
+      "iso": "zrg"
+    },
+    {
+      "id": "WA1SIM",
+      "iso": "wal"
+    },
+    {
+      "id": "SGHWBTP",
+      "iso": "sgh"
+    },
+    {
+      "id": "SGHWBT",
+      "iso": "sgh"
+    },
+    {
+      "id": "SAQBTL",
+      "iso": "saq"
+    },
+    {
+      "id": "SAQSIV",
+      "iso": "saq"
+    },
+    {
+      "id": "LOQCET",
+      "iso": "loq"
+    },
+    {
+      "id": "KSPACA",
+      "iso": "ksp"
+    },
+    {
+      "id": "MVVKLO",
+      "iso": "mvv"
+    },
+    {
+      "id": "AZ1BSA",
+      "iso": "azj"
+    },
+    {
+      "id": "TXOIEM",
+      "iso": "txo"
+    },
+    {
+      "id": "TXOIEMP",
+      "iso": "txo"
+    },
+    {
+      "id": "WBJAIM",
+      "iso": "wbj"
+    },
+    {
+      "id": "OSSODV",
+      "iso": "osd"
+    },
+    {
+      "id": "OSSODVP",
+      "iso": "osd"
+    },
+    {
+      "id": "IUMMCM",
+      "iso": "ium"
+    },
+    {
+      "id": "IUMMC1",
+      "iso": "ium"
+    },
+    {
+      "id": "KVOYPS",
+      "iso": "kvo"
+    },
+    {
+      "id": "SBPWBT",
+      "iso": "sbp"
+    },
+    {
+      "id": "SBPWBTP",
+      "iso": "sbp"
+    },
+    {
+      "id": "CYOPBS",
+      "iso": "cyo"
+    },
+    {
+      "id": "BJZWYI",
+      "iso": "bjz"
+    },
+    {
+      "id": "JIVAIE",
+      "iso": "jiv"
+    },
+    {
+      "id": "SHBMEV",
+      "iso": "shb"
+    },
+    {
+      "id": "ATDWPV",
+      "iso": "atd"
+    },
+    {
+      "id": "ATDWYI",
+      "iso": "atd"
+    },
+    {
+      "id": "DKGNBT",
+      "iso": "dkg"
+    },
+    {
+      "id": "TYESIMP",
+      "iso": "tye"
+    },
+    {
+      "id": "TYERJV",
+      "iso": "tye"
+    },
+    {
+      "id": "KRSWYI",
+      "iso": "krs"
+    },
+    {
+      "id": "IX1WBT",
+      "iso": "ixl"
+    },
+    {
+      "id": "IXLAEM",
+      "iso": "ixl"
+    },
+    {
+      "id": "SLYLAI",
+      "iso": "sly"
+    },
+    {
+      "id": "MXQUNT",
+      "iso": "mxq"
+    },
+    {
+      "id": "HAKKTD",
+      "iso": "hak"
+    },
+    {
+      "id": "TZJAEM",
+      "iso": "tzj"
+    },
+    {
+      "id": "TZTIBS",
+      "iso": "tzj"
+    },
+    {
+      "id": "TZTWBT",
+      "iso": "tzj"
+    },
+    {
+      "id": "TZJAEMP",
+      "iso": "tzj"
+    },
+    {
+      "id": "BKWWBT",
+      "iso": "bkw"
+    },
+    {
+      "id": "TSWTBL",
+      "iso": "tsw"
+    },
+    {
+      "id": "HALWFW",
+      "iso": "hal"
+    },
+    {
+      "id": "GXXWYI",
+      "iso": "gxx"
+    },
+    {
+      "id": "CWAWYI",
+      "iso": "cwa"
+    },
+    {
+      "id": "CWAWYIP",
+      "iso": "cwa"
+    },
+    {
+      "id": "DARBTM",
+      "iso": "dar"
+    },
+    {
+      "id": "DARBTI",
+      "iso": "dar"
+    },
+    {
+      "id": "LDGGOY",
+      "iso": "ldg"
+    },
+    {
+      "id": "KXFTEMP",
+      "iso": "kxf"
+    },
+    {
+      "id": "KXFWYI",
+      "iso": "kxf"
+    },
+    {
+      "id": "KXFWYIP",
+      "iso": "kxf"
+    },
+    {
+      "id": "KXFTEM",
+      "iso": "kxf"
+    },
+    {
+      "id": "BDTACA",
+      "iso": "bdt"
+    },
+    {
+      "id": "JAAJAR",
+      "iso": "jaa"
+    },
+    {
+      "id": "JAAJARP",
+      "iso": "jaa"
+    },
+    {
+      "id": "JAAJAM",
+      "iso": "jaa"
+    },
+    {
+      "id": "WOLFES",
+      "iso": "wol"
+    },
+    {
+      "id": "WOLMBS",
+      "iso": "wol"
+    },
+    {
+      "id": "TZMLRT",
+      "iso": "tzm"
+    },
+    {
+      "id": "TZMWYIP",
+      "iso": "tzm"
+    },
+    {
+      "id": "GRKEPT",
+      "iso": "grc"
+    },
+    {
+      "id": "GRKNVS",
+      "iso": "grc"
+    },
+    {
+      "id": "KQRWYI",
+      "iso": "kqr"
+    },
+    {
+      "id": "SFETAP",
+      "iso": "sfe"
+    },
+    {
+      "id": "ITIPBS",
+      "iso": "iti"
+    },
+    {
+      "id": "BNOWBTP",
+      "iso": "bno"
+    },
+    {
+      "id": "MRJIBT",
+      "iso": "mrj"
+    },
+    {
+      "id": "BBCLAI",
+      "iso": "bbc"
+    },
+    {
+      "id": "ZLMAVB",
+      "iso": "zsm"
+    },
+    {
+      "id": "SIFPOG",
+      "iso": "sif"
+    },
+    {
+      "id": "NARNBT",
+      "iso": "nar"
+    },
+    {
+      "id": "WCIWYT",
+      "iso": "wci"
+    },
+    {
+      "id": "WCIWYB",
+      "iso": "wci"
+    },
+    {
+      "id": "JMDYPM",
+      "iso": "jmd"
+    },
+    {
+      "id": "ORGNBT",
+      "iso": "org"
+    },
+    {
+      "id": "MXXWBTP",
+      "iso": "mxx"
+    },
+    {
+      "id": "BMUPNGP",
+      "iso": "bmu"
+    },
+    {
+      "id": "MTAWPB",
+      "iso": "mta"
+    },
+    {
+      "id": "DA2WST",
+      "iso": "dnj"
+    },
+    {
+      "id": "DA1EST",
+      "iso": "dnj"
+    },
+    {
+      "id": "DNJEST",
+      "iso": "dnj"
+    },
+    {
+      "id": "CRKCBS",
+      "iso": "crk"
+    },
+    {
+      "id": "CRKCBSP",
+      "iso": "crk"
+    },
+    {
+      "id": "NNDBSP",
+      "iso": "nnd"
+    },
+    {
+      "id": "SOMM20",
+      "iso": "som"
+    },
+    {
+      "id": "MWNBLT",
+      "iso": "mwn"
+    },
+    {
+      "id": "MWNWFW",
+      "iso": "mwn"
+    },
+    {
+      "id": "NDVWYI",
+      "iso": "ndv"
+    },
+    {
+      "id": "TURYOL",
+      "iso": "tur"
+    },
+    {
+      "id": "NAGDPI",
+      "iso": "nag"
+    },
+    {
+      "id": "LBEIBTP",
+      "iso": "lbe"
+    },
+    {
+      "id": "KWYACT",
+      "iso": "kwy"
+    },
+    {
+      "id": "SFWAFV",
+      "iso": "sfw"
+    },
+    {
+      "id": "SFWDPI",
+      "iso": "sfw"
+    },
+    {
+      "id": "XSUMEV",
+      "iso": "xsu"
+    },
+    {
+      "id": "BHDDPI",
+      "iso": "bhd"
+    },
+    {
+      "id": "TYYYSCP",
+      "iso": "tyy"
+    },
+    {
+      "id": "NBABSA",
+      "iso": "nba"
+    },
+    {
+      "id": "NDXLAI",
+      "iso": "ndx"
+    },
+    {
+      "id": "BAPWYI",
+      "iso": "bap"
+    },
+    {
+      "id": "ARHFDP",
+      "iso": "arh"
+    },
+    {
+      "id": "NANHOT",
+      "iso": "nan"
+    },
+    {
+      "id": "YOMBIB",
+      "iso": "yom"
+    },
+    {
+      "id": "YOMBIBP",
+      "iso": "yom"
+    },
+    {
+      "id": "SEVWYI",
+      "iso": "sev"
+    },
+    {
+      "id": "SLOBSS",
+      "iso": "slk"
+    },
+    {
+      "id": "TPJLPY",
+      "iso": "tpj"
+    },
+    {
+      "id": "PUAYWM",
+      "iso": "pua"
+    },
+    {
+      "id": "DGDANT",
+      "iso": "dgd"
+    },
+    {
+      "id": "MTRNLC",
+      "iso": "mtr"
+    },
+    {
+      "id": "NDEDPI",
+      "iso": "nde"
+    },
+    {
+      "id": "TPPTBL",
+      "iso": "tpp"
+    },
+    {
+      "id": "BGTWYI",
+      "iso": "bgt"
+    },
+    {
+      "id": "NKABSZ",
+      "iso": "nka"
+    },
+    {
+      "id": "KTBESB",
+      "iso": "ktb"
+    },
+    {
+      "id": "BMAGCB",
+      "iso": "bma"
+    },
+    {
+      "id": "DHGASV",
+      "iso": "dhg"
+    },
+    {
+      "id": "DHGASVP",
+      "iso": "dhg"
+    },
+    {
+      "id": "ATKTAP",
+      "iso": "atk"
+    },
+    {
+      "id": "HADLAI",
+      "iso": "had"
+    },
+    {
+      "id": "BGSWYI",
+      "iso": "bgs"
+    },
+    {
+      "id": "IQWOBT",
+      "iso": "iqw"
+    },
+    {
+      "id": "ATBWYIP",
+      "iso": "atb"
+    },
+    {
+      "id": "ATBWYI",
+      "iso": "atb"
+    },
+    {
+      "id": "NKOWBTP",
+      "iso": "nko"
+    },
+    {
+      "id": "KRUBSFP",
+      "iso": "kru"
+    },
+    {
+      "id": "KRUBSF",
+      "iso": "kru"
+    },
+    {
+      "id": "BNGCIE",
+      "iso": "bng"
+    },
+    {
+      "id": "HNIWFW",
+      "iso": "hni"
+    },
+    {
+      "id": "ZPMSIM",
+      "iso": "zpm"
+    },
+    {
+      "id": "BKQWYI",
+      "iso": "bkq"
+    },
+    {
+      "id": "DHNWFW",
+      "iso": "dhn"
+    },
+    {
+      "id": "DHNDPI",
+      "iso": "dhn"
+    },
+    {
+      "id": "ITABMG",
+      "iso": "ita"
+    },
+    {
+      "id": "HBBNBT",
+      "iso": "hbb"
+    },
+    {
+      "id": "BDUODA",
+      "iso": "bdu"
+    },
+    {
+      "id": "BDUODAP",
+      "iso": "bdu"
+    },
+    {
+      "id": "ETXNBT",
+      "iso": "etx"
+    },
+    {
+      "id": "JKUGCB",
+      "iso": "jku"
+    },
+    {
+      "id": "PYYWBTP",
+      "iso": "pyy"
+    },
+    {
+      "id": "PYYWBT",
+      "iso": "pyy"
+    },
+    {
+      "id": "KRRWBTP",
+      "iso": "krr"
+    },
+    {
+      "id": "BBKCAB",
+      "iso": "bbk"
+    },
+    {
+      "id": "SINCBS",
+      "iso": "sin"
+    },
+    {
+      "id": "DHIWBT",
+      "iso": "dhi"
+    },
+    {
+      "id": "DHIDPI",
+      "iso": "dhi"
+    },
+    {
+      "id": "BMOWYI",
+      "iso": "bmo"
+    },
+    {
+      "id": "DBIMST",
+      "iso": "dbi"
+    },
+    {
+      "id": "NMCBIV",
+      "iso": "nmc"
+    },
+    {
+      "id": "YEYBSB",
+      "iso": "yey"
+    },
+    {
+      "id": "KTYCIT",
+      "iso": "kty"
+    },
+    {
+      "id": "LBJMCV",
+      "iso": "lbj"
+    },
+    {
+      "id": "LBJDPI",
+      "iso": "lbj"
+    },
+    {
+      "id": "LBJMCVP",
+      "iso": "lbj"
+    },
+    {
+      "id": "BKDLMC",
+      "iso": "bkd"
+    },
+    {
+      "id": "EWEDPI",
+      "iso": "ewe"
+    },
+    {
+      "id": "KQOBSL",
+      "iso": "kqo"
+    },
+    {
+      "id": "ZYBNBPP",
+      "iso": "zyb"
+    },
+    {
+      "id": "SEPATA",
+      "iso": "sep"
+    },
+    {
+      "id": "NMDCIE",
+      "iso": "nmd"
+    },
+    {
+      "id": "TVUCAB",
+      "iso": "tvu"
+    },
+    {
+      "id": "HMTNTM",
+      "iso": "hmt"
+    },
+    {
+      "id": "PUGANT",
+      "iso": "pug"
+    },
+    {
+      "id": "BDGWYIP",
+      "iso": "bdg"
+    },
+    {
+      "id": "TUZSWFP",
+      "iso": "tuz"
+    },
+    {
+      "id": "TUZSWF",
+      "iso": "tuz"
+    },
+    {
+      "id": "LB1LHVP",
+      "iso": "lbm"
+    },
+    {
+      "id": "LB1LHV",
+      "iso": "lbm"
+    },
+    {
+      "id": "MTGLAI",
+      "iso": "mtg"
+    },
+    {
+      "id": "WEDWTV",
+      "iso": "wed"
+    },
+    {
+      "id": "NKTWBT",
+      "iso": "nkt"
+    },
+    {
+      "id": "NDPBSU",
+      "iso": "ndp"
+    },
+    {
+      "id": "ZPVTBLP",
+      "iso": "zpv"
+    },
+    {
+      "id": "MXLWYB",
+      "iso": "mxl"
+    },
+    {
+      "id": "PUINTM",
+      "iso": "pui"
+    },
+    {
+      "id": "PUILAN",
+      "iso": "pui"
+    },
+    {
+      "id": "CRJBSC",
+      "iso": "crj"
+    },
+    {
+      "id": "XUJVOH",
+      "iso": "xuj"
+    },
+    {
+      "id": "ZPQBTT",
+      "iso": "zpq"
+    },
+    {
+      "id": "HAQBST",
+      "iso": "haq"
+    },
+    {
+      "id": "LALCET",
+      "iso": "lal"
+    },
+    {
+      "id": "FABSBE",
+      "iso": "fab"
+    },
+    {
+      "id": "KRIDPI",
+      "iso": "kri"
+    },
+    {
+      "id": "KRIBSS",
+      "iso": "kri"
+    },
+    {
+      "id": "OTMTBL",
+      "iso": "otm"
+    },
+    {
+      "id": "NUVANV",
+      "iso": "nuv"
+    },
+    {
+      "id": "NUVANT",
+      "iso": "nuv"
+    },
+    {
+      "id": "MOSABA",
+      "iso": "mos"
+    },
+    {
+      "id": "MOSANT",
+      "iso": "mos"
+    },
+    {
+      "id": "PGGWIN",
+      "iso": "pgg"
+    },
+    {
+      "id": "MFNTSCP",
+      "iso": "mfn"
+    },
+    {
+      "id": "PNZCAB",
+      "iso": "pnz"
+    },
+    {
+      "id": "KCHDGG",
+      "iso": "kch"
+    },
+    {
+      "id": "BSQLBS",
+      "iso": "bsq"
+    },
+    {
+      "id": "TBLWYI",
+      "iso": "tbl"
+    },
+    {
+      "id": "ACAWBTP",
+      "iso": "aca"
+    },
+    {
+      "id": "ZNSLDB",
+      "iso": "zns"
+    },
+    {
+      "id": "HVNUBB",
+      "iso": "hvn"
+    },
+    {
+      "id": "HVNUBBP",
+      "iso": "hvn"
+    },
+    {
+      "id": "ZAWSIM",
+      "iso": "zaw"
+    },
+    {
+      "id": "ZAWOTS",
+      "iso": "zaw"
+    },
+    {
+      "id": "LATBSL",
+      "iso": "lvs"
+    },
+    {
+      "id": "LATLVR",
+      "iso": "lvs"
+    },
+    {
+      "id": "KLKENB",
+      "iso": "klk"
+    },
+    {
+      "id": "DUDWYI",
+      "iso": "uth"
+    },
+    {
+      "id": "KFYDPI",
+      "iso": "kfy"
+    },
+    {
+      "id": "PBVPBT",
+      "iso": "pbv"
+    },
+    {
+      "id": "PDOKTD",
+      "iso": "pdo"
+    },
+    {
+      "id": "PKBTBL",
+      "iso": "pkb"
+    },
+    {
+      "id": "KFPWIN",
+      "iso": "kfp"
+    },
+    {
+      "id": "TMFLPY",
+      "iso": "tmf"
+    },
+    {
+      "id": "AOCBIV",
+      "iso": "aoc"
+    },
+    {
+      "id": "CLAAIR",
+      "iso": "cla"
+    },
+    {
+      "id": "PA2BSN",
+      "iso": "pap"
+    },
+    {
+      "id": "TAMDPI",
+      "iso": "tam"
+    },
+    {
+      "id": "TAMDIP",
+      "iso": "tam"
+    },
+    {
+      "id": "TAMWCO",
+      "iso": "tam"
+    },
+    {
+      "id": "MJLDPI",
+      "iso": "mjl"
+    },
+    {
+      "id": "NPINBS",
+      "iso": "npi"
+    },
+    {
+      "id": "NPIDPI",
+      "iso": "npi"
+    },
+    {
+      "id": "NPIBIB",
+      "iso": "npi"
+    },
+    {
+      "id": "MEHWYI",
+      "iso": "meh"
+    },
+    {
+      "id": "RHGRCAP",
+      "iso": "rhg"
+    },
+    {
+      "id": "GEFSGVP",
+      "iso": "gef"
+    },
+    {
+      "id": "GEFSGV",
+      "iso": "gef"
+    },
+    {
+      "id": "DUQYPB",
+      "iso": "duq"
+    },
+    {
+      "id": "MOZWYI",
+      "iso": "moz"
+    },
+    {
+      "id": "RMQMAC",
+      "iso": "rmq"
+    },
+    {
+      "id": "STVBSE",
+      "iso": "stv"
+    },
+    {
+      "id": "KCAIBTP",
+      "iso": "kca"
+    },
+    {
+      "id": "TDNPPA",
+      "iso": "tdn"
+    },
+    {
+      "id": "TDNPPAP",
+      "iso": "tdn"
+    },
+    {
+      "id": "VAUWFW",
+      "iso": "vau"
+    },
+    {
+      "id": "IJCTEM",
+      "iso": "ijc"
+    },
+    {
+      "id": "IJCTAM",
+      "iso": "ijc"
+    },
+    {
+      "id": "RAHIEM",
+      "iso": "rah"
+    },
+    {
+      "id": "RAHIEMP",
+      "iso": "rah"
+    },
+    {
+      "id": "NYFBTL",
+      "iso": "nyf"
+    },
+    {
+      "id": "CCPBBS",
+      "iso": "ccp"
+    },
+    {
+      "id": "PAEACT",
+      "iso": "pae"
+    },
+    {
+      "id": "XBIKWV",
+      "iso": "xbi"
+    },
+    {
+      "id": "BPEWBV",
+      "iso": "bpe"
+    },
+    {
+      "id": "BPEWPV",
+      "iso": "bpe"
+    },
+    {
+      "id": "ZAKWYI",
+      "iso": "zak"
+    },
+    {
+      "id": "ZAKWYIP",
+      "iso": "zak"
+    },
+    {
+      "id": "ALYASV",
+      "iso": "aly"
+    },
+    {
+      "id": "ALYASVP",
+      "iso": "aly"
+    },
+    {
+      "id": "IOUWBTP",
+      "iso": "iou"
+    },
+    {
+      "id": "CIBWYB",
+      "iso": "cib"
+    },
+    {
+      "id": "KLWLAI",
+      "iso": "klw"
+    },
+    {
+      "id": "NUMWBT",
+      "iso": "num"
+    },
+    {
+      "id": "NSTEVB",
+      "iso": "nst"
+    },
+    {
+      "id": "NSTNLC",
+      "iso": "nst"
+    },
+    {
+      "id": "NSTEBTP",
+      "iso": "nst"
+    },
+    {
+      "id": "NSTEBT",
+      "iso": "nst"
+    },
+    {
+      "id": "NSTBET",
+      "iso": "nst"
+    },
+    {
+      "id": "RMCPBT",
+      "iso": "rmc"
+    },
+    {
+      "id": "RMCPBTP",
+      "iso": "rmc"
+    },
+    {
+      "id": "NYATWF",
+      "iso": "nya"
+    },
+    {
+      "id": "NYJBLV",
+      "iso": "nya"
+    },
+    {
+      "id": "NYJBIB",
+      "iso": "nya"
+    },
+    {
+      "id": "NYAWFV",
+      "iso": "nya"
+    },
+    {
+      "id": "CENNBT",
+      "iso": "cen"
+    },
+    {
+      "id": "PDTFLN",
+      "iso": "pdt"
+    },
+    {
+      "id": "VMYTBL",
+      "iso": "vmy"
+    },
+    {
+      "id": "KJIIBM",
+      "iso": "kji"
+    },
+    {
+      "id": "AJGCIF",
+      "iso": "ajg"
+    },
+    {
+      "id": "AJGABB",
+      "iso": "ajg"
+    },
+    {
+      "id": "RJSIEM",
+      "iso": "rkt"
+    },
+    {
+      "id": "VMPMIT",
+      "iso": "vmp"
+    },
+    {
+      "id": "QWHLLB",
+      "iso": "qwh"
+    },
+    {
+      "id": "ALWDPI",
+      "iso": "alw"
+    },
+    {
+      "id": "TGOTBL",
+      "iso": "tgo"
+    },
+    {
+      "id": "QXLQSV",
+      "iso": "qxl"
+    },
+    {
+      "id": "OLDDPI",
+      "iso": "old"
+    },
+    {
+      "id": "CEGNTP",
+      "iso": "ceg"
+    },
+    {
+      "id": "CEGGGG",
+      "iso": "ceg"
+    },
+    {
+      "id": "SWESFV",
+      "iso": "swe"
+    },
+    {
+      "id": "ZMNCIE",
+      "iso": "zmn"
+    },
+    {
+      "id": "ME1PNG",
+      "iso": "met"
+    },
+    {
+      "id": "GEZESB",
+      "iso": "gez"
+    },
+    {
+      "id": "GEZBSE",
+      "iso": "gez"
+    },
+    {
+      "id": "HU1BIV",
+      "iso": "hus"
+    },
+    {
+      "id": "ZABUNT",
+      "iso": "zab"
+    },
+    {
+      "id": "XDYLAIP",
+      "iso": "xdy"
+    },
+    {
+      "id": "XDYLAI",
+      "iso": "xdy"
+    },
+    {
+      "id": "KJGWYI",
+      "iso": "kjg"
+    },
+    {
+      "id": "THLDPI",
+      "iso": "thl"
+    },
+    {
+      "id": "THLWYI",
+      "iso": "thl"
+    },
+    {
+      "id": "IJJWYI",
+      "iso": "ijj"
+    },
+    {
+      "id": "TDGWBT",
+      "iso": "tdg"
+    },
+    {
+      "id": "BSCWBTP",
+      "iso": "bsc"
+    },
+    {
+      "id": "URDERL",
+      "iso": "urd"
+    },
+    {
+      "id": "URDERA",
+      "iso": "urd"
+    },
+    {
+      "id": "URDCBC",
+      "iso": "urd"
+    },
+    {
+      "id": "URDIRV",
+      "iso": "urd"
+    },
+    {
+      "id": "URDERG",
+      "iso": "urd"
+    },
+    {
+      "id": "URDWTC",
+      "iso": "urd"
+    },
+    {
+      "id": "AFBGNV",
+      "iso": "afb"
+    },
+    {
+      "id": "DYAANT",
+      "iso": "dya"
+    },
+    {
+      "id": "NYUWYI",
+      "iso": "nyu"
+    },
+    {
+      "id": "THVWBTP",
+      "iso": "thv"
+    },
+    {
+      "id": "KEYWYI",
+      "iso": "key"
+    },
+    {
+      "id": "KEYKBT",
+      "iso": "key"
+    },
+    {
+      "id": "TAKLDB",
+      "iso": "tak"
+    },
+    {
+      "id": "COHBTL",
+      "iso": "coh"
+    },
+    {
+      "id": "FVRWBT",
+      "iso": "fvr"
+    },
+    {
+      "id": "QXQKLVP",
+      "iso": "qxq"
+    },
+    {
+      "id": "QXQKLV",
+      "iso": "qxq"
+    },
+    {
+      "id": "PAVNTM",
+      "iso": "pav"
+    },
+    {
+      "id": "KIUWYI",
+      "iso": "kiu"
+    },
+    {
+      "id": "KIUWYIP",
+      "iso": "kiu"
+    },
+    {
+      "id": "VAAWFW",
+      "iso": "vaa"
+    },
+    {
+      "id": "BUGTPBP",
+      "iso": "bug"
+    },
+    {
+      "id": "BUGTPB",
+      "iso": "bug"
+    },
+    {
+      "id": "VMJMIT",
+      "iso": "vmj"
+    },
+    {
+      "id": "THQMTS",
+      "iso": "thq"
+    },
+    {
+      "id": "PCFWFW",
+      "iso": "bpx"
+    },
+    {
+      "id": "STYIBM",
+      "iso": "sty"
+    },
+    {
+      "id": "IFUWPS",
+      "iso": "ifu"
+    },
+    {
+      "id": "VAHDPI",
+      "iso": "vah"
+    },
+    {
+      "id": "BUNBSL",
+      "iso": "bun"
+    },
+    {
+      "id": "SWVNLC",
+      "iso": "swv"
+    },
+    {
+      "id": "KFXDPI",
+      "iso": "kfx"
+    },
+    {
+      "id": "KFXKOS",
+      "iso": "kfx"
+    },
+    {
+      "id": "KFXBIV",
+      "iso": "kfx"
+    },
+    {
+      "id": "KFXDIP",
+      "iso": "kfx"
+    },
+    {
+      "id": "RMYUBS",
+      "iso": "rmy"
+    },
+    {
+      "id": "ROMUSR",
+      "iso": "rmy"
+    },
+    {
+      "id": "RMYPBT",
+      "iso": "rmy"
+    },
+    {
+      "id": "ROMUSRP",
+      "iso": "rmy"
+    },
+    {
+      "id": "RMYWBT",
+      "iso": "rmy"
+    },
+    {
+      "id": "RMYWFT",
+      "iso": "rmy"
+    },
+    {
+      "id": "RMYPBTP",
+      "iso": "rmy"
+    },
+    {
+      "id": "ZAQTBLP",
+      "iso": "zaq"
+    },
+    {
+      "id": "ZAQWYI",
+      "iso": "zaq"
+    },
+    {
+      "id": "ZMZDRC",
+      "iso": "zmz"
+    },
+    {
+      "id": "TDTBEH",
+      "iso": "tdt"
+    },
+    {
+      "id": "TDTKKP",
+      "iso": "tdt"
+    },
+    {
+      "id": "LUZKLV",
+      "iso": "luz"
+    },
+    {
+      "id": "LUZKLVP",
+      "iso": "luz"
+    },
+    {
+      "id": "DZOEHP",
+      "iso": "dzo"
+    },
+    {
+      "id": "ACUTBLP",
+      "iso": "acu"
+    },
+    {
+      "id": "KEBCIE",
+      "iso": "keb"
+    },
+    {
+      "id": "TNTPPA",
+      "iso": "tnt"
+    },
+    {
+      "id": "TNTLAI",
+      "iso": "tnt"
+    },
+    {
+      "id": "NZACAB",
+      "iso": "nza"
+    },
+    {
+      "id": "MIYWYI",
+      "iso": "miy"
+    },
+    {
+      "id": "GRKSFT",
+      "iso": "ell"
+    },
+    {
+      "id": "ALQCBS",
+      "iso": "alq"
+    },
+    {
+      "id": "MCKBSZ",
+      "iso": "mck"
+    },
+    {
+      "id": "XNJPBT",
+      "iso": "xnj"
+    },
+    {
+      "id": "XNJPBTP",
+      "iso": "xnj"
+    },
+    {
+      "id": "PM1LAI",
+      "iso": "pmf"
+    },
+    {
+      "id": "PMFNTM",
+      "iso": "pmf"
+    },
+    {
+      "id": "NYNWFW",
+      "iso": "nyn"
+    },
+    {
+      "id": "TKBNLC",
+      "iso": "tkb"
+    },
+    {
+      "id": "CJECWK",
+      "iso": "cje"
+    },
+    {
+      "id": "MJVNLC",
+      "iso": "mjv"
+    },
+    {
+      "id": "GLABSS",
+      "iso": "gla"
+    },
+    {
+      "id": "RMLNVC",
+      "iso": "rml"
+    },
+    {
+      "id": "RMLNVS",
+      "iso": "rml"
+    },
+    {
+      "id": "ACRAEM",
+      "iso": "acr"
+    },
+    {
+      "id": "ACCBSG",
+      "iso": "acr"
+    },
+    {
+      "id": "LUOBSK",
+      "iso": "luo"
+    },
+    {
+      "id": "LUOBIB",
+      "iso": "luo"
+    },
+    {
+      "id": "KOWNBT",
+      "iso": "kow"
+    },
+    {
+      "id": "KINWFW",
+      "iso": "kin"
+    },
+    {
+      "id": "KIMELM",
+      "iso": "kin"
+    },
+    {
+      "id": "KINBSU",
+      "iso": "kin"
+    },
+    {
+      "id": "MJXBSF",
+      "iso": "mjx"
+    },
+    {
+      "id": "BUUBDV",
+      "iso": "buu"
+    },
+    {
+      "id": "BUUWYI",
+      "iso": "buu"
+    },
+    {
+      "id": "FU3WBT",
+      "iso": "fuh"
+    },
+    {
+      "id": "CJKBSZ",
+      "iso": "cjk"
+    },
+    {
+      "id": "VASWIN",
+      "iso": "vas"
+    },
+    {
+      "id": "AIIBSL",
+      "iso": "aii"
+    },
+    {
+      "id": "AIIFAA",
+      "iso": "aii"
+    },
+    {
+      "id": "KF1WFW",
+      "iso": "kfc"
+    },
+    {
+      "id": "KFCTWFP",
+      "iso": "kfc"
+    },
+    {
+      "id": "UTRITD",
+      "iso": "utr"
+    },
+    {
+      "id": "BVZYSS",
+      "iso": "bvz"
+    },
+    {
+      "id": "STBTAP",
+      "iso": "stb"
+    },
+    {
+      "id": "AEBWYIP",
+      "iso": "aeb"
+    },
+    {
+      "id": "AEBWYI",
+      "iso": "aeb"
+    },
+    {
+      "id": "DYIDPI",
+      "iso": "dyi"
+    },
+    {
+      "id": "SX1TSV",
+      "iso": "sxn"
+    },
+    {
+      "id": "SXNTTV",
+      "iso": "sxn"
+    },
+    {
+      "id": "TDONBT",
+      "iso": "tdo"
+    },
+    {
+      "id": "CLUWBT",
+      "iso": "clu"
+    },
+    {
+      "id": "ARMWAV",
+      "iso": "hyw"
+    },
+    {
+      "id": "MOIRIF",
+      "iso": "moi"
+    },
+    {
+      "id": "ZAJDPI",
+      "iso": "zaj"
+    },
+    {
+      "id": "ZAJUBS",
+      "iso": "zaj"
+    },
+    {
+      "id": "PADALMP",
+      "iso": "pad"
+    },
+    {
+      "id": "PADALM",
+      "iso": "pad"
+    },
+    {
+      "id": "KJONLC",
+      "iso": "kjo"
+    },
+    {
+      "id": "DUBDPI",
+      "iso": "dub"
+    },
+    {
+      "id": "VEPIBTP",
+      "iso": "vep"
+    },
+    {
+      "id": "VEPIBT",
+      "iso": "vep"
+    },
+    {
+      "id": "KZJAKK",
+      "iso": "dtp"
+    },
+    {
+      "id": "DRIWYI",
+      "iso": "dri"
+    },
+    {
+      "id": "CNHBIV",
+      "iso": "cnh"
+    },
+    {
+      "id": "SSNBTL",
+      "iso": "ssn"
+    },
+    {
+      "id": "BXKWFW",
+      "iso": "bxk"
+    },
+    {
+      "id": "PO1NLH",
+      "iso": "por"
+    },
+    {
+      "id": "PORFAA",
+      "iso": "por"
+    },
+    {
+      "id": "PORALM",
+      "iso": "por"
+    },
+    {
+      "id": "PORNLH",
+      "iso": "por"
+    },
+    {
+      "id": "PORBBS",
+      "iso": "por"
+    },
+    {
+      "id": "PORJFA",
+      "iso": "por"
+    },
+    {
+      "id": "PORTHF",
+      "iso": "por"
+    },
+    {
+      "id": "RJIYWM",
+      "iso": "rji"
+    },
+    {
+      "id": "WSSMFG",
+      "iso": "wss"
+    },
+    {
+      "id": "FR1YPM",
+      "iso": "frd"
+    },
+    {
+      "id": "IKPMLT",
+      "iso": "ikp"
+    },
+    {
+      "id": "RIFNVS",
+      "iso": "rif"
+    },
+    {
+      "id": "RIFNVL",
+      "iso": "rif"
+    },
+    {
+      "id": "SPNLPS",
+      "iso": "spa"
+    },
+    {
+      "id": "SPNLBV",
+      "iso": "spa"
+    },
+    {
+      "id": "SPNLAR",
+      "iso": "spa"
+    },
+    {
+      "id": "SPNERV",
+      "iso": "spa"
+    },
+    {
+      "id": "SPNTLA",
+      "iso": "spa"
+    },
+    {
+      "id": "SPNRVC",
+      "iso": "spa"
+    },
+    {
+      "id": "SPNPDT",
+      "iso": "spa"
+    },
+    {
+      "id": "AAAMLT",
+      "iso": "aaa"
+    },
+    {
+      "id": "MAXLAI",
+      "iso": "max"
+    },
+    {
+      "id": "PILGMO",
+      "iso": "pil"
+    },
+    {
+      "id": "PILSIM",
+      "iso": "pil"
+    },
+    {
+      "id": "CK1WBT",
+      "iso": "cak"
+    },
+    {
+      "id": "CKIWBT",
+      "iso": "cak"
+    },
+    {
+      "id": "CKWNVS",
+      "iso": "cak"
+    },
+    {
+      "id": "CAKSBG",
+      "iso": "cak"
+    },
+    {
+      "id": "EMPWYIP",
+      "iso": "emp"
+    },
+    {
+      "id": "PEGDPI",
+      "iso": "peg"
+    },
+    {
+      "id": "PEGWFWP",
+      "iso": "peg"
+    },
+    {
+      "id": "BTGWBT",
+      "iso": "btg"
+    },
+    {
+      "id": "KHUBSA",
+      "iso": "khu"
+    },
+    {
+      "id": "GBPACA",
+      "iso": "gbp"
+    },
+    {
+      "id": "TESYBS",
+      "iso": "tes"
+    },
+    {
+      "id": "TESWYI",
+      "iso": "tes"
+    },
+    {
+      "id": "TESWYIP",
+      "iso": "tes"
+    },
+    {
+      "id": "KNETBL",
+      "iso": "kne"
+    },
+    {
+      "id": "BA1WPV",
+      "iso": "kne"
+    },
+    {
+      "id": "AHRDPI",
+      "iso": "ahr"
+    },
+    {
+      "id": "WUDWYT",
+      "iso": "wud"
+    },
+    {
+      "id": "ADYIBTP",
+      "iso": "ady"
+    },
+    {
+      "id": "DRGBSM",
+      "iso": "drg"
+    },
+    {
+      "id": "DRGBSMP",
+      "iso": "drg"
+    },
+    {
+      "id": "LRCIKV",
+      "iso": "lrc"
+    },
+    {
+      "id": "ANLBSM",
+      "iso": "anl"
+    },
+    {
+      "id": "TETWYI",
+      "iso": "tet"
+    },
+    {
+      "id": "CHNUN1",
+      "iso": "cmn"
+    },
+    {
+      "id": "CHNUNV",
+      "iso": "cmn"
+    },
+    {
+      "id": "CHNRUV",
+      "iso": "cmn"
+    },
+    {
+      "id": "KNBPAT",
+      "iso": "knb"
+    },
+    {
+      "id": "MKDMBS",
+      "iso": "mkd"
+    },
+    {
+      "id": "MLGRCV",
+      "iso": "plt"
+    },
+    {
+      "id": "MLGRPV",
+      "iso": "plt"
+    },
+    {
+      "id": "MLGDPV",
+      "iso": "plt"
+    },
+    {
+      "id": "MLGEIV",
+      "iso": "plt"
+    },
+    {
+      "id": "OGBBSN",
+      "iso": "ogb"
+    },
+    {
+      "id": "CBJWYI",
+      "iso": "cbj"
+    },
+    {
+      "id": "DTYDPI",
+      "iso": "dty"
+    },
+    {
+      "id": "DTYYWM",
+      "iso": "dty"
+    },
+    {
+      "id": "YUPCLA",
+      "iso": "yup"
+    },
+    {
+      "id": "YUPLANP",
+      "iso": "yup"
+    },
+    {
+      "id": "YUPFDP",
+      "iso": "yup"
+    },
+    {
+      "id": "YUPLAN",
+      "iso": "yup"
+    },
+    {
+      "id": "KDPITD",
+      "iso": "kdp"
+    },
+    {
+      "id": "MAVWYI",
+      "iso": "mav"
+    },
+    {
+      "id": "GAXBSE",
+      "iso": "gax"
+    },
+    {
+      "id": "IKKTBL",
+      "iso": "ikk"
+    },
+    {
+      "id": "AAZUBB",
+      "iso": "aaz"
+    },
+    {
+      "id": "KATBIV",
+      "iso": "kat"
+    },
+    {
+      "id": "KATBIVP",
+      "iso": "kat"
+    },
+    {
+      "id": "XISWIN",
+      "iso": "xis"
+    },
+    {
+      "id": "CHJMIT",
+      "iso": "chj"
+    },
+    {
+      "id": "JRATGM",
+      "iso": "jra"
+    },
+    {
+      "id": "OMBBSP",
+      "iso": "omb"
+    },
+    {
+      "id": "MADIBS",
+      "iso": "mad"
+    },
+    {
+      "id": "NXIWFT",
+      "iso": "nxi"
+    },
+    {
+      "id": "VIGANT",
+      "iso": "vig"
+    },
+    {
+      "id": "KHNDPI",
+      "iso": "khn"
+    },
+    {
+      "id": "TEAWBTP",
+      "iso": "tea"
+    },
+    {
+      "id": "TEAWBT",
+      "iso": "tea"
+    },
+    {
+      "id": "CKBIBS",
+      "iso": "ckb"
+    },
+    {
+      "id": "IKLNBT",
+      "iso": "ikl"
+    },
+    {
+      "id": "YUHSBV",
+      "iso": "yue"
+    },
+    {
+      "id": "QVIBSE",
+      "iso": "qvi"
+    },
+    {
+      "id": "KDEDPI",
+      "iso": "kde"
+    },
+    {
+      "id": "BQJATBP",
+      "iso": "bqj"
+    },
+    {
+      "id": "BQJATB",
+      "iso": "bqj"
+    },
+    {
+      "id": "EMKMUP",
+      "iso": "emk"
+    },
+    {
+      "id": "DRUBST",
+      "iso": "dru"
+    },
+    {
+      "id": "KDLTBL",
+      "iso": "kdl"
+    },
+    {
+      "id": "MAJTBL",
+      "iso": "maj"
+    },
+    {
+      "id": "EMBGPA",
+      "iso": "emb"
+    },
+    {
+      "id": "BQCRJV",
+      "iso": "bqc"
+    },
+    {
+      "id": "BQ1IBV",
+      "iso": "bqc"
+    },
+    {
+      "id": "NTKWYI",
+      "iso": "ntk"
+    },
+    {
+      "id": "KMQMYC",
+      "iso": "kmq"
+    },
+    {
+      "id": "GBKDPI",
+      "iso": "gbk"
+    },
+    {
+      "id": "TJLLMF",
+      "iso": "tjl"
+    },
+    {
+      "id": "IKECBS",
+      "iso": "ike"
+    },
+    {
+      "id": "ANPNIE",
+      "iso": "anp"
+    },
+    {
+      "id": "KHGNTV",
+      "iso": "khg"
+    },
+    {
+      "id": "KHGNTB",
+      "iso": "khg"
+    },
+    {
+      "id": "AK1BSG",
+      "iso": "aka"
+    },
+    {
+      "id": "AKADVR",
+      "iso": "aka"
+    },
+    {
+      "id": "AK2ASA",
+      "iso": "aka"
+    },
+    {
+      "id": "AK2BIB",
+      "iso": "aka"
+    },
+    {
+      "id": "AMXASV",
+      "iso": "amx"
+    },
+    {
+      "id": "AMXASVP",
+      "iso": "amx"
+    },
+    {
+      "id": "SZABSMP",
+      "iso": "sza"
+    },
+    {
+      "id": "SZABSM",
+      "iso": "sza"
+    },
+    {
+      "id": "FUEGMO",
+      "iso": "gng"
+    },
+    {
+      "id": "MNIBIL",
+      "iso": "mni"
+    },
+    {
+      "id": "MNIBIV",
+      "iso": "mni"
+    },
+    {
+      "id": "MNIMAW",
+      "iso": "mni"
+    },
+    {
+      "id": "MMSBSG",
+      "iso": "mam"
+    },
+    {
+      "id": "MVCNVS",
+      "iso": "mam"
+    },
+    {
+      "id": "MVCAEMP",
+      "iso": "mam"
+    },
+    {
+      "id": "MMSBSS",
+      "iso": "mam"
+    },
+    {
+      "id": "MVJWBT",
+      "iso": "mam"
+    },
+    {
+      "id": "MVCAEM",
+      "iso": "mam"
+    },
+    {
+      "id": "MMFNBT",
+      "iso": "mmf"
+    },
+    {
+      "id": "TEOWFW",
+      "iso": "teo"
+    },
+    {
+      "id": "ANWNBT",
+      "iso": "anw"
+    },
+    {
+      "id": "CDHDPI",
+      "iso": "cdh"
+    },
+    {
+      "id": "MBBWYI",
+      "iso": "mbb"
+    },
+    {
+      "id": "MBBWPS",
+      "iso": "mbb"
+    },
+    {
+      "id": "GBLDPI",
+      "iso": "gbl"
+    },
+    {
+      "id": "ROWUBBP",
+      "iso": "row"
+    },
+    {
+      "id": "OGCNBT",
+      "iso": "ogc"
+    },
+    {
+      "id": "KPHBSN",
+      "iso": "knc"
+    },
+    {
+      "id": "CM3WBT",
+      "iso": "cmo"
+    },
+    {
+      "id": "IMAWIN",
+      "iso": "ima"
+    },
+    {
+      "id": "KDQBSF",
+      "iso": "kdq"
+    },
+    {
+      "id": "PICCIE",
+      "iso": "pic"
+    },
+    {
+      "id": "KMLWBTP",
+      "iso": "kml"
+    },
+    {
+      "id": "BTOTAP",
+      "iso": "bto"
+    },
+    {
+      "id": "BRVGPA",
+      "iso": "brv"
+    },
+    {
+      "id": "HRXSBB",
+      "iso": "hrx"
+    },
+    {
+      "id": "SPNETSP",
+      "iso": "spn"
+    },
+    {
+      "id": "SPNETS",
+      "iso": "spn"
+    },
+    {
+      "id": "CFMBIV",
+      "iso": "cbl"
+    },
+    {
+      "id": "ROPWYI",
+      "iso": "rop"
+    },
+    {
+      "id": "EKAWYI",
+      "iso": "eka"
+    },
+    {
+      "id": "ODKNCL",
+      "iso": "odk"
+    },
+    {
+      "id": "PIDIPI",
+      "iso": "pid"
+    },
+    {
+      "id": "KBOWBTP",
+      "iso": "kbo"
+    },
+    {
+      "id": "TIYWYI",
+      "iso": "tiy"
+    },
+    {
+      "id": "CNMSBG",
+      "iso": "cac"
+    },
+    {
+      "id": "CNMRGB",
+      "iso": "cac"
+    },
+    {
+      "id": "ADXSVN",
+      "iso": "adx"
+    },
+    {
+      "id": "ADQWYT",
+      "iso": "adq"
+    },
+    {
+      "id": "KHTWBT",
+      "iso": "kht"
+    },
+    {
+      "id": "SUVIEMP",
+      "iso": "suv"
+    },
+    {
+      "id": "MGGCAB",
+      "iso": "mgg"
+    },
+    {
+      "id": "POSBSM",
+      "iso": "pos"
+    },
+    {
+      "id": "MNZLAI",
+      "iso": "mnz"
+    },
+    {
+      "id": "RELBTL",
+      "iso": "rel"
+    },
+    {
+      "id": "IBLFOC",
+      "iso": "ibl"
+    },
+    {
+      "id": "ERVWTC",
+      "iso": "kan"
+    },
+    {
+      "id": "KANDIP",
+      "iso": "kan"
+    },
+    {
+      "id": "KANWCO",
+      "iso": "kan"
+    },
+    {
+      "id": "KANDPI",
+      "iso": "kan"
+    },
+    {
+      "id": "MALWIN",
+      "iso": "mal"
+    },
+    {
+      "id": "MALDIP",
+      "iso": "mal"
+    },
+    {
+      "id": "MJSWTC",
+      "iso": "mal"
+    },
+    {
+      "id": "MALBIB",
+      "iso": "mal"
+    },
+    {
+      "id": "MALDPI",
+      "iso": "mal"
+    },
+    {
+      "id": "MALBCM",
+      "iso": "mal"
+    },
+    {
+      "id": "MALBCMP",
+      "iso": "mal"
+    },
+    {
+      "id": "MGUPNG",
+      "iso": "mgu"
+    },
+    {
+      "id": "GABWBT",
+      "iso": "gab"
+    },
+    {
+      "id": "KCZWYI",
+      "iso": "ntm"
+    },
+    {
+      "id": "NTMWBTP",
+      "iso": "ntm"
+    },
+    {
+      "id": "KMWWYI",
+      "iso": "kmw"
+    },
+    {
+      "id": "MNHACT",
+      "iso": "mnh"
+    },
+    {
+      "id": "OKSNBT",
+      "iso": "oks"
+    },
+    {
+      "id": "GBMNCL",
+      "iso": "gbm"
+    },
+    {
+      "id": "GBMDPI",
+      "iso": "gbm"
+    },
+    {
+      "id": "GBMNLC",
+      "iso": "gbm"
+    },
+    {
+      "id": "GBMWIN",
+      "iso": "gbm"
+    },
+    {
+      "id": "ROLTBL",
+      "iso": "rol"
+    },
+    {
+      "id": "PESEMV",
+      "iso": "pes"
+    },
+    {
+      "id": "PESFBVP",
+      "iso": "pes"
+    },
+    {
+      "id": "PESKORP",
+      "iso": "pes"
+    },
+    {
+      "id": "PESKOR",
+      "iso": "pes"
+    },
+    {
+      "id": "PESFBV",
+      "iso": "pes"
+    },
+    {
+      "id": "ZCDMIT",
+      "iso": "zcd"
+    },
+    {
+      "id": "MMGWYI",
+      "iso": "mmg"
+    },
+    {
+      "id": "MMGWBTP",
+      "iso": "mmg"
+    },
+    {
+      "id": "MMGWYIP",
+      "iso": "mmg"
+    },
+    {
+      "id": "MMGWBT",
+      "iso": "mmg"
+    },
+    {
+      "id": "CAXSBB",
+      "iso": "cax"
+    },
+    {
+      "id": "WSGWYI",
+      "iso": "wsg"
+    },
+    {
+      "id": "DWKNLC",
+      "iso": "dwk"
+    },
+    {
+      "id": "LTGBSL",
+      "iso": "ltg"
+    },
+    {
+      "id": "LEGSBP",
+      "iso": "enl"
+    },
+    {
+      "id": "ONBLTC",
+      "iso": "onb"
+    },
+    {
+      "id": "ONBLTCP",
+      "iso": "onb"
+    },
+    {
+      "id": "AHABLG",
+      "iso": "aha"
+    },
+    {
+      "id": "TCYNLCP",
+      "iso": "tcy"
+    },
+    {
+      "id": "TCYNLC",
+      "iso": "tcy"
+    },
+    {
+      "id": "TCYNL1",
+      "iso": "tcy"
+    },
+    {
+      "id": "HTSAIC",
+      "iso": "hts"
+    },
+    {
+      "id": "ROBKTD",
+      "iso": "rob"
+    },
+    {
+      "id": "VIFBSC",
+      "iso": "vif"
+    },
+    {
+      "id": "VIFCIE",
+      "iso": "vif"
+    },
+    {
+      "id": "KMYRIF",
+      "iso": "kmy"
+    },
+    {
+      "id": "ABSGPM",
+      "iso": "abs"
+    },
+    {
+      "id": "SSSWFW",
+      "iso": "sss"
+    },
+    {
+      "id": "AGBNBT",
+      "iso": "agb"
+    },
+    {
+      "id": "PCCZXNP",
+      "iso": "pcc"
+    },
+    {
+      "id": "POBAEMP",
+      "iso": "poh"
+    },
+    {
+      "id": "POBAEM",
+      "iso": "poh"
+    },
+    {
+      "id": "POBWYI",
+      "iso": "poh"
+    },
+    {
+      "id": "POHPOC",
+      "iso": "poh"
+    },
+    {
+      "id": "KBZNBT",
+      "iso": "kbz"
+    },
+    {
+      "id": "BWUTBL",
+      "iso": "bwu"
+    },
+    {
+      "id": "KUBTBL",
+      "iso": "kub"
+    },
+    {
+      "id": "NLXDPI",
+      "iso": "nlx"
+    },
+    {
+      "id": "GVSWYI",
+      "iso": "gvs"
+    },
+    {
+      "id": "LEHBSZ",
+      "iso": "leh"
+    },
+    {
+      "id": "SHGSWW",
+      "iso": "shg"
+    },
+    {
+      "id": "AZOCAB",
+      "iso": "azo"
+    },
+    {
+      "id": "KZASPV",
+      "iso": "kza"
+    },
+    {
+      "id": "YKAWYI",
+      "iso": "yka"
+    },
+    {
+      "id": "UNIWRV",
+      "iso": "uni"
+    },
+    {
+      "id": "BFSNVSP",
+      "iso": "bfs"
+    },
+    {
+      "id": "BFSNVS",
+      "iso": "bfs"
+    },
+    {
+      "id": "SBRKTD",
+      "iso": "sbr"
+    },
+    {
+      "id": "ASRNCL",
+      "iso": "asr"
+    },
+    {
+      "id": "MZQKTDP",
+      "iso": "mzq"
+    },
+    {
+      "id": "MZQKTD",
+      "iso": "mzq"
+    },
+    {
+      "id": "KYNTAP",
+      "iso": "kyn"
+    },
+    {
+      "id": "KPSYBIP",
+      "iso": "kps"
+    },
+    {
+      "id": "KPSYBI",
+      "iso": "kps"
+    },
+    {
+      "id": "JITWBT",
+      "iso": "jit"
+    },
+    {
+      "id": "KYGWBT",
+      "iso": "kyg"
+    },
+    {
+      "id": "BLHBSL",
+      "iso": "blh"
+    },
+    {
+      "id": "GU1WBT",
+      "iso": "gur"
+    },
+    {
+      "id": "MSEBSC",
+      "iso": "mse"
+    },
+    {
+      "id": "EPIBSN",
+      "iso": "epi"
+    },
+    {
+      "id": "BFZTLF",
+      "iso": "bfz"
+    },
+    {
+      "id": "BFZDPI",
+      "iso": "bfz"
+    },
+    {
+      "id": "CPYWBTP",
+      "iso": "cpy"
+    },
+    {
+      "id": "NLVWYI",
+      "iso": "nlv"
+    },
+    {
+      "id": "SDBWBT",
+      "iso": "sdb"
+    },
+    {
+      "id": "SDBWBTP",
+      "iso": "sdb"
+    },
+    {
+      "id": "WANMIR",
+      "iso": "wan"
+    },
+    {
+      "id": "GSLWBT",
+      "iso": "gsl"
+    },
+    {
+      "id": "FLRWYI",
+      "iso": "flr"
+    },
+    {
+      "id": "CUHTBL",
+      "iso": "cuh"
+    },
+    {
+      "id": "SGJDPI",
+      "iso": "sgj"
+    },
+    {
+      "id": "SASYSN",
+      "iso": "sas"
+    },
+    {
+      "id": "DOPCIF",
+      "iso": "dop"
+    },
+    {
+      "id": "DOPDPI",
+      "iso": "dop"
+    },
+    {
+      "id": "TRVBST",
+      "iso": "trv"
+    },
+    {
+      "id": "SHNOMF",
+      "iso": "shn"
+    },
+    {
+      "id": "OSOMLT",
+      "iso": "oso"
+    },
+    {
+      "id": "BIYNCL",
+      "iso": "biy"
+    },
+    {
+      "id": "WBALANP",
+      "iso": "wba"
+    },
+    {
+      "id": "WBALAN",
+      "iso": "wba"
+    },
+    {
+      "id": "WBACLA",
+      "iso": "wba"
+    },
+    {
+      "id": "MPMBTT",
+      "iso": "mpm"
+    },
+    {
+      "id": "YAOGOI",
+      "iso": "yao"
+    },
+    {
+      "id": "YAOPBT",
+      "iso": "yao"
+    },
+    {
+      "id": "UDGNLC",
+      "iso": "udg"
+    },
+    {
+      "id": "GUGGGG",
+      "iso": "gug"
+    },
+    {
+      "id": "BCYNBT",
+      "iso": "bcy"
+    },
+    {
+      "id": "XWLWYB",
+      "iso": "xwl"
+    },
+    {
+      "id": "BORWYI",
+      "iso": "bor"
+    },
+    {
+      "id": "ESSWYI",
+      "iso": "ess"
+    },
+    {
+      "id": "XTCECS",
+      "iso": "xtc"
+    },
+    {
+      "id": "ZWAWBT",
+      "iso": "zwa"
+    },
+    {
+      "id": "TRCWYT",
+      "iso": "trc"
+    },
+    {
+      "id": "KYUWYIP",
+      "iso": "kyu"
+    },
+    {
+      "id": "KYUWYI",
+      "iso": "kyu"
+    },
+    {
+      "id": "MZJSIMP",
+      "iso": "mzj"
+    },
+    {
+      "id": "HLTBIV",
+      "iso": "hlt"
+    },
+    {
+      "id": "HLTEBT",
+      "iso": "hlt"
+    },
+    {
+      "id": "KVQBSM",
+      "iso": "kvq"
+    },
+    {
+      "id": "UNRWFW",
+      "iso": "unr"
+    },
+    {
+      "id": "UNRBSS",
+      "iso": "unr"
+    },
+    {
+      "id": "TXQWYI",
+      "iso": "txq"
+    },
+    {
+      "id": "MPXPNGP",
+      "iso": "mpx"
+    },
+    {
+      "id": "BILNBT",
+      "iso": "bil"
+    },
+    {
+      "id": "NFADPI",
+      "iso": "bfa"
+    },
+    {
+      "id": "MYLLAI",
+      "iso": "myl"
+    },
+    {
+      "id": "RWLSUT",
+      "iso": "rwl"
+    },
+    {
+      "id": "BNGDIP",
+      "iso": "ben"
+    },
+    {
+      "id": "BENDPI",
+      "iso": "ben"
+    },
+    {
+      "id": "BNGCLV",
+      "iso": "ben"
+    },
+    {
+      "id": "BNGWTC",
+      "iso": "ben"
+    },
+    {
+      "id": "BENBIB",
+      "iso": "ben"
+    },
+    {
+      "id": "BNGBBS",
+      "iso": "ben"
+    },
+    {
+      "id": "UDIWYI",
+      "iso": "udi"
+    },
+    {
+      "id": "UDIWYIP",
+      "iso": "udi"
+    },
+    {
+      "id": "GUISBU",
+      "iso": "gui"
+    },
+    {
+      "id": "HILDPI",
+      "iso": "hil"
+    },
+    {
+      "id": "BIBANT",
+      "iso": "bib"
+    },
+    {
+      "id": "YBIWBT",
+      "iso": "ybi"
+    },
+    {
+      "id": "LOHWBT",
+      "iso": "loh"
+    },
+    {
+      "id": "NEWNCLP",
+      "iso": "new"
+    },
+    {
+      "id": "GYELDB",
+      "iso": "gye"
+    },
+    {
+      "id": "APHWBT",
+      "iso": "aph"
+    },
+    {
+      "id": "SAHIBTP",
+      "iso": "sah"
+    },
+    {
+      "id": "LLGUBBP",
+      "iso": "llg"
+    },
+    {
+      "id": "XWEWYB",
+      "iso": "xwe"
+    },
+    {
+      "id": "ZTGMIT",
+      "iso": "ztg"
+    },
+    {
+      "id": "SHUBSC",
+      "iso": "shu"
+    },
+    {
+      "id": "SHUABA",
+      "iso": "shu"
+    },
+    {
+      "id": "SHUBSL",
+      "iso": "shu"
+    },
+    {
+      "id": "SHUDPI",
+      "iso": "shu"
+    },
+    {
+      "id": "SHUDPL",
+      "iso": "shu"
+    },
+    {
+      "id": "AYOETS",
+      "iso": "ayo"
+    },
+    {
+      "id": "SHORJV",
+      "iso": "sho"
+    },
+    {
+      "id": "SHOSIMP",
+      "iso": "sho"
+    },
+    {
+      "id": "SNVKTD",
+      "iso": "snv"
+    },
+    {
+      "id": "KYAWBT",
+      "iso": "kya"
+    },
+    {
+      "id": "WNKTCF",
+      "iso": "wnk"
+    },
+    {
+      "id": "BJWWYI",
+      "iso": "bjw"
+    },
+    {
+      "id": "OPABTI",
+      "iso": "opa"
+    },
+    {
+      "id": "OPANBT",
+      "iso": "opa"
+    },
+    {
+      "id": "KUJDPI",
+      "iso": "kuj"
+    },
+    {
+      "id": "APUWBT",
+      "iso": "apu"
+    },
+    {
+      "id": "UKWMLT",
+      "iso": "ukw"
+    },
+    {
+      "id": "OSILAI",
+      "iso": "osi"
+    },
+    {
+      "id": "KSTANT",
+      "iso": "kst"
+    },
+    {
+      "id": "DEDWYI",
+      "iso": "ded"
+    },
+    {
+      "id": "YDDOYB",
+      "iso": "ydd"
+    },
+    {
+      "id": "YDDOYT",
+      "iso": "ydd"
+    },
+    {
+      "id": "SBSWFT",
+      "iso": "sbs"
+    },
+    {
+      "id": "NECUBB",
+      "iso": "nec"
+    },
+    {
+      "id": "SMWPAU",
+      "iso": "smw"
+    },
+    {
+      "id": "PWRWFW",
+      "iso": "pwr"
+    },
+    {
+      "id": "NIHIYV",
+      "iso": "nih"
+    },
+    {
+      "id": "SNXWYI",
+      "iso": "snx"
+    },
+    {
+      "id": "KYOUBB",
+      "iso": "kyo"
+    },
+    {
+      "id": "KYOUBBP1DA-opus64",
+      "iso": "kyo"
+    },
+    {
+      "id": "KYOUBBP",
+      "iso": "kyo"
+    },
+    {
+      "id": "KYOUBBP1DA-opus32",
+      "iso": "kyo"
+    },
+    {
+      "id": "RTWDPI",
+      "iso": "rtw"
+    },
+    {
+      "id": "MYXBSL",
+      "iso": "myx"
+    },
+    {
+      "id": "ASTBSS",
+      "iso": "ast"
+    },
+    {
+      "id": "KNGCTB",
+      "iso": "boh"
+    },
+    {
+      "id": "WBIWYI",
+      "iso": "wbi"
+    },
+    {
+      "id": "LCPTBS",
+      "iso": "lcp"
+    },
+    {
+      "id": "BC1WBT",
+      "iso": "bcc"
+    },
+    {
+      "id": "BC1WBTP",
+      "iso": "bcc"
+    },
+    {
+      "id": "BCCWBTP",
+      "iso": "bcc"
+    },
+    {
+      "id": "BEZWBT",
+      "iso": "bez"
+    },
+    {
+      "id": "CSYCLV",
+      "iso": "csy"
+    },
+    {
+      "id": "YBHWBT",
+      "iso": "ybh"
+    },
+    {
+      "id": "UKKWBTP",
+      "iso": "ukk"
+    },
+    {
+      "id": "UKKWBT",
+      "iso": "ukk"
+    },
+    {
+      "id": "BEHWBTP",
+      "iso": "beh"
+    },
+    {
+      "id": "SNMWFW",
+      "iso": "snm"
+    },
+    {
+      "id": "SNMTWF",
+      "iso": "snm"
+    },
+    {
+      "id": "FLHGIDP",
+      "iso": "flh"
+    },
+    {
+      "id": "CSKATB",
+      "iso": "csk"
+    },
+    {
+      "id": "WATWBT",
+      "iso": "wat"
+    },
+    {
+      "id": "GUOWYIP",
+      "iso": "guo"
+    },
+    {
+      "id": "GUOWYI",
+      "iso": "guo"
+    },
+    {
+      "id": "LONTWF",
+      "iso": "lon"
+    },
+    {
+      "id": "ASABST",
+      "iso": "asa"
+    },
+    {
+      "id": "MPPWBTP",
+      "iso": "mpp"
+    },
+    {
+      "id": "BLRWYI",
+      "iso": "blr"
+    },
+    {
+      "id": "GUHNTM",
+      "iso": "guh"
+    },
+    {
+      "id": "KVYWYI",
+      "iso": "kvy"
+    },
+    {
+      "id": "MZBNVS",
+      "iso": "mzb"
+    },
+    {
+      "id": "RWMWFW",
+      "iso": "rwm"
+    },
+    {
+      "id": "JOWWYI",
+      "iso": "jow"
+    },
+    {
+      "id": "SAGBIV",
+      "iso": "sag"
+    },
+    {
+      "id": "AYZYSS",
+      "iso": "ayz"
+    },
+    {
+      "id": "LOGWYI",
+      "iso": "log"
+    },
+    {
+      "id": "SDQGFAP",
+      "iso": "sdq"
+    },
+    {
+      "id": "SDQGFA",
+      "iso": "sdq"
+    },
+    {
+      "id": "NLEBSK",
+      "iso": "nle"
+    },
+    {
+      "id": "PXMMIT",
+      "iso": "pxm"
+    },
+    {
+      "id": "GVNWYI",
+      "iso": "gvn"
+    },
+    {
+      "id": "BIMDPI",
+      "iso": "bim"
+    },
+    {
+      "id": "XTEWBT",
+      "iso": "xte"
+    },
+    {
+      "id": "SMLTBL",
+      "iso": "sml"
+    },
+    {
+      "id": "SNDNCL",
+      "iso": "snd"
+    },
+    {
+      "id": "KYSBSM",
+      "iso": "kys"
+    },
+    {
+      "id": "ISLICE",
+      "iso": "isl"
+    },
+    {
+      "id": "KVWUBBP",
+      "iso": "kvw"
+    },
+    {
+      "id": "KVWUBB",
+      "iso": "kvw"
+    },
+    {
+      "id": "SKRSRG",
+      "iso": "skr"
+    },
+    {
+      "id": "WBRNCL",
+      "iso": "wbr"
+    },
+    {
+      "id": "BOSKZB",
+      "iso": "bos"
+    },
+    {
+      "id": "LIYACA",
+      "iso": "liy"
+    },
+    {
+      "id": "WIMWYI",
+      "iso": "wim"
+    },
+    {
+      "id": "LBFDPI",
+      "iso": "lbf"
+    },
+    {
+      "id": "DGSWYI",
+      "iso": "dgs"
+    },
+    {
+      "id": "GRRWBTP",
+      "iso": "grr"
+    },
+    {
+      "id": "BKHCAB",
+      "iso": "bkh"
+    },
+    {
+      "id": "LAIBLT",
+      "iso": "lai"
+    },
+    {
+      "id": "HATBIVP",
+      "iso": "hat"
+    },
+    {
+      "id": "HATBIV",
+      "iso": "hat"
+    },
+    {
+      "id": "HATBNV",
+      "iso": "hat"
+    },
+    {
+      "id": "BGCDPI",
+      "iso": "bgc"
+    },
+    {
+      "id": "JMRTVI",
+      "iso": "jmr"
+    },
+    {
+      "id": "NKVWFW",
+      "iso": "nkv"
+    },
+    {
+      "id": "ARZVDV",
+      "iso": "arb"
+    },
+    {
+      "id": "ARBIBS",
+      "iso": "arb"
+    },
+    {
+      "id": "ARBBIB",
+      "iso": "arb"
+    },
+    {
+      "id": "ARBWTC",
+      "iso": "arb"
+    },
+    {
+      "id": "DMACIE",
+      "iso": "dma"
+    },
+    {
+      "id": "ZZAWBTP",
+      "iso": "zza"
+    },
+    {
+      "id": "ZZAWBT",
+      "iso": "zza"
+    },
+    {
+      "id": "KXYWFW",
+      "iso": "kxy"
+    },
+    {
+      "id": "WOSWBTP",
+      "iso": "wos"
+    },
+    {
+      "id": "UI1UMK",
+      "iso": "uig"
+    },
+    {
+      "id": "UIGUMKP",
+      "iso": "uig"
+    },
+    {
+      "id": "BGDNLC",
+      "iso": "bgd"
+    },
+    {
+      "id": "BNPWBTP",
+      "iso": "bnp"
+    },
+    {
+      "id": "HAZPAM",
+      "iso": "haz"
+    },
+    {
+      "id": "XUANLCP",
+      "iso": "xua"
+    },
+    {
+      "id": "XUANLC",
+      "iso": "xua"
+    },
+    {
+      "id": "LAGWBT",
+      "iso": "lag"
+    },
+    {
+      "id": "JNSNLC",
+      "iso": "jns"
+    },
+    {
+      "id": "MRROBB",
+      "iso": "mrr"
+    },
+    {
+      "id": "LMLBSP",
+      "iso": "lml"
+    },
+    {
+      "id": "CRAWBT",
+      "iso": "cra"
+    },
+    {
+      "id": "KXPDPI",
+      "iso": "kxp"
+    },
+    {
+      "id": "FANBSG",
+      "iso": "fan"
+    },
+    {
+      "id": "BAAABC",
+      "iso": "bas"
+    },
+    {
+      "id": "PPSWYI",
+      "iso": "pps"
+    },
+    {
+      "id": "MXGBSA",
+      "iso": "mxg"
+    },
+    {
+      "id": "LNDKTD",
+      "iso": "lnd"
+    },
+    {
+      "id": "SCKDPI",
+      "iso": "sck"
+    },
+    {
+      "id": "ZSRWYI",
+      "iso": "zsr"
+    },
+    {
+      "id": "BDENBT",
+      "iso": "bde"
+    },
+    {
+      "id": "TSAWBTP",
+      "iso": "tsa"
+    },
+    {
+      "id": "TSAWBT",
+      "iso": "tsa"
+    },
+    {
+      "id": "LMKEBT",
+      "iso": "lmk"
+    },
+    {
+      "id": "DNGIMB",
+      "iso": "dng"
+    },
+    {
+      "id": "MTLTSCP",
+      "iso": "mtl"
+    },
+    {
+      "id": "XSMDPI",
+      "iso": "xsm"
+    },
+    {
+      "id": "MQHUNT",
+      "iso": "mqh"
+    },
+    {
+      "id": "TUJNTM",
+      "iso": "tuj"
+    },
+    {
+      "id": "HDYEBS",
+      "iso": "hdy"
+    },
+    {
+      "id": "GRIBSP",
+      "iso": "gri"
+    },
+    {
+      "id": "CRTBSA",
+      "iso": "crt"
+    },
+    {
+      "id": "LMYTCF",
+      "iso": "lmy"
+    },
+    {
+      "id": "NBWACT",
+      "iso": "nbw"
+    },
+    {
+      "id": "CRSSBS",
+      "iso": "crs"
+    },
+    {
+      "id": "SILGIL",
+      "iso": "sil"
+    },
+    {
+      "id": "DAVBSK",
+      "iso": "dav"
+    },
+    {
+      "id": "DGODPI",
+      "iso": "dgo"
+    },
+    {
+      "id": "TUMBLT",
+      "iso": "tum"
+    },
+    {
+      "id": "SGQPIT",
+      "iso": "tum"
+    },
+    {
+      "id": "TUWBSM",
+      "iso": "tum"
+    },
+    {
+      "id": "KWOWBT",
+      "iso": "kwo"
+    },
+    {
+      "id": "AWAWTC",
+      "iso": "awa"
+    },
+    {
+      "id": "GRGWYI",
+      "iso": "grg"
+    },
+    {
+      "id": "HBNBSS",
+      "iso": "hbn"
+    },
+    {
+      "id": "YORNBT",
+      "iso": "yor"
+    },
+    {
+      "id": "YORTEM",
+      "iso": "yor"
+    },
+    {
+      "id": "YORTAM",
+      "iso": "yor"
+    },
+    {
+      "id": "YORDOA",
+      "iso": "yor"
+    },
+    {
+      "id": "YORDPI",
+      "iso": "yor"
+    },
+    {
+      "id": "YOROBV",
+      "iso": "yor"
+    },
+    {
+      "id": "NGNNBT",
+      "iso": "ets"
+    },
+    {
+      "id": "ETSNBT",
+      "iso": "ets"
+    },
+    {
+      "id": "MQFLAI",
+      "iso": "mqf"
+    },
+    {
+      "id": "HNEWIN",
+      "iso": "hne"
+    },
+    {
+      "id": "DDIWBT",
+      "iso": "ddi"
+    },
+    {
+      "id": "BBGCIE",
+      "iso": "bbg"
+    },
+    {
+      "id": "LKIKLVP",
+      "iso": "lki"
+    },
+    {
+      "id": "RUSMPK",
+      "iso": "rus"
+    },
+    {
+      "id": "RUSBTM",
+      "iso": "rus"
+    },
+    {
+      "id": "RUSWTC",
+      "iso": "rus"
+    },
+    {
+      "id": "RUSSYN",
+      "iso": "rus"
+    },
+    {
+      "id": "TPUWYI",
+      "iso": "tpu"
+    },
+    {
+      "id": "SJMWBTP",
+      "iso": "sjm"
+    },
+    {
+      "id": "ATIWBT",
+      "iso": "ati"
+    },
+    {
+      "id": "ARPPDV",
+      "iso": "arp"
+    },
+    {
+      "id": "SCPWBT",
+      "iso": "scp"
+    },
+    {
+      "id": "BHUWFW",
+      "iso": "bhu"
+    },
+    {
+      "id": "ORCBTL",
+      "iso": "orc"
+    },
+    {
+      "id": "ORYDPI",
+      "iso": "ory"
+    },
+    {
+      "id": "SESVMVP",
+      "iso": "ses"
+    },
+    {
+      "id": "FAOFBS",
+      "iso": "fao"
+    },
+    {
+      "id": "PUDBEM",
+      "iso": "pud"
+    },
+    {
+      "id": "LBNFCB",
+      "iso": "lbn"
+    },
+    {
+      "id": "TUYBTL",
+      "iso": "tuy"
+    },
+    {
+      "id": "KXVWFWP",
+      "iso": "kxv"
+    },
+    {
+      "id": "KXVWOL",
+      "iso": "kxv"
+    },
+    {
+      "id": "KXVKBT",
+      "iso": "kxv"
+    },
+    {
+      "id": "NGUQTO",
+      "iso": "ngu"
+    },
+    {
+      "id": "RUNDPI",
+      "iso": "run"
+    },
+    {
+      "id": "RSWNBT",
+      "iso": "rsw"
+    },
+    {
+      "id": "SJPNIE",
+      "iso": "sjp"
+    },
+    {
+      "id": "DBJWBTP",
+      "iso": "dbj"
+    },
+    {
+      "id": "SETWYI",
+      "iso": "set"
+    },
+    {
+      "id": "KRCIBT",
+      "iso": "krc"
+    },
+    {
+      "id": "MWEPBT",
+      "iso": "mwe"
+    },
+    {
+      "id": "WIBANT",
+      "iso": "wib"
+    },
+    {
+      "id": "PUCKTD",
+      "iso": "puc"
+    },
+    {
+      "id": "PLJLDB",
+      "iso": "uly"
+    },
+    {
+      "id": "JGOCAB",
+      "iso": "jgo"
+    },
+    {
+      "id": "JAVLAI",
+      "iso": "jav"
+    },
+    {
+      "id": "CTYNLC",
+      "iso": "cty"
+    },
+    {
+      "id": "NABWYI",
+      "iso": "nab"
+    },
+    {
+      "id": "PUJKTD",
+      "iso": "puj"
+    },
+    {
+      "id": "GRTBSS",
+      "iso": "grt"
+    },
+    {
+      "id": "LMDECS",
+      "iso": "lmd"
+    },
+    {
+      "id": "YESWBT",
+      "iso": "yes"
+    },
+    {
+      "id": "BHAWIN",
+      "iso": "bha"
+    },
+    {
+      "id": "BHAWINP",
+      "iso": "bha"
+    },
+    {
+      "id": "CR1PDR",
+      "iso": "crn"
+    },
+    {
+      "id": "NH1NMV",
+      "iso": "nhx"
+    },
+    {
+      "id": "NHXNTVS1DA16",
+      "iso": "nhx"
+    },
+    {
+      "id": "AWUGPK",
+      "iso": "awu"
+    },
+    {
+      "id": "MTDYKV",
+      "iso": "mtd"
+    },
+    {
+      "id": "MTDYKVP",
+      "iso": "mtd"
+    },
+    {
+      "id": "PSTPBS",
+      "iso": "pst"
+    },
+    {
+      "id": "MWKBSM",
+      "iso": "mwk"
+    },
+    {
+      "id": "LNLACA",
+      "iso": "lnl"
+    },
+    {
+      "id": "LGQGIL",
+      "iso": "lgq"
+    },
+    {
+      "id": "MXOWFW",
+      "iso": "mxo"
+    },
+    {
+      "id": "HAUDPI",
+      "iso": "hau"
+    },
+    {
+      "id": "HUABSN",
+      "iso": "hau"
+    },
+    {
+      "id": "HAUCLV",
+      "iso": "hau"
+    },
+    {
+      "id": "DHDNLC",
+      "iso": "dhd"
+    },
+    {
+      "id": "YIMEBTP",
+      "iso": "yim"
+    },
+    {
+      "id": "YIMEBT",
+      "iso": "yim"
+    },
+    {
+      "id": "LDLNBT",
+      "iso": "ldl"
+    },
+    {
+      "id": "BHTDPI",
+      "iso": "bht"
+    },
+    {
+      "id": "DBVDGG",
+      "iso": "dbv"
+    },
+    {
+      "id": "SLUYPMP",
+      "iso": "slu"
+    },
+    {
+      "id": "SLUYPM",
+      "iso": "slu"
+    },
+    {
+      "id": "ULBMLT",
+      "iso": "ulb"
+    },
+    {
+      "id": "LBRWBT",
+      "iso": "lbr"
+    },
+    {
+      "id": "SIDBSE",
+      "iso": "sid"
+    },
+    {
+      "id": "ITLIBTP",
+      "iso": "itl"
+    },
+    {
+      "id": "IRUNLC",
+      "iso": "iru"
+    },
+    {
+      "id": "NHMWBTP",
+      "iso": "nhm"
+    },
+    {
+      "id": "MTQDPI",
+      "iso": "mtq"
+    },
+    {
+      "id": "DBQWYI",
+      "iso": "dbq"
+    },
+    {
+      "id": "SLRNVS",
+      "iso": "slr"
+    },
+    {
+      "id": "WLOWTG",
+      "iso": "wlo"
+    },
+    {
+      "id": "WLOWTGP",
+      "iso": "wlo"
+    },
+    {
+      "id": "BGWIEM",
+      "iso": "bgw"
+    },
+    {
+      "id": "BANKTDP",
+      "iso": "ban"
+    },
+    {
+      "id": "BANDPI",
+      "iso": "ban"
+    },
+    {
+      "id": "BANKTD",
+      "iso": "ban"
+    },
+    {
+      "id": "YEANLC",
+      "iso": "yea"
+    },
+    {
+      "id": "TSUBST",
+      "iso": "tsu"
+    },
+    {
+      "id": "LDBWBT",
+      "iso": "ldb"
+    },
+    {
+      "id": "KWGBIV",
+      "iso": "kwg"
+    },
+    {
+      "id": "SEAWYIP",
+      "iso": "sea"
+    },
+    {
+      "id": "NBQLAI",
+      "iso": "nbq"
+    },
+    {
+      "id": "NDHWFT",
+      "iso": "ndh"
+    },
+    {
+      "id": "BKRYPB",
+      "iso": "bkr"
+    },
+    {
+      "id": "CLTWYI",
+      "iso": "ctl"
+    },
+    {
+      "id": "TZESBM",
+      "iso": "tzo"
+    },
+    {
+      "id": "TZCSBM",
+      "iso": "tzo"
+    },
+    {
+      "id": "DG1ATA",
+      "iso": "dgi"
+    },
+    {
+      "id": "TUKTBP",
+      "iso": "tuk"
+    },
+    {
+      "id": "TUKTTV",
+      "iso": "tuk"
+    },
+    {
+      "id": "TUKTBPP",
+      "iso": "tuk"
+    },
+    {
+      "id": "JACAEMP",
+      "iso": "jac"
+    },
+    {
+      "id": "BDVDPI",
+      "iso": "bdv"
+    },
+    {
+      "id": "WONACT",
+      "iso": "won"
+    },
+    {
+      "id": "BUWCIE",
+      "iso": "buw"
+    },
+    {
+      "id": "TDJYSIP",
+      "iso": "tdj"
+    },
+    {
+      "id": "TDJYSI",
+      "iso": "tdj"
+    },
+    {
+      "id": "THARTS",
+      "iso": "tha"
+    },
+    {
+      "id": "VAVDPI",
+      "iso": "vav"
+    },
+    {
+      "id": "LUCWYI",
+      "iso": "luc"
+    },
+    {
+      "id": "MEYPBT",
+      "iso": "mey"
+    },
+    {
+      "id": "SWHBTK",
+      "iso": "swh"
+    },
+    {
+      "id": "KFFNRV",
+      "iso": "kff"
+    },
+    {
+      "id": "MIRUNT",
+      "iso": "mir"
+    },
+    {
+      "id": "COXWBTP",
+      "iso": "cox"
+    },
+    {
+      "id": "IFKDPI",
+      "iso": "ifk"
+    },
+    {
+      "id": "IFKTBL",
+      "iso": "ifk"
+    },
+    {
+      "id": "MFVBSS",
+      "iso": "mfv"
+    },
+    {
+      "id": "ALSABV",
+      "iso": "als"
+    },
+    {
+      "id": "ALSBSA",
+      "iso": "als"
+    },
+    {
+      "id": "TGKWBT",
+      "iso": "tgk"
+    },
+    {
+      "id": "TARPBC",
+      "iso": "tar"
+    },
+    {
+      "id": "PHRWBTP",
+      "iso": "phr"
+    },
+    {
+      "id": "PHRWBT",
+      "iso": "phr"
+    },
+    {
+      "id": "BYRYWV",
+      "iso": "byr"
+    },
+    {
+      "id": "KIUDPI",
+      "iso": "kik"
+    },
+    {
+      "id": "KO2VOM",
+      "iso": "kor"
+    },
+    {
+      "id": "MJTFMP",
+      "iso": "mjt"
+    },
+    {
+      "id": "LZNEBT",
+      "iso": "lzn"
+    },
+    {
+      "id": "LZNEBTP",
+      "iso": "lzn"
+    },
+    {
+      "id": "ROMUCRP",
+      "iso": "rmn"
+    },
+    {
+      "id": "RMNWFT",
+      "iso": "rmn"
+    },
+    {
+      "id": "RMNSBS",
+      "iso": "rmn"
+    },
+    {
+      "id": "ROMUCR",
+      "iso": "rmn"
+    },
+    {
+      "id": "SRPBMG",
+      "iso": "srp"
+    },
+    {
+      "id": "SRPPDV",
+      "iso": "srp"
+    },
+    {
+      "id": "TGLBIV",
+      "iso": "tgl"
+    },
+    {
+      "id": "KJCACC",
+      "iso": "kjc"
+    },
+    {
+      "id": "ALTWYR",
+      "iso": "alt"
+    },
+    {
+      "id": "GOKDPI",
+      "iso": "gok"
+    },
+    {
+      "id": "NYKBSA",
+      "iso": "nyk"
+    },
+    {
+      "id": "NYKWSA",
+      "iso": "nyk"
+    },
+    {
+      "id": "NYKSAW",
+      "iso": "nyk"
+    },
+    {
+      "id": "OFUTSCP",
+      "iso": "ofu"
+    },
+    {
+      "id": "GLDIBTP",
+      "iso": "gld"
+    },
+    {
+      "id": "SXBBTL",
+      "iso": "sxb"
+    },
+    {
+      "id": "KEUWBT",
+      "iso": "keu"
+    },
+    {
+      "id": "KCLWYI",
+      "iso": "kcl"
+    },
+    {
+      "id": "TNCWBTP",
+      "iso": "tnc"
+    },
+    {
+      "id": "YRLCLA",
+      "iso": "yrl"
+    },
+    {
+      "id": "ZATQTO",
+      "iso": "zat"
+    },
+    {
+      "id": "ALFTSCP",
+      "iso": "alf"
+    },
+    {
+      "id": "GEKTSCP",
+      "iso": "gek"
+    },
+    {
+      "id": "MEETBLP",
+      "iso": "mee"
+    },
+    {
+      "id": "ICAWYI",
+      "iso": "ica"
+    },
+    {
+      "id": "KFZANV",
+      "iso": "kfz"
+    },
+    {
+      "id": "KFZANT",
+      "iso": "kfz"
+    },
+    {
+      "id": "CCOWBT",
+      "iso": "cco"
+    },
+    {
+      "id": "BULBOB",
+      "iso": "bul"
+    },
+    {
+      "id": "BULCBV",
+      "iso": "bul"
+    },
+    {
+      "id": "PBUPAK",
+      "iso": "pbu"
+    },
+    {
+      "id": "PBUPAM",
+      "iso": "pbu"
+    },
+    {
+      "id": "PBUYPR",
+      "iso": "pbu"
+    },
+    {
+      "id": "XKLKTD",
+      "iso": "xkl"
+    },
+    {
+      "id": "XKLBSM",
+      "iso": "xkl"
+    },
+    {
+      "id": "AC1IBS",
+      "iso": "ace"
+    },
+    {
+      "id": "ACEIBS",
+      "iso": "ace"
+    },
+    {
+      "id": "YRKIBTP",
+      "iso": "yrk"
+    },
+    {
+      "id": "FUVTBL",
+      "iso": "fuv"
+    },
+    {
+      "id": "SXWWBT",
+      "iso": "sxw"
+    },
+    {
+      "id": "TKRPBT",
+      "iso": "tkr"
+    },
+    {
+      "id": "TKRIBTP",
+      "iso": "tkr"
+    },
+    {
+      "id": "TKRPBTP",
+      "iso": "tkr"
+    },
+    {
+      "id": "GELWBT",
+      "iso": "gel"
+    },
+    {
+      "id": "MLVWBT",
+      "iso": "mlv"
+    },
+    {
+      "id": "HULPNG",
+      "iso": "hul"
+    },
+    {
+      "id": "KOIIBT",
+      "iso": "koi"
+    },
+    {
+      "id": "KFTNIE",
+      "iso": "kft"
+    },
+    {
+      "id": "ZAZLDT",
+      "iso": "zaz"
+    },
+    {
+      "id": "AEUWBTP",
+      "iso": "aeu"
+    },
+    {
+      "id": "MCUTBL",
+      "iso": "mcu"
+    },
+    {
+      "id": "MELWBT",
+      "iso": "mel"
+    },
+    {
+      "id": "GEBPBTP",
+      "iso": "geb"
+    },
+    {
+      "id": "GEBFBK",
+      "iso": "geb"
+    },
+    {
+      "id": "NYPWFW",
+      "iso": "nyp"
+    },
+    {
+      "id": "KFSDPI",
+      "iso": "kfs"
+    },
+    {
+      "id": "AERWYIP",
+      "iso": "aer"
+    },
+    {
+      "id": "AERWYI",
+      "iso": "aer"
+    },
+    {
+      "id": "MIGMIT",
+      "iso": "mig"
+    },
+    {
+      "id": "ALUWBT",
+      "iso": "alu"
+    },
+    {
+      "id": "TTRIBT",
+      "iso": "tat"
+    },
+    {
+      "id": "NSXBSA",
+      "iso": "nsx"
+    },
+    {
+      "id": "QXNWYI",
+      "iso": "qxn"
+    },
+    {
+      "id": "GISWFW",
+      "iso": "gis"
+    },
+    {
+      "id": "MFYMIT",
+      "iso": "mfy"
+    },
+    {
+      "id": "VMRTWF",
+      "iso": "vmr"
+    },
+    {
+      "id": "KEFWYT",
+      "iso": "kef"
+    },
+    {
+      "id": "TNPWYI",
+      "iso": "tnp"
+    },
+    {
+      "id": "MLKBTL",
+      "iso": "mlk"
+    },
+    {
+      "id": "RADBSV",
+      "iso": "rad"
+    },
+    {
+      "id": "TDBNIE",
+      "iso": "tdb"
+    },
+    {
+      "id": "CJAWYI",
+      "iso": "cja"
+    },
+    {
+      "id": "AO1UBBP",
+      "iso": "aoz"
+    },
+    {
+      "id": "AOZUBV",
+      "iso": "aoz"
+    },
+    {
+      "id": "AO2UBB",
+      "iso": "aoz"
+    },
+    {
+      "id": "AOZUBVP",
+      "iso": "aoz"
+    },
+    {
+      "id": "AO1UBB",
+      "iso": "aoz"
+    },
+    {
+      "id": "AO2UBBP",
+      "iso": "aoz"
+    },
+    {
+      "id": "KF1NLC",
+      "iso": "kfi"
+    },
+    {
+      "id": "KFIKVV",
+      "iso": "kfi"
+    },
+    {
+      "id": "KFINLC",
+      "iso": "kfi"
+    },
+    {
+      "id": "ICRWYI",
+      "iso": "icr"
+    },
+    {
+      "id": "XNNWBT",
+      "iso": "xnn"
+    },
+    {
+      "id": "TNWPPA",
+      "iso": "tnw"
+    },
+    {
+      "id": "FLMUBS",
+      "iso": "cfm"
+    },
+    {
+      "id": "CFMBSM",
+      "iso": "cfm"
+    },
+    {
+      "id": "PANDPI",
+      "iso": "pan"
+    },
+    {
+      "id": "NUFWYIP",
+      "iso": "nuf"
+    },
+    {
+      "id": "NUFWYI",
+      "iso": "nuf"
+    },
+    {
+      "id": "MCHLAN",
+      "iso": "mch"
+    },
+    {
+      "id": "MCHCLA",
+      "iso": "mch"
+    },
+    {
+      "id": "FUEDPI",
+      "iso": "fue"
+    },
+    {
+      "id": "BUXTSCP",
+      "iso": "bux"
+    },
+    {
+      "id": "MCAGGG",
+      "iso": "mca"
+    },
+    {
+      "id": "UROWYI",
+      "iso": "uro"
+    },
+    {
+      "id": "GLKTRI",
+      "iso": "glk"
+    },
+    {
+      "id": "GLKGMV",
+      "iso": "glk"
+    },
+    {
+      "id": "GLKGEV",
+      "iso": "glk"
+    },
+    {
+      "id": "GLKGMVP",
+      "iso": "glk"
+    },
+    {
+      "id": "GLKGEVP",
+      "iso": "glk"
+    },
+    {
+      "id": "XKVBSB",
+      "iso": "xkv"
+    },
+    {
+      "id": "GODWBT",
+      "iso": "god"
+    },
+    {
+      "id": "ZA2QTO",
+      "iso": "zai"
+    },
+    {
+      "id": "ZA1QTO",
+      "iso": "zai"
+    },
+    {
+      "id": "LUEBSZ",
+      "iso": "lue"
+    },
+    {
+      "id": "KIDITD",
+      "iso": "kid"
+    },
+    {
+      "id": "TMVWFW",
+      "iso": "tmv"
+    },
+    {
+      "id": "PKRNLC",
+      "iso": "pkr"
+    },
+    {
+      "id": "MCFTBL",
+      "iso": "mcf"
+    },
+    {
+      "id": "RBBWBTP",
+      "iso": "rbb"
+    },
+    {
+      "id": "RBBWBT",
+      "iso": "rbb"
+    },
+    {
+      "id": "OLOIBT",
+      "iso": "olo"
+    },
+    {
+      "id": "OLOIBTP",
+      "iso": "olo"
+    },
+    {
+      "id": "GIZDPI",
+      "iso": "giz"
+    },
+    {
+      "id": "KEOWFW",
+      "iso": "keo"
+    },
+    {
+      "id": "SRXDPI",
+      "iso": "srx"
+    },
+    {
+      "id": "SRXWIN",
+      "iso": "srx"
+    },
+    {
+      "id": "AIXWBT",
+      "iso": "aix"
+    },
+    {
+      "id": "MJIWFW",
+      "iso": "mji"
+    },
+    {
+      "id": "NUZTBL",
+      "iso": "nuz"
+    },
+    {
+      "id": "THRDPI",
+      "iso": "thr"
+    },
+    {
+      "id": "THRIEM",
+      "iso": "thr"
+    },
+    {
+      "id": "MZQLAI",
+      "iso": "xmz"
+    },
+    {
+      "id": "XMZKTD",
+      "iso": "xmz"
+    },
+    {
+      "id": "ZMPACT",
+      "iso": "zmp"
+    },
+    {
+      "id": "XNRDPI",
+      "iso": "xnr"
+    },
+    {
+      "id": "PDCWYI",
+      "iso": "pdc"
+    },
+    {
+      "id": "CLDABT",
+      "iso": "cld"
+    },
+    {
+      "id": "TBGTBLP",
+      "iso": "tbg"
+    },
+    {
+      "id": "LUPCIE",
+      "iso": "lup"
+    },
+    {
+      "id": "WTIMYC",
+      "iso": "wti"
+    },
+    {
+      "id": "ACMAAV",
+      "iso": "acm"
+    },
+    {
+      "id": "ACMAS3",
+      "iso": "acm"
+    },
+    {
+      "id": "ACMAAVP",
+      "iso": "acm"
+    },
+    {
+      "id": "RMZBBS",
+      "iso": "rmz"
+    },
+    {
+      "id": "RMZWBT",
+      "iso": "rmz"
+    },
+    {
+      "id": "PHAWFW",
+      "iso": "pha"
+    },
+    {
+      "id": "NUTWFW",
+      "iso": "nut"
+    },
+    {
+      "id": "MIHUNT",
+      "iso": "mih"
+    },
+    {
+      "id": "ZARTBLP",
+      "iso": "zar"
+    },
+    {
+      "id": "PBSUNT",
+      "iso": "pbs"
+    },
+    {
+      "id": "LUYBSK",
+      "iso": "luy"
+    },
+    {
+      "id": "KLILAI",
+      "iso": "kli"
+    },
+    {
+      "id": "CJSIBTP",
+      "iso": "cjs"
+    },
+    {
+      "id": "GJNDPI",
+      "iso": "gjn"
+    },
+    {
+      "id": "PBTYPR",
+      "iso": "pbt"
+    },
+    {
+      "id": "GEJBS2",
+      "iso": "gej"
+    },
+    {
+      "id": "AFUMFG",
+      "iso": "afu"
+    },
+    {
+      "id": "LZZWYIP",
+      "iso": "lzz"
+    },
+    {
+      "id": "LZZWYI",
+      "iso": "lzz"
+    }
+  ],
+  "ebible": [
+    {
+      "id": "adt",
+      "iso": "adt"
+    },
+    {
+      "id": "aeu",
+      "iso": "aeb"
+    },
+    {
+      "id": "alh",
+      "iso": "alh"
+    },
+    {
+      "id": "apec",
+      "iso": "ape"
+    },
+    {
+      "id": "aqk",
+      "iso": "aqk"
+    },
+    {
+      "id": "arbwbtc",
+      "iso": "arb"
+    },
+    {
+      "id": "asmfb",
+      "iso": "asm"
+    },
+    {
+      "id": "bbd",
+      "iso": "bbd"
+    },
+    {
+      "id": "bbr2013",
+      "iso": "bbr"
+    },
+    {
+      "id": "bccl",
+      "iso": "bcc"
+    },
+    {
+      "id": "beln",
+      "iso": "bel"
+    },
+    {
+      "id": "ben2006",
+      "iso": "ben"
+    },
+    {
+      "id": "benirv",
+      "iso": "ben"
+    },
+    {
+      "id": "benobcv",
+      "iso": "ben"
+    },
+    {
+      "id": "bhd",
+      "iso": "bhd"
+    },
+    {
+      "id": "bhi",
+      "iso": "bhi"
+    },
+    {
+      "id": "bhu",
+      "iso": "bhu"
+    },
+    {
+      "id": "big2013",
+      "iso": "big"
+    },
+    {
+      "id": "bodn",
+      "iso": "bod"
+    },
+    {
+      "id": "bsj",
+      "iso": "bsj"
+    },
+    {
+      "id": "bswe",
+      "iso": "bsw"
+    },
+    {
+      "id": "bswl",
+      "iso": "bsw"
+    },
+    {
+      "id": "buj",
+      "iso": "buj"
+    },
+    {
+      "id": "buk2013",
+      "iso": "buk"
+    },
+    {
+      "id": "bvw",
+      "iso": "bvw"
+    },
+    {
+      "id": "bwc",
+      "iso": "bwc"
+    },
+    {
+      "id": "bxh24",
+      "iso": "bxh"
+    },
+    {
+      "id": "cdz",
+      "iso": "cdz"
+    },
+    {
+      "id": "cebocb",
+      "iso": "ceb"
+    },
+    {
+      "id": "cekak",
+      "iso": "cek"
+    },
+    {
+      "id": "ces1613",
+      "iso": "ces"
+    },
+    {
+      "id": "ceslb",
+      "iso": "ces"
+    },
+    {
+      "id": "cmn2006",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmncbs",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmncbt",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmn-cu89s",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmn-cu89t",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmnfeb",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmok",
+      "iso": "cmo"
+    },
+    {
+      "id": "cth",
+      "iso": "cth"
+    },
+    {
+      "id": "daf",
+      "iso": "daf"
+    },
+    {
+      "id": "dan1931",
+      "iso": "dan"
+    },
+    {
+      "id": "deu1951",
+      "iso": "deu"
+    },
+    {
+      "id": "deuelbbk",
+      "iso": "deu"
+    },
+    {
+      "id": "deuelo",
+      "iso": "deu"
+    },
+    {
+      "id": "deutkw",
+      "iso": "deu"
+    },
+    {
+      "id": "dhgdol",
+      "iso": "dhg"
+    },
+    {
+      "id": "dhgduwadha",
+      "iso": "dhg"
+    },
+    {
+      "id": "did",
+      "iso": "mbd"
+    },
+    {
+      "id": "djj",
+      "iso": "djj"
+    },
+    {
+      "id": "dne",
+      "iso": "dne"
+    },
+    {
+      "id": "dnv",
+      "iso": "dnv"
+    },
+    {
+      "id": "dud",
+      "iso": "dud"
+    },
+    {
+      "id": "dwrl",
+      "iso": "dwr"
+    },
+    {
+      "id": "dwu",
+      "iso": "dwu"
+    },
+    {
+      "id": "dwuliv",
+      "iso": "dwu"
+    },
+    {
+      "id": "ekkpkp",
+      "iso": "ekk"
+    },
+    {
+      "id": "engaoi",
+      "iso": "eng"
+    },
+    {
+      "id": "engasvbt",
+      "iso": "eng"
+    },
+    {
+      "id": "engbarkly",
+      "iso": "eng"
+    },
+    {
+      "id": "enge2t",
+      "iso": "eng"
+    },
+    {
+      "id": "engemtv",
+      "iso": "eng"
+    },
+    {
+      "id": "enggw",
+      "iso": "eng"
+    },
+    {
+      "id": "eng-kjv2006",
+      "iso": "eng"
+    },
+    {
+      "id": "engkjvcpb",
+      "iso": "eng"
+    },
+    {
+      "id": "englee",
+      "iso": "eng"
+    },
+    {
+      "id": "englxxup",
+      "iso": "eng"
+    },
+    {
+      "id": "engmsb",
+      "iso": "eng"
+    },
+    {
+      "id": "engnna",
+      "iso": "eng"
+    },
+    {
+      "id": "engoebcw",
+      "iso": "eng"
+    },
+    {
+      "id": "engoke",
+      "iso": "eng"
+    },
+    {
+      "id": "engPEV",
+      "iso": "eng"
+    },
+    {
+      "id": "engtcent",
+      "iso": "eng"
+    },
+    {
+      "id": "engULB",
+      "iso": "eng"
+    },
+    {
+      "id": "eng-webbe",
+      "iso": "eng"
+    },
+    {
+      "id": "engwebp",
+      "iso": "eng"
+    },
+    {
+      "id": "engwebpb",
+      "iso": "eng"
+    },
+    {
+      "id": "engwebster",
+      "iso": "eng"
+    },
+    {
+      "id": "engwebu",
+      "iso": "eng"
+    },
+    {
+      "id": "engwmbb",
+      "iso": "eng"
+    },
+    {
+      "id": "engwyc2017",
+      "iso": "eng"
+    },
+    {
+      "id": "engwyc2018",
+      "iso": "eng"
+    },
+    {
+      "id": "engWycliffe",
+      "iso": "eng"
+    },
+    {
+      "id": "fag",
+      "iso": "fag"
+    },
+    {
+      "id": "frajnd",
+      "iso": "fra"
+    },
+    {
+      "id": "francl",
+      "iso": "fra"
+    },
+    {
+      "id": "frasbl",
+      "iso": "fra"
+    },
+    {
+      "id": "gaze",
+      "iso": "gaz"
+    },
+    {
+      "id": "gfkh",
+      "iso": "gfk"
+    },
+    {
+      "id": "gfks",
+      "iso": "gfk"
+    },
+    {
+      "id": "gge",
+      "iso": "gge"
+    },
+    {
+      "id": "glwl",
+      "iso": "glw"
+    },
+    {
+      "id": "gmve",
+      "iso": "gmv"
+    },
+    {
+      "id": "gmvggm",
+      "iso": "gmv"
+    },
+    {
+      "id": "gmvl",
+      "iso": "gmv"
+    },
+    {
+      "id": "gofe",
+      "iso": "gof"
+    },
+    {
+      "id": "gofl",
+      "iso": "gof"
+    },
+    {
+      "id": "gofwftw",
+      "iso": "gof"
+    },
+    {
+      "id": "gqa",
+      "iso": "gqa"
+    },
+    {
+      "id": "grcbrent",
+      "iso": "grc"
+    },
+    {
+      "id": "grcbyz",
+      "iso": "grc"
+    },
+    {
+      "id": "grcmt",
+      "iso": "grc"
+    },
+    {
+      "id": "grcsbl",
+      "iso": "grc"
+    },
+    {
+      "id": "grcsr",
+      "iso": "grc"
+    },
+    {
+      "id": "grctcgnt",
+      "iso": "grc"
+    },
+    {
+      "id": "grc-tisch",
+      "iso": "grc"
+    },
+    {
+      "id": "grctr",
+      "iso": "grc"
+    },
+    {
+      "id": "guj2017",
+      "iso": "guj"
+    },
+    {
+      "id": "gupk",
+      "iso": "gup"
+    },
+    {
+      "id": "gupmay",
+      "iso": "gup"
+    },
+    {
+      "id": "guxg",
+      "iso": "gux"
+    },
+    {
+      "id": "gyz",
+      "iso": "gyz"
+    },
+    {
+      "id": "hatbsa",
+      "iso": "hat"
+    },
+    {
+      "id": "hausa",
+      "iso": "hau"
+    },
+    {
+      "id": "hauulb",
+      "iso": "hau"
+    },
+    {
+      "id": "hav",
+      "iso": "hav"
+    },
+    {
+      "id": "hch",
+      "iso": "hch"
+    },
+    {
+      "id": "heblb",
+      "iso": "heb"
+    },
+    {
+      "id": "hebsg",
+      "iso": "heb"
+    },
+    {
+      "id": "hebwlc",
+      "iso": "heb"
+    },
+    {
+      "id": "hin2017",
+      "iso": "hin"
+    },
+    {
+      "id": "hincv",
+      "iso": "hin"
+    },
+    {
+      "id": "hltmcsb",
+      "iso": "hlt"
+    },
+    {
+      "id": "hltthb",
+      "iso": "hlt"
+    },
+    {
+      "id": "hrebt",
+      "iso": "hre"
+    },
+    {
+      "id": "hru",
+      "iso": "hru"
+    },
+    {
+      "id": "hrvbib",
+      "iso": "hrv"
+    },
+    {
+      "id": "hwo",
+      "iso": "hwo"
+    },
+    {
+      "id": "ibd",
+      "iso": "ibd"
+    },
+    {
+      "id": "idc",
+      "iso": "idc"
+    },
+    {
+      "id": "iloulb",
+      "iso": "ilo"
+    },
+    {
+      "id": "ino2013",
+      "iso": "ino"
+    },
+    {
+      "id": "ita1885",
+      "iso": "ita"
+    },
+    {
+      "id": "ita1927",
+      "iso": "ita"
+    },
+    {
+      "id": "jay",
+      "iso": "jay"
+    },
+    {
+      "id": "jnje",
+      "iso": "jnj"
+    },
+    {
+      "id": "jnjl",
+      "iso": "jnj"
+    },
+    {
+      "id": "jum",
+      "iso": "jum"
+    },
+    {
+      "id": "kanirv",
+      "iso": "kan"
+    },
+    {
+      "id": "kanokcv",
+      "iso": "kan"
+    },
+    {
+      "id": "kans",
+      "iso": "kan"
+    },
+    {
+      "id": "kdc2014",
+      "iso": "kdc"
+    },
+    {
+      "id": "kdl",
+      "iso": "kdl"
+    },
+    {
+      "id": "kfcp",
+      "iso": "kfc"
+    },
+    {
+      "id": "khj",
+      "iso": "khj"
+    },
+    {
+      "id": "khm-h",
+      "iso": "khm"
+    },
+    {
+      "id": "kjn",
+      "iso": "kjn"
+    },
+    {
+      "id": "kky",
+      "iso": "kky"
+    },
+    {
+      "id": "kld",
+      "iso": "kld"
+    },
+    {
+      "id": "knb",
+      "iso": "kmu"
+    },
+    {
+      "id": "kqew",
+      "iso": "kqe"
+    },
+    {
+      "id": "krh",
+      "iso": "krh"
+    },
+    {
+      "id": "kud2014",
+      "iso": "kud"
+    },
+    {
+      "id": "kus",
+      "iso": "kxv"
+    },
+    {
+      "id": "kwo",
+      "iso": "kwo"
+    },
+    {
+      "id": "kxf",
+      "iso": "kxf"
+    },
+    {
+      "id": "kyuk",
+      "iso": "kyu"
+    },
+    {
+      "id": "lag",
+      "iso": "lag"
+    },
+    {
+      "id": "lbv",
+      "iso": "lbv"
+    },
+    {
+      "id": "ldb",
+      "iso": "ldb"
+    },
+    {
+      "id": "litb",
+      "iso": "lit"
+    },
+    {
+      "id": "lrg",
+      "iso": "lng"
+    },
+    {
+      "id": "lth",
+      "iso": "lth"
+    },
+    {
+      "id": "lyn",
+      "iso": "lyn"
+    },
+    {
+      "id": "mal2015",
+      "iso": "mal"
+    },
+    {
+      "id": "malc",
+      "iso": "mal"
+    },
+    {
+      "id": "marc",
+      "iso": "mar"
+    },
+    {
+      "id": "mbbOT",
+      "iso": "mbb"
+    },
+    {
+      "id": "mdybse",
+      "iso": "mdy"
+    },
+    {
+      "id": "mey",
+      "iso": "mey"
+    },
+    {
+      "id": "mfm",
+      "iso": "mfm"
+    },
+    {
+      "id": "mfo",
+      "iso": "mfo"
+    },
+    {
+      "id": "mfxe",
+      "iso": "mfx"
+    },
+    {
+      "id": "mfxl",
+      "iso": "mfx"
+    },
+    {
+      "id": "mgh2016",
+      "iso": "mgh"
+    },
+    {
+      "id": "mgv",
+      "iso": "mgv"
+    },
+    {
+      "id": "mpa",
+      "iso": "mpa"
+    },
+    {
+      "id": "mri2012",
+      "iso": "mri"
+    },
+    {
+      "id": "msy2020",
+      "iso": "msy"
+    },
+    {
+      "id": "mwf2018",
+      "iso": "mwf"
+    },
+    {
+      "id": "mxm",
+      "iso": "mxm"
+    },
+    {
+      "id": "myajvb",
+      "iso": "mya"
+    },
+    {
+      "id": "nal",
+      "iso": "nal"
+    },
+    {
+      "id": "nck",
+      "iso": "nck"
+    },
+    {
+      "id": "ncr",
+      "iso": "ncr"
+    },
+    {
+      "id": "ndg",
+      "iso": "ndg"
+    },
+    {
+      "id": "nit",
+      "iso": "nit"
+    },
+    {
+      "id": "njd",
+      "iso": "njd"
+    },
+    {
+      "id": "nkn",
+      "iso": "nkn"
+    },
+    {
+      "id": "nkr",
+      "iso": "nkr"
+    },
+    {
+      "id": "nld1939",
+      "iso": "nld"
+    },
+    {
+      "id": "nldgbv",
+      "iso": "nld"
+    },
+    {
+      "id": "nmx",
+      "iso": "nmx"
+    },
+    {
+      "id": "noblb",
+      "iso": "nob"
+    },
+    {
+      "id": "npioncb",
+      "iso": "npi"
+    },
+    {
+      "id": "npiulb",
+      "iso": "npi"
+    },
+    {
+      "id": "nrz",
+      "iso": "nrz"
+    },
+    {
+      "id": "num",
+      "iso": "num"
+    },
+    {
+      "id": "nww",
+      "iso": "nww"
+    },
+    {
+      "id": "okvh",
+      "iso": "okv"
+    },
+    {
+      "id": "omw-a",
+      "iso": "omw"
+    },
+    {
+      "id": "oyde",
+      "iso": "oyd"
+    },
+    {
+      "id": "oydl",
+      "iso": "oyd"
+    },
+    {
+      "id": "pdo",
+      "iso": "pdo"
+    },
+    {
+      "id": "pesopcb",
+      "iso": "pes"
+    },
+    {
+      "id": "pga",
+      "iso": "pga"
+    },
+    {
+      "id": "piu2006",
+      "iso": "piu"
+    },
+    {
+      "id": "plj",
+      "iso": "plj"
+    },
+    {
+      "id": "pll",
+      "iso": "pll"
+    },
+    {
+      "id": "polsz",
+      "iso": "pol"
+    },
+    {
+      "id": "pon2006",
+      "iso": "pon"
+    },
+    {
+      "id": "pon-pdn",
+      "iso": "pon"
+    },
+    {
+      "id": "porblt",
+      "iso": "por"
+    },
+    {
+      "id": "porbr2018",
+      "iso": "por"
+    },
+    {
+      "id": "porbrbsl",
+      "iso": "por"
+    },
+    {
+      "id": "poronbv",
+      "iso": "por"
+    },
+    {
+      "id": "por-WBTC",
+      "iso": "por"
+    },
+    {
+      "id": "pub",
+      "iso": "pub"
+    },
+    {
+      "id": "pwr",
+      "iso": "pwr"
+    },
+    {
+      "id": "quctt",
+      "iso": "quc"
+    },
+    {
+      "id": "reg",
+      "iso": "reg"
+    },
+    {
+      "id": "rhgc",
+      "iso": "rhg"
+    },
+    {
+      "id": "rifa",
+      "iso": "rif"
+    },
+    {
+      "id": "rifl",
+      "iso": "rif"
+    },
+    {
+      "id": "rift",
+      "iso": "rif"
+    },
+    {
+      "id": "rki",
+      "iso": "rki"
+    },
+    {
+      "id": "rmb",
+      "iso": "rmb"
+    },
+    {
+      "id": "rmczrb",
+      "iso": "rmc"
+    },
+    {
+      "id": "rmna",
+      "iso": "rmn"
+    },
+    {
+      "id": "rmyArli",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmyChergash",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmyGurbet",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmylovari",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmyservi",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmyvlakh",
+      "iso": "rmy"
+    },
+    {
+      "id": "ron1924",
+      "iso": "ron"
+    },
+    {
+      "id": "ronlsb",
+      "iso": "ron"
+    },
+    {
+      "id": "ronludari",
+      "iso": "ron"
+    },
+    {
+      "id": "sanasm",
+      "iso": "san"
+    },
+    {
+      "id": "sanben",
+      "iso": "san"
+    },
+    {
+      "id": "sanbur",
+      "iso": "san"
+    },
+    {
+      "id": "sancol",
+      "iso": "san"
+    },
+    {
+      "id": "sandev",
+      "iso": "san"
+    },
+    {
+      "id": "sanguj",
+      "iso": "san"
+    },
+    {
+      "id": "sanhk",
+      "iso": "san"
+    },
+    {
+      "id": "sanias",
+      "iso": "san"
+    },
+    {
+      "id": "sanitr",
+      "iso": "san"
+    },
+    {
+      "id": "sankan",
+      "iso": "san"
+    },
+    {
+      "id": "sankhm",
+      "iso": "san"
+    },
+    {
+      "id": "sanmal",
+      "iso": "san"
+    },
+    {
+      "id": "sanori",
+      "iso": "san"
+    },
+    {
+      "id": "sanpun",
+      "iso": "san"
+    },
+    {
+      "id": "santam",
+      "iso": "san"
+    },
+    {
+      "id": "santib",
+      "iso": "san"
+    },
+    {
+      "id": "sanurd",
+      "iso": "san"
+    },
+    {
+      "id": "sanvel",
+      "iso": "san"
+    },
+    {
+      "id": "sce",
+      "iso": "sce"
+    },
+    {
+      "id": "six",
+      "iso": "six"
+    },
+    {
+      "id": "snx",
+      "iso": "snx"
+    },
+    {
+      "id": "spablm",
+      "iso": "spa"
+    },
+    {
+      "id": "spaLBLA",
+      "iso": "spa"
+    },
+    {
+      "id": "spanblh",
+      "iso": "spa"
+    },
+    {
+      "id": "spaonbv",
+      "iso": "spa"
+    },
+    {
+      "id": "spav1602p",
+      "iso": "spa"
+    },
+    {
+      "id": "srp1865",
+      "iso": "srp"
+    },
+    {
+      "id": "srp1868",
+      "iso": "srp"
+    },
+    {
+      "id": "srponspc",
+      "iso": "srp"
+    },
+    {
+      "id": "srponstl",
+      "iso": "srp"
+    },
+    {
+      "id": "stw",
+      "iso": "stw"
+    },
+    {
+      "id": "swef",
+      "iso": "swe"
+    },
+    {
+      "id": "swhonen",
+      "iso": "swh"
+    },
+    {
+      "id": "swhonmm",
+      "iso": "swh"
+    },
+    {
+      "id": "syll",
+      "iso": "syl"
+    },
+    {
+      "id": "syls",
+      "iso": "syl"
+    },
+    {
+      "id": "tam2008",
+      "iso": "tam"
+    },
+    {
+      "id": "tam2017",
+      "iso": "tam"
+    },
+    {
+      "id": "tamtcv",
+      "iso": "tam"
+    },
+    {
+      "id": "tcn",
+      "iso": "tcn"
+    },
+    {
+      "id": "tczchongthu",
+      "iso": "tcz"
+    },
+    {
+      "id": "tdx",
+      "iso": "tdx"
+    },
+    {
+      "id": "tel2017",
+      "iso": "tel"
+    },
+    {
+      "id": "telotsa",
+      "iso": "tel"
+    },
+    {
+      "id": "tiwm",
+      "iso": "tiw"
+    },
+    {
+      "id": "tpiOTNT",
+      "iso": "tpi"
+    },
+    {
+      "id": "tsw",
+      "iso": "tsw"
+    },
+    {
+      "id": "tteo",
+      "iso": "tte"
+    },
+    {
+      "id": "ttqt",
+      "iso": "ttq"
+    },
+    {
+      "id": "turobt",
+      "iso": "tur"
+    },
+    {
+      "id": "turytc",
+      "iso": "tur"
+    },
+    {
+      "id": "tvn",
+      "iso": "tvn"
+    },
+    {
+      "id": "twiasante",
+      "iso": "twi"
+    },
+    {
+      "id": "tyx",
+      "iso": "tyx"
+    },
+    {
+      "id": "ubu-andelale",
+      "iso": "ubu"
+    },
+    {
+      "id": "ukr1871",
+      "iso": "ukr"
+    },
+    {
+      "id": "ukrfb",
+      "iso": "ukr"
+    },
+    {
+      "id": "ulk1902",
+      "iso": "ulk"
+    },
+    {
+      "id": "urdgvh",
+      "iso": "urd"
+    },
+    {
+      "id": "urdgvr",
+      "iso": "urd"
+    },
+    {
+      "id": "urdgvu",
+      "iso": "urd"
+    },
+    {
+      "id": "urdoucv",
+      "iso": "urd"
+    },
+    {
+      "id": "urim",
+      "iso": "uri"
+    },
+    {
+      "id": "utr",
+      "iso": "utr"
+    },
+    {
+      "id": "vaa",
+      "iso": "vaa"
+    },
+    {
+      "id": "vgr",
+      "iso": "vgr"
+    },
+    {
+      "id": "vie1934",
+      "iso": "vie"
+    },
+    {
+      "id": "vie2011",
+      "iso": "vie"
+    },
+    {
+      "id": "vieovcb",
+      "iso": "vie"
+    },
+    {
+      "id": "wbq",
+      "iso": "wbq"
+    },
+    {
+      "id": "wiv",
+      "iso": "wiv"
+    },
+    {
+      "id": "wja",
+      "iso": "wja"
+    },
+    {
+      "id": "wlg",
+      "iso": "wlg"
+    },
+    {
+      "id": "wolmbs",
+      "iso": "wol"
+    },
+    {
+      "id": "yer",
+      "iso": "yer"
+    },
+    {
+      "id": "ymp",
+      "iso": "ymp"
+    },
+    {
+      "id": "zajp",
+      "iso": "zaj"
+    },
+    {
+      "id": "zpi",
+      "iso": "zpi"
+    },
+    {
+      "id": "zatNTps",
+      "iso": "zat"
+    },
+    {
+      "id": "zbu",
+      "iso": "zbu"
+    },
+    {
+      "id": "zgam",
+      "iso": "zga"
+    },
+    {
+      "id": "ztyNTps",
+      "iso": "zty"
+    }
+  ],
+  "helloao": [
+    {
+      "id": "BSB",
+      "iso": "eng"
+    },
+    {
+      "id": "ENGWEBP",
+      "iso": "eng"
+    },
+    {
+      "id": "GHT",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_abt",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_aoi",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_boy",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_cpb",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_dra",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_emtv",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_kja",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_lee",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_lxu",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_msb",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_nna",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_oke",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_tce",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_ulb",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_w88",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_wbs",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_webpb",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_webu",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_weu",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_wmu",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_wyc2017",
+      "iso": "eng"
+    },
+    {
+      "id": "eng_wyc2018",
+      "iso": "eng"
+    },
+    {
+      "id": "GHTG",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_byz",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_gtr",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_mtk",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_sbl",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_srg",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_tcg",
+      "iso": "grc"
+    },
+    {
+      "id": "grc_tis",
+      "iso": "grc"
+    },
+    {
+      "id": "hbo_wlc",
+      "iso": "hbo"
+    },
+    {
+      "id": "hin_cvb",
+      "iso": "hin"
+    },
+    {
+      "id": "aaz_ubb",
+      "iso": "aaz"
+    },
+    {
+      "id": "abc_wbt",
+      "iso": "abc"
+    },
+    {
+      "id": "abt_map",
+      "iso": "abt"
+    },
+    {
+      "id": "abt_wos",
+      "iso": "abt"
+    },
+    {
+      "id": "acr_ibs",
+      "iso": "acr"
+    },
+    {
+      "id": "adt_bsa",
+      "iso": "adt"
+    },
+    {
+      "id": "adz_png",
+      "iso": "adz"
+    },
+    {
+      "id": "agm_png",
+      "iso": "agm"
+    },
+    {
+      "id": "agr_wbt",
+      "iso": "agr"
+    },
+    {
+      "id": "ahr_twf",
+      "iso": "ahr"
+    },
+    {
+      "id": "aii_abt",
+      "iso": "aii"
+    },
+    {
+      "id": "alq_cbs",
+      "iso": "alq"
+    },
+    {
+      "id": "alw_wtw",
+      "iso": "alw"
+    },
+    {
+      "id": "aly_wbt",
+      "iso": "aly"
+    },
+    {
+      "id": "amh_amh",
+      "iso": "amh"
+    },
+    {
+      "id": "amm_tbl",
+      "iso": "amm"
+    },
+    {
+      "id": "amn_ana",
+      "iso": "amn"
+    },
+    {
+      "id": "amo_d43",
+      "iso": "amo"
+    },
+    {
+      "id": "amu_wbt",
+      "iso": "amu"
+    },
+    {
+      "id": "anh_pbt",
+      "iso": "anh"
+    },
+    {
+      "id": "aoi_bib",
+      "iso": "aoi"
+    },
+    {
+      "id": "aom_tbl",
+      "iso": "aom"
+    },
+    {
+      "id": "aon_wbt",
+      "iso": "aon"
+    },
+    {
+      "id": "ape_bwb",
+      "iso": "ape"
+    },
+    {
+      "id": "ape_cce",
+      "iso": "ape"
+    },
+    {
+      "id": "app_pbt",
+      "iso": "app"
+    },
+    {
+      "id": "apu_wbt",
+      "iso": "apu"
+    },
+    {
+      "id": "apw_wbt",
+      "iso": "apw"
+    },
+    {
+      "id": "apz_png",
+      "iso": "apz"
+    },
+    {
+      "id": "arp_abs",
+      "iso": "arp"
+    },
+    {
+      "id": "asj_wbt",
+      "iso": "asj"
+    },
+    {
+      "id": "asm_irv",
+      "iso": "asm"
+    },
+    {
+      "id": "atg_wbt",
+      "iso": "atg"
+    },
+    {
+      "id": "att_wbt",
+      "iso": "att"
+    },
+    {
+      "id": "auy_tbl",
+      "iso": "auy"
+    },
+    {
+      "id": "awk_bsa",
+      "iso": "awk"
+    },
+    {
+      "id": "azb_bsa",
+      "iso": "azb"
+    },
+    {
+      "id": "bao_ntw",
+      "iso": "bao"
+    },
+    {
+      "id": "bba_sim",
+      "iso": "bba"
+    },
+    {
+      "id": "bbb_tbl",
+      "iso": "bbb"
+    },
+    {
+      "id": "bch_png",
+      "iso": "bch"
+    },
+    {
+      "id": "bdv_twf",
+      "iso": "bdv"
+    },
+    {
+      "id": "bea_bfb",
+      "iso": "bea"
+    },
+    {
+      "id": "bel_njo",
+      "iso": "bel"
+    },
+    {
+      "id": "ben_irv",
+      "iso": "ben"
+    },
+    {
+      "id": "ben_ocv",
+      "iso": "ben"
+    },
+    {
+      "id": "beo_pio",
+      "iso": "beo"
+    },
+    {
+      "id": "beu_ubb",
+      "iso": "beu"
+    },
+    {
+      "id": "bfz_tlf",
+      "iso": "bfz"
+    },
+    {
+      "id": "bgc_tlf",
+      "iso": "bgc"
+    },
+    {
+      "id": "bgg_twf",
+      "iso": "bgg"
+    },
+    {
+      "id": "bhd_tlf",
+      "iso": "bhd"
+    },
+    {
+      "id": "bhi_twf",
+      "iso": "bhi"
+    },
+    {
+      "id": "bhu_twf",
+      "iso": "bhu"
+    },
+    {
+      "id": "big_tbl",
+      "iso": "big"
+    },
+    {
+      "id": "bjv_wbt",
+      "iso": "bjv"
+    },
+    {
+      "id": "bkw_wbt",
+      "iso": "bkw"
+    },
+    {
+      "id": "bkx_ubb",
+      "iso": "bkx"
+    },
+    {
+      "id": "bla_cms",
+      "iso": "bla"
+    },
+    {
+      "id": "boj_png",
+      "iso": "boj"
+    },
+    {
+      "id": "bpr_wbt",
+      "iso": "bpr"
+    },
+    {
+      "id": "bps_wbt",
+      "iso": "bps"
+    },
+    {
+      "id": "bpx_wft",
+      "iso": "bpx"
+    },
+    {
+      "id": "bre_brg",
+      "iso": "bre"
+    },
+    {
+      "id": "bsj_doo",
+      "iso": "bsj"
+    },
+    {
+      "id": "bsw_etw",
+      "iso": "bsw"
+    },
+    {
+      "id": "bsw_ltw",
+      "iso": "bsw"
+    },
+    {
+      "id": "bwo_twf",
+      "iso": "bwo"
+    },
+    {
+      "id": "byr_png",
+      "iso": "byr"
+    },
+    {
+      "id": "byx_png",
+      "iso": "byx"
+    },
+    {
+      "id": "bzj_wbt",
+      "iso": "bzj"
+    },
+    {
+      "id": "cab_png",
+      "iso": "cab"
+    },
+    {
+      "id": "cac_wbt",
+      "iso": "cac"
+    },
+    {
+      "id": "cak_eas",
+      "iso": "cak"
+    },
+    {
+      "id": "cak_sbg",
+      "iso": "cak"
+    },
+    {
+      "id": "cak_swy",
+      "iso": "cak"
+    },
+    {
+      "id": "cak_wes",
+      "iso": "cak"
+    },
+    {
+      "id": "cax_sbb",
+      "iso": "cax"
+    },
+    {
+      "id": "cbi_wbt",
+      "iso": "cbi"
+    },
+    {
+      "id": "cbt_wbt",
+      "iso": "cbt"
+    },
+    {
+      "id": "cbv_wbt",
+      "iso": "cbv"
+    },
+    {
+      "id": "cdz_bcs",
+      "iso": "cdz"
+    },
+    {
+      "id": "ceb_ocb",
+      "iso": "ceb"
+    },
+    {
+      "id": "cek_akb",
+      "iso": "cek"
+    },
+    {
+      "id": "ces_bib",
+      "iso": "ces"
+    },
+    {
+      "id": "ces_bkr",
+      "iso": "ces"
+    },
+    {
+      "id": "cgc_wbt",
+      "iso": "cgc"
+    },
+    {
+      "id": "cha_pga",
+      "iso": "cha"
+    },
+    {
+      "id": "chq_wbt",
+      "iso": "chq"
+    },
+    {
+      "id": "ckb_bib",
+      "iso": "ckb"
+    },
+    {
+      "id": "clu_wbt",
+      "iso": "clu"
+    },
+    {
+      "id": "cme_ntw",
+      "iso": "cme"
+    },
+    {
+      "id": "cmn_cbs",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmn_cbt",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmn_cu1",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmn_cuv",
+      "iso": "cmn"
+    },
+    {
+      "id": "cmn_feb",
+      "iso": "cmn"
+    },
+    {
+      "id": "cnq_wbt",
+      "iso": "cnq"
+    },
+    {
+      "id": "cnt_tbl",
+      "iso": "cnt"
+    },
+    {
+      "id": "cop_bhc",
+      "iso": "cop"
+    },
+    {
+      "id": "cop_cnt",
+      "iso": "cop"
+    },
+    {
+      "id": "cot_ntw",
+      "iso": "cot"
+    },
+    {
+      "id": "csy_skb",
+      "iso": "csy"
+    },
+    {
+      "id": "cta_wbt",
+      "iso": "cta"
+    },
+    {
+      "id": "cth_bcf",
+      "iso": "cth"
+    },
+    {
+      "id": "cux_wbt",
+      "iso": "cux"
+    },
+    {
+      "id": "cya_wbt",
+      "iso": "cya"
+    },
+    {
+      "id": "dan_det",
+      "iso": "dan"
+    },
+    {
+      "id": "dao_twf",
+      "iso": "dao"
+    },
+    {
+      "id": "deu_elbbk",
+      "iso": "deu"
+    },
+    {
+      "id": "deu_elo",
+      "iso": "deu"
+    },
+    {
+      "id": "deu_sch",
+      "iso": "deu"
+    },
+    {
+      "id": "deu_tkw",
+      "iso": "deu"
+    },
+    {
+      "id": "dhg_dol",
+      "iso": "dhg"
+    },
+    {
+      "id": "dhg_duw",
+      "iso": "dhg"
+    },
+    {
+      "id": "dhn_twf",
+      "iso": "dhn"
+    },
+    {
+      "id": "dif_lut",
+      "iso": "dif"
+    },
+    {
+      "id": "dik_wbt",
+      "iso": "dik"
+    },
+    {
+      "id": "djj_wbt",
+      "iso": "djj"
+    },
+    {
+      "id": "djr_bib",
+      "iso": "djr"
+    },
+    {
+      "id": "dne_twf",
+      "iso": "dne"
+    },
+    {
+      "id": "dnv_twf",
+      "iso": "dnv"
+    },
+    {
+      "id": "dop_sim",
+      "iso": "dop"
+    },
+    {
+      "id": "dov_d43",
+      "iso": "dov"
+    },
+    {
+      "id": "dso_twf",
+      "iso": "dso"
+    },
+    {
+      "id": "dwr_ltw",
+      "iso": "dwr"
+    },
+    {
+      "id": "dwu_liv",
+      "iso": "dwu"
+    },
+    {
+      "id": "dwu_wbt",
+      "iso": "dwu"
+    },
+    {
+      "id": "ekk_pkp",
+      "iso": "ekk"
+    },
+    {
+      "id": "epo_bfb",
+      "iso": "epo"
+    },
+    {
+      "id": "ewe_bib",
+      "iso": "ewe"
+    },
+    {
+      "id": "fad_wbt",
+      "iso": "fad"
+    },
+    {
+      "id": "fin_bib",
+      "iso": "fin"
+    },
+    {
+      "id": "fra_jnd",
+      "iso": "fra"
+    },
+    {
+      "id": "fra_ncl",
+      "iso": "fra"
+    },
+    {
+      "id": "gaq_twf",
+      "iso": "gaq"
+    },
+    {
+      "id": "gax_twf",
+      "iso": "gax"
+    },
+    {
+      "id": "gaz_ebi",
+      "iso": "gaz"
+    },
+    {
+      "id": "gbl_bey",
+      "iso": "gbl"
+    },
+    {
+      "id": "gdf_tsc",
+      "iso": "gdf"
+    },
+    {
+      "id": "gel_wbt",
+      "iso": "gel"
+    },
+    {
+      "id": "gfk_hwb",
+      "iso": "gfk"
+    },
+    {
+      "id": "gfk_swb",
+      "iso": "gfk"
+    },
+    {
+      "id": "gge_wbt",
+      "iso": "gge"
+    },
+    {
+      "id": "glw_llu",
+      "iso": "glw"
+    },
+    {
+      "id": "gmv_etw",
+      "iso": "gmv"
+    },
+    {
+      "id": "gmv_ggm",
+      "iso": "gmv"
+    },
+    {
+      "id": "gmv_ltw",
+      "iso": "gmv"
+    },
+    {
+      "id": "gof_etw",
+      "iso": "gof"
+    },
+    {
+      "id": "gof_ltw",
+      "iso": "gof"
+    },
+    {
+      "id": "gof_wftw",
+      "iso": "gof"
+    },
+    {
+      "id": "goj_twf",
+      "iso": "goj"
+    },
+    {
+      "id": "gok_twf",
+      "iso": "gok"
+    },
+    {
+      "id": "guf_wbt",
+      "iso": "guf"
+    },
+    {
+      "id": "gui_sbu",
+      "iso": "gui"
+    },
+    {
+      "id": "guj_irv",
+      "iso": "guj"
+    },
+    {
+      "id": "gup_kwb",
+      "iso": "gup"
+    },
+    {
+      "id": "gup_may",
+      "iso": "gup"
+    },
+    {
+      "id": "gux_ulb",
+      "iso": "gux"
+    },
+    {
+      "id": "gvc_wbt",
+      "iso": "gvc"
+    },
+    {
+      "id": "gyl_twf",
+      "iso": "gyl"
+    },
+    {
+      "id": "gyr_wbt",
+      "iso": "gyr"
+    },
+    {
+      "id": "gyz_sco",
+      "iso": "gyz"
+    },
+    {
+      "id": "hat_bsa",
+      "iso": "hat"
+    },
+    {
+      "id": "hat_pds",
+      "iso": "hat"
+    },
+    {
+      "id": "hau_bib",
+      "iso": "hau"
+    },
+    {
+      "id": "hau_ulb",
+      "iso": "hau"
+    },
+    {
+      "id": "hav_tsc",
+      "iso": "hav"
+    },
+    {
+      "id": "haw_868",
+      "iso": "haw"
+    },
+    {
+      "id": "hch_wb2",
+      "iso": "hch"
+    },
+    {
+      "id": "heb_lbm",
+      "iso": "heb"
+    },
+    {
+      "id": "heb_scg",
+      "iso": "heb"
+    },
+    {
+      "id": "heb_wlc",
+      "iso": "heb"
+    },
+    {
+      "id": "hil_bib",
+      "iso": "hil"
+    },
+    {
+      "id": "hlb_twf",
+      "iso": "hlb"
+    },
+    {
+      "id": "hlt_thb",
+      "iso": "hlt"
+    },
+    {
+      "id": "hne_twf",
+      "iso": "hne"
+    },
+    {
+      "id": "hop_wbt",
+      "iso": "hop"
+    },
+    {
+      "id": "hoy_twf",
+      "iso": "hoy"
+    },
+    {
+      "id": "hre_bth",
+      "iso": "hre"
+    },
+    {
+      "id": "hru_bcs",
+      "iso": "hru"
+    },
+    {
+      "id": "hrv_bib",
+      "iso": "hrv"
+    },
+    {
+      "id": "hrv_iva",
+      "iso": "hrv"
+    },
+    {
+      "id": "hrw_wbt",
+      "iso": "hrw"
+    },
+    {
+      "id": "hun_bib",
+      "iso": "hun"
+    },
+    {
+      "id": "hus_tbl",
+      "iso": "hus"
+    },
+    {
+      "id": "huu_wbt",
+      "iso": "huu"
+    },
+    {
+      "id": "hvn_ubb",
+      "iso": "hvn"
+    },
+    {
+      "id": "hwo_tsc",
+      "iso": "hwo"
+    },
+    {
+      "id": "ibd_wbt",
+      "iso": "ibd"
+    },
+    {
+      "id": "idc_sco",
+      "iso": "idc"
+    },
+    {
+      "id": "ikz_wbt",
+      "iso": "ikz"
+    },
+    {
+      "id": "ilo_ulb",
+      "iso": "ilo"
+    },
+    {
+      "id": "ind_obo",
+      "iso": "ind"
+    },
+    {
+      "id": "ino_wbt",
+      "iso": "ino"
+    },
+    {
+      "id": "isn_ulb",
+      "iso": "isn"
+    },
+    {
+      "id": "ita_dio",
+      "iso": "ita"
+    },
+    {
+      "id": "ita_riv",
+      "iso": "ita"
+    },
+    {
+      "id": "iws_tbl",
+      "iso": "iws"
+    },
+    {
+      "id": "jae_png",
+      "iso": "jae"
+    },
+    {
+      "id": "jay_wbt",
+      "iso": "jay"
+    },
+    {
+      "id": "jid_nbt",
+      "iso": "jid"
+    },
+    {
+      "id": "jiv_aie",
+      "iso": "jiv"
+    },
+    {
+      "id": "jni_ulb",
+      "iso": "jni"
+    },
+    {
+      "id": "jnj_etw",
+      "iso": "jnj"
+    },
+    {
+      "id": "jnj_ltw",
+      "iso": "jnj"
+    },
+    {
+      "id": "jpn_loc",
+      "iso": "jpn"
+    },
+    {
+      "id": "jum_pbt",
+      "iso": "jum"
+    },
+    {
+      "id": "juy_twf",
+      "iso": "juy"
+    },
+    {
+      "id": "jvn_wbt",
+      "iso": "jvn"
+    },
+    {
+      "id": "kan_irv",
+      "iso": "kan"
+    },
+    {
+      "id": "kan_okcv",
+      "iso": "kan"
+    },
+    {
+      "id": "kan_swf",
+      "iso": "kan"
+    },
+    {
+      "id": "kdc_014",
+      "iso": "kdc"
+    },
+    {
+      "id": "kdl_ldt",
+      "iso": "kdl"
+    },
+    {
+      "id": "kfc_pwf",
+      "iso": "kfc"
+    },
+    {
+      "id": "kff_twf",
+      "iso": "kff"
+    },
+    {
+      "id": "kfw_twf",
+      "iso": "kfw"
+    },
+    {
+      "id": "khj_lis",
+      "iso": "khj"
+    },
+    {
+      "id": "kik_bib",
+      "iso": "kik"
+    },
+    {
+      "id": "kjn_wbt",
+      "iso": "kjn"
+    },
+    {
+      "id": "kky_laa",
+      "iso": "kky"
+    },
+    {
+      "id": "klt_wbt",
+      "iso": "klt"
+    },
+    {
+      "id": "kmg_png",
+      "iso": "kmg"
+    },
+    {
+      "id": "kmh_kal",
+      "iso": "kmh"
+    },
+    {
+      "id": "kmh_min",
+      "iso": "kmh"
+    },
+    {
+      "id": "kmo_bil",
+      "iso": "kmo"
+    },
+    {
+      "id": "kms_png",
+      "iso": "kms"
+    },
+    {
+      "id": "kor_old",
+      "iso": "kor"
+    },
+    {
+      "id": "kos_pub",
+      "iso": "kos"
+    },
+    {
+      "id": "kpf_png",
+      "iso": "kpf"
+    },
+    {
+      "id": "kqa_pbt",
+      "iso": "kqa"
+    },
+    {
+      "id": "krh_itd",
+      "iso": "krh"
+    },
+    {
+      "id": "kud_wbt",
+      "iso": "kud"
+    },
+    {
+      "id": "kux_wbt",
+      "iso": "kux"
+    },
+    {
+      "id": "kxv_wft",
+      "iso": "kxv"
+    },
+    {
+      "id": "lag_wbt",
+      "iso": "lag"
+    },
+    {
+      "id": "lbm_twf",
+      "iso": "lbm"
+    },
+    {
+      "id": "ldb_wbt",
+      "iso": "ldb"
+    },
+    {
+      "id": "lga_sco",
+      "iso": "lga"
+    },
+    {
+      "id": "lin_bib",
+      "iso": "lin"
+    },
+    {
+      "id": "lit_bbi",
+      "iso": "lit"
+    },
+    {
+      "id": "lit_tpv",
+      "iso": "lit"
+    },
+    {
+      "id": "lng_wbt",
+      "iso": "lng"
+    },
+    {
+      "id": "lth_wbt",
+      "iso": "lth"
+    },
+    {
+      "id": "luo_bib",
+      "iso": "luo"
+    },
+    {
+      "id": "lyn_twf",
+      "iso": "lyn"
+    },
+    {
+      "id": "maj_btt",
+      "iso": "maj"
+    },
+    {
+      "id": "mal_bib",
+      "iso": "mal"
+    },
+    {
+      "id": "mal_fbf",
+      "iso": "mal"
+    },
+    {
+      "id": "mal_irv",
+      "iso": "mal"
+    },
+    {
+      "id": "maq_tbl",
+      "iso": "maq"
+    },
+    {
+      "id": "mar_cbi",
+      "iso": "mar"
+    },
+    {
+      "id": "mar_irv",
+      "iso": "mar"
+    },
+    {
+      "id": "mbu_tsc",
+      "iso": "mbu"
+    },
+    {
+      "id": "mcr_wbt",
+      "iso": "mcr"
+    },
+    {
+      "id": "mdy_twf",
+      "iso": "mdy"
+    },
+    {
+      "id": "mey_pbt",
+      "iso": "mey"
+    },
+    {
+      "id": "mfm_sco",
+      "iso": "mfm"
+    },
+    {
+      "id": "mfo_lis",
+      "iso": "mfo"
+    },
+    {
+      "id": "mfx_ewf",
+      "iso": "mfx"
+    },
+    {
+      "id": "mfx_ltw",
+      "iso": "mfx"
+    },
+    {
+      "id": "mgh_wft",
+      "iso": "mgh"
+    },
+    {
+      "id": "mgj_lis",
+      "iso": "mgj"
+    },
+    {
+      "id": "mgv_twf",
+      "iso": "mgv"
+    },
+    {
+      "id": "mgw_pbt",
+      "iso": "mgw"
+    },
+    {
+      "id": "mie_tbl",
+      "iso": "mie"
+    },
+    {
+      "id": "mil_tbl",
+      "iso": "mil"
+    },
+    {
+      "id": "mit_ntw",
+      "iso": "mit"
+    },
+    {
+      "id": "miz_tbl",
+      "iso": "miz"
+    },
+    {
+      "id": "mkj_mok",
+      "iso": "mkj"
+    },
+    {
+      "id": "mks_tbl",
+      "iso": "mks"
+    },
+    {
+      "id": "mkw_wbt",
+      "iso": "mkw"
+    },
+    {
+      "id": "mle_wbt",
+      "iso": "mle"
+    },
+    {
+      "id": "mni_twf",
+      "iso": "mni"
+    },
+    {
+      "id": "mpa_twf",
+      "iso": "mpa"
+    },
+    {
+      "id": "mpm_tbl",
+      "iso": "mpm"
+    },
+    {
+      "id": "mti_tbl",
+      "iso": "mti"
+    },
+    {
+      "id": "mvn_jlb",
+      "iso": "mvn"
+    },
+    {
+      "id": "mwe_pbt",
+      "iso": "mwe"
+    },
+    {
+      "id": "mwf_2018",
+      "iso": "mwf"
+    },
+    {
+      "id": "mxb_mvr",
+      "iso": "mxb"
+    },
+    {
+      "id": "mxm_wbt",
+      "iso": "mxm"
+    },
+    {
+      "id": "mxq_tbl",
+      "iso": "mxq"
+    },
+    {
+      "id": "mxt_tbl",
+      "iso": "mxt"
+    },
+    {
+      "id": "mya_jvb",
+      "iso": "mya"
+    },
+    {
+      "id": "mya_ojv",
+      "iso": "mya"
+    },
+    {
+      "id": "mzq_sco",
+      "iso": "mzq"
+    },
+    {
+      "id": "naf_tbl",
+      "iso": "naf"
+    },
+    {
+      "id": "nag_ano",
+      "iso": "nag"
+    },
+    {
+      "id": "nal_wbt",
+      "iso": "nal"
+    },
+    {
+      "id": "nay_afa",
+      "iso": "nay"
+    },
+    {
+      "id": "ncf_wbt",
+      "iso": "ncf"
+    },
+    {
+      "id": "nck_wbt",
+      "iso": "nck"
+    },
+    {
+      "id": "ncl_tbl",
+      "iso": "ncl"
+    },
+    {
+      "id": "ncr_wbt",
+      "iso": "ncr"
+    },
+    {
+      "id": "ndg_ulb",
+      "iso": "ndg"
+    },
+    {
+      "id": "ndj_twf",
+      "iso": "ndj"
+    },
+    {
+      "id": "ngp_twf",
+      "iso": "ngp"
+    },
+    {
+      "id": "ngu_tbl",
+      "iso": "ngu"
+    },
+    {
+      "id": "nhy_tbl",
+      "iso": "nhy"
+    },
+    {
+      "id": "nit_wtf",
+      "iso": "nit"
+    },
+    {
+      "id": "njd_twf",
+      "iso": "njd"
+    },
+    {
+      "id": "nkn_twf",
+      "iso": "nkn"
+    },
+    {
+      "id": "nko_ntw",
+      "iso": "nko"
+    },
+    {
+      "id": "nld_",
+      "iso": "nld"
+    },
+    {
+      "id": "nld_1939",
+      "iso": "nld"
+    },
+    {
+      "id": "nld_gbv",
+      "iso": "nld"
+    },
+    {
+      "id": "nlg_wbt",
+      "iso": "nlg"
+    },
+    {
+      "id": "nnq_twf",
+      "iso": "nnq"
+    },
+    {
+      "id": "nob_lbb",
+      "iso": "nob"
+    },
+    {
+      "id": "nou_tbl",
+      "iso": "nou"
+    },
+    {
+      "id": "npi_ncb",
+      "iso": "npi"
+    },
+    {
+      "id": "npi_ulb",
+      "iso": "npi"
+    },
+    {
+      "id": "npl_wyi",
+      "iso": "npl"
+    },
+    {
+      "id": "nrz_nar",
+      "iso": "nrz"
+    },
+    {
+      "id": "nss_wbt",
+      "iso": "nss"
+    },
+    {
+      "id": "nww_twf",
+      "iso": "nww"
+    },
+    {
+      "id": "nya_bib",
+      "iso": "nya"
+    },
+    {
+      "id": "okv_hwb",
+      "iso": "okv"
+    },
+    {
+      "id": "okv_tbl",
+      "iso": "okv"
+    },
+    {
+      "id": "omw_sta",
+      "iso": "omw"
+    },
+    {
+      "id": "ons_png",
+      "iso": "ons"
+    },
+    {
+      "id": "ood_wbt",
+      "iso": "ood"
+    },
+    {
+      "id": "ory_irv",
+      "iso": "ory"
+    },
+    {
+      "id": "ote_tbl",
+      "iso": "ote"
+    },
+    {
+      "id": "otq_tbl",
+      "iso": "otq"
+    },
+    {
+      "id": "oyd_etw",
+      "iso": "oyd"
+    },
+    {
+      "id": "oyd_ltw",
+      "iso": "oyd"
+    },
+    {
+      "id": "pan_irv",
+      "iso": "pan"
+    },
+    {
+      "id": "pdo_sco",
+      "iso": "pdo"
+    },
+    {
+      "id": "peg_twf",
+      "iso": "peg"
+    },
+    {
+      "id": "pes_opcb",
+      "iso": "pes"
+    },
+    {
+      "id": "pes_pbs",
+      "iso": "pes"
+    },
+    {
+      "id": "pga_pbt",
+      "iso": "pga"
+    },
+    {
+      "id": "pll_twf",
+      "iso": "pll"
+    },
+    {
+      "id": "pol_bib",
+      "iso": "pol"
+    },
+    {
+      "id": "pon_pja",
+      "iso": "pon"
+    },
+    {
+      "id": "pon_sspon",
+      "iso": "pon"
+    },
+    {
+      "id": "por_blj",
+      "iso": "por"
+    },
+    {
+      "id": "por_blt",
+      "iso": "por"
+    },
+    {
+      "id": "por_bsl",
+      "iso": "por"
+    },
+    {
+      "id": "por_onbv",
+      "iso": "por"
+    },
+    {
+      "id": "poy_pbt",
+      "iso": "poy"
+    },
+    {
+      "id": "ptp_tbl",
+      "iso": "ptp"
+    },
+    {
+      "id": "pub_twf",
+      "iso": "pub"
+    },
+    {
+      "id": "puu_sco",
+      "iso": "puu"
+    },
+    {
+      "id": "pwg_gtt",
+      "iso": "pwg"
+    },
+    {
+      "id": "pwr_twf",
+      "iso": "pwr"
+    },
+    {
+      "id": "qub_wbt",
+      "iso": "qub"
+    },
+    {
+      "id": "quc_new",
+      "iso": "quc"
+    },
+    {
+      "id": "quc_tra",
+      "iso": "quc"
+    },
+    {
+      "id": "quc_ttp",
+      "iso": "quc"
+    },
+    {
+      "id": "quf_llb",
+      "iso": "quf"
+    },
+    {
+      "id": "qup_wbt",
+      "iso": "qup"
+    },
+    {
+      "id": "qvc_tbl",
+      "iso": "qvc"
+    },
+    {
+      "id": "qvh_wbt",
+      "iso": "qvh"
+    },
+    {
+      "id": "qvw_wbt",
+      "iso": "qvw"
+    },
+    {
+      "id": "qwh_llb",
+      "iso": "qwh"
+    },
+    {
+      "id": "reg_ulb",
+      "iso": "reg"
+    },
+    {
+      "id": "rei_twf",
+      "iso": "rei"
+    },
+    {
+      "id": "rhg_ctw",
+      "iso": "rhg"
+    },
+    {
+      "id": "rhg_sco",
+      "iso": "rhg"
+    },
+    {
+      "id": "rif_ati",
+      "iso": "rif"
+    },
+    {
+      "id": "rif_lti",
+      "iso": "rif"
+    },
+    {
+      "id": "rif_tti",
+      "iso": "rif"
+    },
+    {
+      "id": "rki_twf",
+      "iso": "rki"
+    },
+    {
+      "id": "rmb_wbt",
+      "iso": "rmb"
+    },
+    {
+      "id": "rmc_the",
+      "iso": "rmc"
+    },
+    {
+      "id": "rmc_zrb",
+      "iso": "rmc"
+    },
+    {
+      "id": "rmn_atw",
+      "iso": "rmn"
+    },
+    {
+      "id": "rmy_che",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmy_ser",
+      "iso": "rmy"
+    },
+    {
+      "id": "rmy_vla",
+      "iso": "rmy"
+    },
+    {
+      "id": "ron_924",
+      "iso": "ron"
+    },
+    {
+      "id": "ron_bayash",
+      "iso": "ron"
+    },
+    {
+      "id": "ron_lsb",
+      "iso": "ron"
+    },
+    {
+      "id": "roo_tbl",
+      "iso": "roo"
+    },
+    {
+      "id": "ruf_pbt",
+      "iso": "ruf"
+    },
+    {
+      "id": "rup_twf",
+      "iso": "rup"
+    },
+    {
+      "id": "rus_syn",
+      "iso": "rus"
+    },
+    {
+      "id": "rwo_raw",
+      "iso": "rwo"
+    },
+    {
+      "id": "san_asm",
+      "iso": "san"
+    },
+    {
+      "id": "san_ben",
+      "iso": "san"
+    },
+    {
+      "id": "san_bur",
+      "iso": "san"
+    },
+    {
+      "id": "san_col",
+      "iso": "san"
+    },
+    {
+      "id": "san_dev",
+      "iso": "san"
+    },
+    {
+      "id": "san_guj",
+      "iso": "san"
+    },
+    {
+      "id": "san_ias",
+      "iso": "san"
+    },
+    {
+      "id": "san_itr",
+      "iso": "san"
+    },
+    {
+      "id": "san_kan",
+      "iso": "san"
+    },
+    {
+      "id": "san_khm",
+      "iso": "san"
+    },
+    {
+      "id": "san_mal",
+      "iso": "san"
+    },
+    {
+      "id": "san_ori",
+      "iso": "san"
+    },
+    {
+      "id": "san_pun",
+      "iso": "san"
+    },
+    {
+      "id": "san_tam",
+      "iso": "san"
+    },
+    {
+      "id": "san_tib",
+      "iso": "san"
+    },
+    {
+      "id": "san_urd",
+      "iso": "san"
+    },
+    {
+      "id": "san_vel",
+      "iso": "san"
+    },
+    {
+      "id": "sbk_ulb",
+      "iso": "sbk"
+    },
+    {
+      "id": "sbs_doo",
+      "iso": "sbs"
+    },
+    {
+      "id": "sby_twf",
+      "iso": "sby"
+    },
+    {
+      "id": "sce_rsp",
+      "iso": "sce"
+    },
+    {
+      "id": "sch_twf",
+      "iso": "sch"
+    },
+    {
+      "id": "sgb_wbt",
+      "iso": "sgb"
+    },
+    {
+      "id": "shj_pbt",
+      "iso": "shj"
+    },
+    {
+      "id": "shr_buk",
+      "iso": "shr"
+    },
+    {
+      "id": "six_pbt",
+      "iso": "six"
+    },
+    {
+      "id": "sja_wbt",
+      "iso": "sja"
+    },
+    {
+      "id": "sle_wft",
+      "iso": "sle"
+    },
+    {
+      "id": "slk_bib",
+      "iso": "slk"
+    },
+    {
+      "id": "sna_bib",
+      "iso": "sna"
+    },
+    {
+      "id": "snp_kom",
+      "iso": "snp"
+    },
+    {
+      "id": "snp_lam",
+      "iso": "snp"
+    },
+    {
+      "id": "snx_wbt",
+      "iso": "snx"
+    },
+    {
+      "id": "sny_tbl",
+      "iso": "sny"
+    },
+    {
+      "id": "spa_blm",
+      "iso": "spa"
+    },
+    {
+      "id": "spa_onbv",
+      "iso": "spa"
+    },
+    {
+      "id": "spa_pdt",
+      "iso": "spa"
+    },
+    {
+      "id": "spa_r09",
+      "iso": "spa"
+    },
+    {
+      "id": "spa_v2p",
+      "iso": "spa"
+    },
+    {
+      "id": "spl_png",
+      "iso": "spl"
+    },
+    {
+      "id": "spp_wbt",
+      "iso": "spp"
+    },
+    {
+      "id": "sps_tbl",
+      "iso": "sps"
+    },
+    {
+      "id": "srp_865",
+      "iso": "srp"
+    },
+    {
+      "id": "srp_onspc",
+      "iso": "srp"
+    },
+    {
+      "id": "srp_onstl",
+      "iso": "srp"
+    },
+    {
+      "id": "stw_wbt",
+      "iso": "stw"
+    },
+    {
+      "id": "sua_tbl",
+      "iso": "sua"
+    },
+    {
+      "id": "sur_itd",
+      "iso": "sur"
+    },
+    {
+      "id": "swe_fol",
+      "iso": "swe"
+    },
+    {
+      "id": "swe_svk",
+      "iso": "swe"
+    },
+    {
+      "id": "swh_onmm",
+      "iso": "swh"
+    },
+    {
+      "id": "swh_swa",
+      "iso": "swh"
+    },
+    {
+      "id": "tac_wbt",
+      "iso": "tac"
+    },
+    {
+      "id": "tam_irv",
+      "iso": "tam"
+    },
+    {
+      "id": "tam_tcv",
+      "iso": "tam"
+    },
+    {
+      "id": "tap_twf",
+      "iso": "tap"
+    },
+    {
+      "id": "taw_pbt",
+      "iso": "taw"
+    },
+    {
+      "id": "tbf_man",
+      "iso": "tbf"
+    },
+    {
+      "id": "tbx_wbt",
+      "iso": "tbx"
+    },
+    {
+      "id": "tbz_sim",
+      "iso": "tbz"
+    },
+    {
+      "id": "tca_tbl",
+      "iso": "tca"
+    },
+    {
+      "id": "tcn_twf",
+      "iso": "tcn"
+    },
+    {
+      "id": "tdt_beh",
+      "iso": "tdt"
+    },
+    {
+      "id": "tdx_sle",
+      "iso": "tdx"
+    },
+    {
+      "id": "tee_tbl",
+      "iso": "tee"
+    },
+    {
+      "id": "tel_irv",
+      "iso": "tel"
+    },
+    {
+      "id": "tel_otsa",
+      "iso": "tel"
+    },
+    {
+      "id": "tet_ubb",
+      "iso": "tet"
+    },
+    {
+      "id": "tew_wbt",
+      "iso": "tew"
+    },
+    {
+      "id": "tgj_twf",
+      "iso": "tgj"
+    },
+    {
+      "id": "thr_twf",
+      "iso": "thr"
+    },
+    {
+      "id": "tiw_mwb",
+      "iso": "tiw"
+    },
+    {
+      "id": "tlf_tbl",
+      "iso": "tlf"
+    },
+    {
+      "id": "tmd_wbt",
+      "iso": "tmd"
+    },
+    {
+      "id": "tnc_wbt",
+      "iso": "tnc"
+    },
+    {
+      "id": "tof_wbt",
+      "iso": "tof"
+    },
+    {
+      "id": "ton_png",
+      "iso": "ton"
+    },
+    {
+      "id": "tos_tbl",
+      "iso": "tos"
+    },
+    {
+      "id": "tpa_wbt",
+      "iso": "tpa"
+    },
+    {
+      "id": "tpi_pngon",
+      "iso": "tpi"
+    },
+    {
+      "id": "trc_tbl",
+      "iso": "trc"
+    },
+    {
+      "id": "tsw_sco",
+      "iso": "tsw"
+    },
+    {
+      "id": "tte_owb",
+      "iso": "tte"
+    },
+    {
+      "id": "tte_tbl",
+      "iso": "tte"
+    },
+    {
+      "id": "tuc_oov",
+      "iso": "tuc"
+    },
+    {
+      "id": "tuc_tua",
+      "iso": "tuc"
+    },
+    {
+      "id": "tuf_wbt",
+      "iso": "tuf"
+    },
+    {
+      "id": "tur_obt",
+      "iso": "tur"
+    },
+    {
+      "id": "tur_ytc",
+      "iso": "tur"
+    },
+    {
+      "id": "tvn_twf",
+      "iso": "tvn"
+    },
+    {
+      "id": "tvt_wft",
+      "iso": "tvt"
+    },
+    {
+      "id": "twi_aka",
+      "iso": "twi"
+    },
+    {
+      "id": "twi_asa",
+      "iso": "twi"
+    },
+    {
+      "id": "tyx_wbt",
+      "iso": "tyx"
+    },
+    {
+      "id": "tzo_hui",
+      "iso": "tzo"
+    },
+    {
+      "id": "tzo_tzc",
+      "iso": "tzo"
+    },
+    {
+      "id": "tzo_tze",
+      "iso": "tzo"
+    },
+    {
+      "id": "ubu_nop",
+      "iso": "ubu"
+    },
+    {
+      "id": "ukr_1996",
+      "iso": "ukr"
+    },
+    {
+      "id": "ukr_npu",
+      "iso": "ukr"
+    },
+    {
+      "id": "ukr_pan",
+      "iso": "ukr"
+    },
+    {
+      "id": "ukr_ufb",
+      "iso": "ukr"
+    },
+    {
+      "id": "unx_twf",
+      "iso": "unx"
+    },
+    {
+      "id": "urd_gvh",
+      "iso": "urd"
+    },
+    {
+      "id": "urd_gvr",
+      "iso": "urd"
+    },
+    {
+      "id": "urd_gvu",
+      "iso": "urd"
+    },
+    {
+      "id": "urd_irv",
+      "iso": "urd"
+    },
+    {
+      "id": "urd_oucv",
+      "iso": "urd"
+    },
+    {
+      "id": "uro_wbt",
+      "iso": "uro"
+    },
+    {
+      "id": "utr_sco",
+      "iso": "utr"
+    },
+    {
+      "id": "vaa_wft",
+      "iso": "vaa"
+    },
+    {
+      "id": "vgr_wft",
+      "iso": "vgr"
+    },
+    {
+      "id": "vid_pbt",
+      "iso": "vid"
+    },
+    {
+      "id": "vie_1934",
+      "iso": "vie"
+    },
+    {
+      "id": "wat_wbt",
+      "iso": "wat"
+    },
+    {
+      "id": "wbi_ulb",
+      "iso": "wbi"
+    },
+    {
+      "id": "wbq_bcs",
+      "iso": "wbq"
+    },
+    {
+      "id": "wer_tbl",
+      "iso": "wer"
+    },
+    {
+      "id": "wiv_wbt",
+      "iso": "wiv"
+    },
+    {
+      "id": "wja_sco",
+      "iso": "wja"
+    },
+    {
+      "id": "wlg_wbt",
+      "iso": "wlg"
+    },
+    {
+      "id": "wlo_wbt",
+      "iso": "wlo"
+    },
+    {
+      "id": "wmt_wbt",
+      "iso": "wmt"
+    },
+    {
+      "id": "wmw_wbt",
+      "iso": "wmw"
+    },
+    {
+      "id": "wol_inj",
+      "iso": "wol"
+    },
+    {
+      "id": "wol_mbs",
+      "iso": "wol"
+    },
+    {
+      "id": "xbi_wam",
+      "iso": "xbi"
+    },
+    {
+      "id": "xed_wbt",
+      "iso": "xed"
+    },
+    {
+      "id": "xnj_twf",
+      "iso": "xnj"
+    },
+    {
+      "id": "xnn_wbt",
+      "iso": "xnn"
+    },
+    {
+      "id": "xsi_wbt",
+      "iso": "xsi"
+    },
+    {
+      "id": "xsn_liz",
+      "iso": "xsn"
+    },
+    {
+      "id": "yaa_tbl",
+      "iso": "yaa"
+    },
+    {
+      "id": "yaf_tsc",
+      "iso": "yaf"
+    },
+    {
+      "id": "yao_twf",
+      "iso": "yao"
+    },
+    {
+      "id": "yap_bsm",
+      "iso": "yap"
+    },
+    {
+      "id": "yaq_tbl",
+      "iso": "yaq"
+    },
+    {
+      "id": "ydd_afi",
+      "iso": "ydd"
+    },
+    {
+      "id": "yer_lis",
+      "iso": "yer"
+    },
+    {
+      "id": "ymp_sil",
+      "iso": "ymp"
+    },
+    {
+      "id": "yns_tsc",
+      "iso": "yns"
+    },
+    {
+      "id": "yom_bib",
+      "iso": "yom"
+    },
+    {
+      "id": "yor_bib",
+      "iso": "yor"
+    },
+    {
+      "id": "yss_yam",
+      "iso": "yss"
+    },
+    {
+      "id": "yss_yaw",
+      "iso": "yss"
+    },
+    {
+      "id": "yuj_tbl",
+      "iso": "yuj"
+    },
+    {
+      "id": "zab_tbl",
+      "iso": "zab"
+    },
+    {
+      "id": "zai_tbl",
+      "iso": "zai"
+    },
+    {
+      "id": "zaj_ppb",
+      "iso": "zaj"
+    },
+    {
+      "id": "zas_wyi",
+      "iso": "zas"
+    },
+    {
+      "id": "zav_tbl",
+      "iso": "zav"
+    },
+    {
+      "id": "zbu_tsc",
+      "iso": "zbu"
+    },
+    {
+      "id": "zga_mul",
+      "iso": "zga"
+    },
+    {
+      "id": "zin_wbt",
+      "iso": "zin"
+    },
+    {
+      "id": "ziw_twf",
+      "iso": "ziw"
+    },
+    {
+      "id": "zlm_ksz",
+      "iso": "zlm"
+    },
+    {
+      "id": "zlu_tsc",
+      "iso": "zlu"
+    },
+    {
+      "id": "zpc_wbt",
+      "iso": "zpc"
+    }
+  ]
+}

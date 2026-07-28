@@ -36,6 +36,12 @@ this is deliberate: batch_compare_dbt_dbt.py's original bug was processing
 both canons under one hardcoded book/chapter default, silently comparing
 OT-tagged filesets with NT text. Never repeat that mistake here.
 
+OT groups automatically retry with a longer fallback probe (PSA 51) when
+the primary probe (PSA 117) leaves any id unfetched — see OT_FALLBACK
+below for why (some translations genuinely have zero verses in PSA 117
+specifically) and why the retry always covers the whole group, never a
+single id.
+
 Usage:
     python3 compare_all.py [--book B] [--chapter N] [--limit N] [--iso ISO,ISO,...]
 """
@@ -56,6 +62,22 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
 
 OUT_PATH = COMPARISON_RESULTS_DIR / "all-comparisons.json"
+
+# A client (2026-07-28) reported cpy_wbt (helloAO) OT as a false-positive
+# unreachable id: checked directly, PSA 117 genuinely returns a real 200
+# with 0 verses for this specific translation (confirmed via the raw
+# response, not a broken endpoint) — but PSA 51, GEN 1, etc. all work
+# fine. PKF's own manifest for cpy confirms the same pattern independently:
+# its OT PSA coverage is "5,22,40,51,89,91,103,119,148" — no 117, but 51 is
+# there. PSA 117 (2 verses) has always been documented as having "weak
+# discriminating power" (see doc/catalog-overlap.md's `probes` field, which
+# already lists PSA51 as the OT fallback) — this generalizes that existing,
+# previously narrow (4-language, PKF-vs-DBT-only) PSA51 refinement to the
+# whole pipeline. Retrying is done for the WHOLE (iso,canon) group, never
+# per-id: comparing one id's PSA117 text against another id's PSA51 text
+# would be meaningless, so a group either uses PSA117 for everyone or PSA51
+# for everyone, never a mix.
+OT_FALLBACK = ("PSA", 51)
 
 
 def dbt_candidates(catalog: dict, iso: str, canon: str) -> dict:
@@ -246,6 +268,12 @@ def main():
                 continue
             try:
                 entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, book, chapter, env, bucket, tmpdir)
+                if canon == "ot" and entry.get("ids_failed") and (book, chapter) != OT_FALLBACK:
+                    fb_book, fb_chapter = OT_FALLBACK
+                    fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, fb_book, fb_chapter, env, bucket, tmpdir)
+                    if len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
+                        fb_entry["probe"] = f"{fb_book}{fb_chapter}"
+                        entry = fb_entry
             except Exception as e:
                 entry = {"status": "error", "error": str(e)[:200]}
             entry.update({"iso": iso, "canon": canon})

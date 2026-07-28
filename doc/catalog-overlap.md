@@ -8,13 +8,18 @@ comparison**, not a guess or a naming-convention inference — see
 [`sources.md`](sources.md) for what's actually being compared.
 
 Only covers `(iso, canon)` pairs where at least one id was actually
-fetched and checked. If `catalog-index.json` lists an id for a language
-but this file has nothing for that `(iso, canon)` at all, it means that
-language had only one known candidate anywhere — nothing existed to
-compare it against, so no fetch was even attempted; check
+fetched and checked. If `catalog-index.json` lists a source for a
+language but this file has nothing for that `(iso, canon)` at all, it
+means that language had only one known candidate anywhere — nothing
+existed to compare it against, so no fetch was even attempted; check
 [`catalog-index.json`](catalog-index.md) for coarse per-source existence
 instead (this is a deliberate exclusion, not a gap — see "What's excluded"
-below).
+below). As of 2026-07-28, `catalog-index.json`'s "d" (DBT) source is
+guaranteed to mean independently fetchable text of its own — DBT catalog
+rows that are just pointers to another source's text no longer count — so
+"catalog-index.json lists 2 sources but catalog-overlap.json has nothing"
+should no longer happen; if it does, that's a real bug, not this by-design
+exclusion (see `catalog-index.md`).
 
 Published as **clusters of genuinely distinct options**, not a raw
 comparison matrix. A language with 7 DBT versions and 8 helloAO
@@ -66,14 +71,21 @@ case a client originally flagged: `SPARVC`'s name ("Reina Valera 1909")
 suggested it might be another RV-family variant, and the same-source
 comparison confirms it.
 
-## Row format (revised 2026-07-28 for compactness — see below)
+## Row format (revised 2026-07-28 for compactness)
 
 `entries["<iso>:<canon>"] = [cluster, cluster, ...]` — grouped by language
 and testament so a language with many clusters (e.g. `eng`/`nt` has 40+)
 doesn't repeat the same two strings on every row.
 
-- **`iso`, `canon`** — same as `catalog-index.json` (`canon` includes the
-  `ntp`/`otp` Portions suffix where applicable), joined with `:` as the key.
+- **`iso`** — ISO 639-3 language code, same as `catalog-index.json`.
+- **`canon`** — always plain `nt`/`ot`, **never** `ntp`/`otp` — this is
+  different from `catalog-index.json`, which does distinguish Portions
+  (`ntp`/`otp`) from full coverage. The Portions/full distinction doesn't
+  matter for TEXT COMPARISON purposes (the same probe chapter is used
+  either way), so it's deliberately collapsed here. If you're
+  cross-referencing both files for the same language, don't expect the
+  canon label to match exactly — check both `nt` and `ntp` (or `ot`/`otp`)
+  in the index against this file's plain `nt`/`ot` key.
 - **`cluster.ids`** — every id in this cluster, always source-prefixed with
   a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF) — matching
   `catalog-index.json`'s own source-code convention, never a bare id.
@@ -142,6 +154,17 @@ zero possible comparison partners produces no information beyond "yes,
 one edition exists" — which the index already gives you. Before 2026-07-28
 these were published as bare `{"ids": [...]}` placeholder rows anyway; they
 made up 1775 of 4222 rows (42%) for zero benefit and were removed.
+
+A closely related, previously real gap (fixed 2026-07-28): some DBT
+catalog rows are external-source *pointers* (their text tag references
+helloAO's or eBible's text rather than hosting DBT's own) — these used to
+make `catalog-index.json` overcount, showing e.g. "2 sources" for a
+language where DBT's own listing contributed nothing independently
+comparable, so this file correctly excluded it entirely while the index
+looked like it should have something. `catalog-index.json`'s `dbt_rows()`
+now applies the same `resolve_fileset()` check this pipeline uses, so a
+"d" in the index is a genuine guarantee of independently fetchable text —
+see `catalog-index.md`.
 
 This is a genuinely different case from a bare row that IS still published
 — see the worked example below.
@@ -233,12 +256,33 @@ vanishing a once-real id is just as uninformative as an unmarked bare row,
 for the same reason. Run `verify_samples.py --id <ID>` to (re-)check
 whether a specific id has gone offline.
 
+## Why an OT comparison might use PSA 51 instead of PSA 117
+
+A client (2026-07-28) reported `cpy_wbt` (helloAO) as a false-positive
+unreachable id for OT — checked directly, its PSA 117 endpoint returns a
+real 200 response with `"content": [], "numberOfVerses": 0`: this specific
+translation genuinely has an empty PSA 117 chapter, not a broken endpoint.
+PKF's own manifest for `cpy` independently confirms the same pattern — its
+OT coverage lists PSA verses "5,22,40,51,89,91,103,119,148" (no 117, but
+51 is there). PSA 117 (2 verses) has always been documented as having weak
+discriminating power; `compare_all.py` now automatically retries an entire
+OT `(iso, canon)` group with PSA 51 whenever the primary PSA 117 probe
+leaves any id unfetched, and adopts the PSA 51 result only if it fetches
+strictly more ids than PSA 117 did — always for the WHOLE group at once,
+never per-id, since comparing one id's PSA 117 text against another id's
+PSA 51 text would be meaningless. This generalizes what was previously a
+narrow, 4-language-only refinement (`pkf-dbt-comparison-ot-psa51.json`,
+still separately preserved — see `generate_catalog_overlap.py`'s
+`apply_psa51_refinement()`) to the whole pipeline.
+
 ## Top-level fields
 
 - **`probes`** — which chapter(s) each comparison was actually based on.
   OT has two: `PSA117` (short, 2 verses, the default) and `PSA51` (longer,
-  used to re-check any non-1.0 PSA117 result for a more statistically
-  reliable verdict — a 2-verse chapter has weak discriminating power).
+  used automatically whenever PSA117 leaves any id in a group unfetched —
+  see above; a 2-verse chapter has weak discriminating power and, as
+  discovered 2026-07-28, sometimes genuinely has zero verses in a specific
+  translation).
 - **`priority`** — see [`sources.md`](sources.md). The convention a client
   should apply themselves to pick one preferred id from a multi-id
   cluster (no `default` field is published — see "Row format" above);

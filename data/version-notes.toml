@@ -1,0 +1,27 @@
+# Curated notes for Bible versions
+# These enrich the auto-generated data with information
+# that cannot be derived from DBT, DBS, eBible, or helloAO metadata.
+#
+# Keys use the full fileset ID: {ISO}{VERSION_ID}
+
+[ENGESH]
+same_text_as = "ENGESV"
+note = "Hear the Word Audio Bible recording"
+
+[ENGESV]
+same_text_as = "ENGESH"
+
+[ENGNLH]
+same_text_as = "ENGNLT"
+note = "her.BIBLE — women's voices"
+
+[ENGNLT]
+same_text_as = "ENGNLH"
+note = "Holy Sanctuary version"
+
+[EN1WEB]
+same_text_as = "ENGWEB"
+note = "Narrated by Winfred Henson"
+
+[ENGWEB]
+same_text_as = "EN1WEB"
