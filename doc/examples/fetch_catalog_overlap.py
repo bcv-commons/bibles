@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-"""Resolve the distinct options + recommended default for a language from
+"""Resolve the distinct options + a recommended default for a language from
 catalog-overlap.json. No dependencies beyond the Python standard library.
+
+No `default` field is published (removed 2026-07-28) - it's a one-line
+computation from `priority` + `ids` that every client can do itself, so
+this example does exactly that rather than relying on a precomputed field.
 
 Usage:
     python3 fetch_catalog_overlap.py <iso> [canon]
@@ -11,6 +15,12 @@ import sys
 import urllib.request
 
 URL = "https://cdn.bibel.wiki/dbt/_app/catalog-overlap.json"
+SOURCE_NAME = {"d": "dbt", "h": "helloao", "p": "pkf"}
+
+
+def pick_default(ids, priority):
+    rank = {name: i for i, name in enumerate(priority)}
+    return min(ids, key=lambda i: rank[SOURCE_NAME[i.split(":", 1)[0]]])
 
 
 def main():
@@ -25,17 +35,21 @@ def main():
     with urllib.request.urlopen(req) as r:
         data = json.loads(r.read())
 
-    matches = [row for row in data["entries"] if row[0] == iso and row[1] == canon]
-    if not matches:
-        print(f"No comparison data for '{iso}' ({canon}). Either only one source exists "
-              f"for this language, or nothing has been compared yet - check "
-              f"catalog-index.json instead.")
+    clusters = data["entries"].get(f"{iso}:{canon}")
+    if not clusters:
+        print(f"No comparison data for '{iso}' ({canon}). Either only one candidate exists "
+              f"for this language (nothing to compare against - check catalog-index.json), "
+              f"or nothing has been fetched yet.")
         return
 
     print(f"Distinct options for '{iso}' ({canon}):")
-    for _, _, cluster in matches:
+    for cluster in clusters:
         ids = cluster["ids"]
-        default = cluster.get("default", ids[0])
+        if cluster.get("r") is False:
+            note = " [CONFIRMED REMOVED]" if cluster.get("confirmed_removed") else " [currently unreachable]"
+            print(f"  {ids[0]}{note}")
+            continue
+        default = pick_default(ids, data["priority"])
         alternatives = [i for i in ids if i != default]
         line = f"  -> {default}"
         if alternatives:
