@@ -49,3 +49,14 @@ collection is listed under `collections[].pkf` in
 One `<NN>-<BOOKCODE>.usfm` file per book, standard USFM markup (`\c`, `\v`,
 etc.) — the file number prefix keeps multi-book output sortable (OT 01-39,
 NT 41-67, deuterocanon 68-87, peripherals after that).
+
+## Python and Rust siblings
+
+[`../pkf-decode-py/`](../pkf-decode-py/) and [`../pkf-decode-rs/`](../pkf-decode-rs/)
+are independent reimplementations of the exact same narrow feature this
+script uses `proskomma-core`/`proskomma-json-tools` for — no Node.js
+dependency, verified byte-for-byte identical output across the real PKF
+corpus via [`../verify_pkf_decode.py`](../verify_pkf_decode.py). Use this
+JS version if you already have Node and want the shortest path to real
+output; use one of the siblings if you want to avoid the Node dependency
+entirely, or are integrating into a Python/Rust codebase.

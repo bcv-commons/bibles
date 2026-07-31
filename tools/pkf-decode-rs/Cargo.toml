@@ -1,0 +1,9 @@
+[package]
+name = "pkf-decode"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+flate2 = "1"
+serde_json = { version = "1", features = ["preserve_order"] }
+base64 = "0.22"
