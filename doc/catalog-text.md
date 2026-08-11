@@ -1,6 +1,6 @@
 # `catalog-text.json`
 
-`https://cdn.bibel.wiki/dbt/_app/catalog-text.json`
+`https://cdn.bibel.wiki/catalog/text.json`
 
 DBT's own text fileset routing, compact and per-version — "given a DBT
 `(iso, distinct_id, canon)`, which fileset id(s) actually carry its text,

@@ -1,9 +1,10 @@
 PYTHON := .venv/bin/python
 CORE := pipeline/core
 
-.PHONY: all dbt-metadata versification vrs vrs-map version-info \
+.PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
-        cache align-pull align-pull-dry check help
+        publish-catalog publish-catalog-dry \
+        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry check help
 
 help: ## Show available targets
 	@echo "bibles — CDN publish pipeline"
@@ -15,6 +16,8 @@ help: ## Show available targets
 	@echo "  make vrs-map          Build cross-scheme verse maps (/_vrs/map/)"
 	@echo "  make versification    Fingerprint versification schemes"
 	@echo "  make version-info     Generate version-info artifact"
+	@echo "  make dbt-catalog      Generate catalog-text.json / catalog-audio.json"
+	@echo "  make catalog-books    Generate per-language /catalog/<iso[0]>/<iso>/books.json"
 	@echo ""
 	@echo "  CDN publishing"
 	@echo "  ──────────────"
@@ -22,10 +25,15 @@ help: ## Show available targets
 	@echo "  make publish-dbt-dry  Dry-run (no writes to CDN)"
 	@echo "  make cleanup-dbt      Delete orphaned files from CDN"
 	@echo "  make cleanup-dbt-dry  Dry-run orphan cleanup"
+	@echo "  make publish-catalog     Upload export/catalog/ to cdn.bibel.wiki/catalog/"
+	@echo "  make publish-catalog-dry Dry-run (no writes to CDN)"
 	@echo ""
 	@echo "  Data fetch"
 	@echo "  ──────────"
 	@echo "  make cache            Fetch API data (helloAO + DBS)"
+	@echo "  make fetch-dbt-catalog Fetch DBT's raw bible catalog into internal-data/api-cache/"
+	@echo "  make sort-dbt-catalog Derive internal-data/sorted/BB/ from the fetched catalog"
+	@echo "  make fetch-catalog-books Fetch PKF + helloAO per-language book data (for catalog-books)"
 	@echo "  make align-pull       Pull new audio-sync align/ output into internal-data/align-cache/"
 	@echo "  make align-pull-dry   Dry-run align pull (no writes)"
 	@echo ""
@@ -47,6 +55,7 @@ dbt-metadata: ## Generate media.json + per-book timing + versification for CDN
 	$(PYTHON) $(CORE)/generate_audio_metadata.py
 	$(PYTHON) $(CORE)/generate_timing_by_book.py
 	$(PYTHON) $(CORE)/generate_helloao_crosswalk.py
+	$(PYTHON) $(CORE)/generate_dbt_catalog.py
 
 vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
@@ -67,6 +76,12 @@ versification: ## Fingerprint DBT versification schemes
 version-info: ## Generate version-info artifact
 	$(PYTHON) $(CORE)/generate_version_info.py $(ARGS)
 
+dbt-catalog: ## Generate catalog-text.json / catalog-audio.json from the fetched DBT catalog
+	$(PYTHON) $(CORE)/generate_dbt_catalog.py $(ARGS)
+
+catalog-books: ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
+	$(PYTHON) $(CORE)/generate_catalog_books.py $(ARGS)
+
 # ---------------------------------------------------------------------------
 # CDN publishing
 # ---------------------------------------------------------------------------
@@ -83,6 +98,12 @@ cleanup-dbt: ## Delete orphaned files from CDN
 cleanup-dbt-dry: ## Dry-run orphan cleanup (no deletes)
 	CLEANUP=1 DRY_RUN=1 bash $(CORE)/publish-dbt.sh
 
+publish-catalog: ## Upload export/catalog/ to cdn.bibel.wiki/catalog/
+	bash $(CORE)/publish-catalog.sh
+
+publish-catalog-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-catalog.sh
+
 # ---------------------------------------------------------------------------
 # Data fetch
 # ---------------------------------------------------------------------------
@@ -90,6 +111,16 @@ cleanup-dbt-dry: ## Dry-run orphan cleanup (no deletes)
 cache: ## Fetch API data (helloAO + DBS) into api-cache/
 	$(PYTHON) $(CORE)/fetch_helloao_cache.py
 	$(PYTHON) $(CORE)/fetch_dbs_cache.py
+
+fetch-dbt-catalog: ## Fetch DBT's raw bible catalog into internal-data/api-cache/ (needs BIBLE_API_KEY)
+	$(PYTHON) $(CORE)/fetch_api_cache.py $(ARGS)
+
+sort-dbt-catalog: ## Derive internal-data/sorted/BB/ from the fetched DBT catalog (run after fetch-dbt-catalog)
+	$(PYTHON) $(CORE)/sort_cache_data.py
+
+fetch-catalog-books: ## Fetch PKF + helloAO per-language book data into internal-data/api-cache/ (resumable)
+	$(PYTHON) $(CORE)/fetch_pkf_book_data.py
+	$(PYTHON) $(CORE)/fetch_helloao_book_data.py
 
 align-pull: ## Pull new audio-sync align/ output (Contract B) into internal-data/align-cache/
 	$(PYTHON) $(CORE)/pull_align_cache.py

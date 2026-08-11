@@ -56,7 +56,7 @@ from pathlib import Path
 from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, DOWNLOADS, EXPORT, HELLOAO_BOOK_COMPLETENESS_FILE  # noqa: E402
+from paths import API_CACHE, DOWNLOADS, CATALOG_DIR, HELLOAO_BOOK_COMPLETENESS_FILE  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 
@@ -144,7 +144,7 @@ def helloao_rows():
 
 def main():
     args = sys.argv[1:]
-    out_path = Path(args[args.index("--out") + 1]) if "--out" in args else EXPORT / "dbt" / "_app" / "catalog-index.json"
+    out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "index.json"
 
     # helloao-book-completeness.json (built earlier this session) only has
     # has_full_nt/has_full_ot — add has_any_nt/has_any_ot (Portions signal)

@@ -9,7 +9,7 @@
 //
 // Usage: node fetch_catalog_overlap.js <iso> [canon]
 
-const URL = "https://cdn.bibel.wiki/dbt/_app/catalog-overlap.json";
+const URL = "https://cdn.bibel.wiki/catalog/overlap.json";
 const SOURCE_NAME = { d: "dbt", h: "helloao", p: "pkf" };
 
 function pickDefault(ids, priority) {

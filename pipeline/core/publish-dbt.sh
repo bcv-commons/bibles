@@ -58,6 +58,23 @@ if [ "${DRY_RUN:-}" = "1" ]; then
 fi
 
 # ── Cleanup mode: delete orphaned files from CDN ──
+#
+# FROZEN_LEGACY_PATHS: catalog-index.json/catalog-overlap.json/
+# catalog-text.json/catalog-audio.json moved to /catalog/{index,overlap,
+# text,audio}.json on 2026-08-11 (hard cutover — see pipeline/paths.py's
+# CATALOG_DIR comment). The generators no longer write these paths under
+# export/dbt/_app/ at all, so without this exclusion list a routine
+# cleanup-dbt run would treat the still-live old copies as orphans and
+# delete them — exactly what the cutover was designed NOT to do (old
+# location stays live and working, just frozen/un-updated). Remove this
+# list (and the old CDN copies) only as a deliberate, separate decision
+# later, not as a side effect of an unrelated cleanup run.
+FROZEN_LEGACY_PATHS=(
+    "_app/catalog-index.json"
+    "_app/catalog-overlap.json"
+    "_app/catalog-text.json"
+    "_app/catalog-audio.json"
+)
 if [ "${CLEANUP:-}" = "1" ]; then
     if [ ! -d "$SOURCE_DIR" ]; then
         echo "[ERROR] $SOURCE_DIR not found. Run: make dbt-metadata"
@@ -68,6 +85,14 @@ if [ "${CLEANUP:-}" = "1" ]; then
     orphans=()
     while IFS= read -r rel; do
         [ -z "$rel" ] && continue
+        is_frozen=0
+        for frozen in "${FROZEN_LEGACY_PATHS[@]}"; do
+            if [ "$rel" = "$frozen" ]; then
+                is_frozen=1
+                break
+            fi
+        done
+        [ "$is_frozen" = "1" ] && continue
         if [ ! -f "$SOURCE_DIR/$rel" ]; then
             orphans+=("$rel")
         fi

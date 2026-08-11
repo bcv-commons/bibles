@@ -58,6 +58,15 @@ its text/audio, in what format(s)." Narrower and more mechanical than
 should start with those two instead and only reach for these when you
 need DBT's own routing detail.
 
+## Book names, license, and edition metadata
+
+**[`books.json` (per-language)](catalog-books.md)** — vernacular book
+names, license/year attribution, script direction, and font hints, merged
+across DBT, PKF, and helloAO. Published one file per language
+(`/catalog/<iso[0]>/<iso>/books.json`), not bundled into the files above —
+reach for it once you already know which language(s) you need and want
+real localized book titles for a UI, not for discovery.
+
 ## Audio, video, pictures
 
 - **Audio** — currently DBT is the only source with published audio

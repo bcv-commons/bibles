@@ -1,6 +1,6 @@
 # `catalog-index.json`
 
-`https://cdn.bibel.wiki/dbt/_app/catalog-index.json`
+`https://cdn.bibel.wiki/catalog/index.json`
 
 Thin existence/availability index across all three sources. Answers "what
 exists, from whom, for this language, complete or partial" — nothing else.

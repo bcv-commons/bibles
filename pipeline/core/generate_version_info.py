@@ -21,11 +21,10 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, DATA, EXPORT  # noqa: E402
+from paths import API_CACHE, DATA, EXPORT, SORTED_DIR  # noqa: E402
 
 EXPORT_DIR = EXPORT / "ALL-langs"
 VERSIONS_DIR = EXPORT / "versions-data"
-SORTED_DIR = Path("sorted/BB")
 DBS_DIR = API_CACHE / "dbs" / "bibles"
 EBIBLE_CATALOG = API_CACHE / "ebible" / "translations.csv"
 HELLOAO_CATALOG = API_CACHE / "helloao" / "available_translations.json"

@@ -10,7 +10,7 @@ import json
 import sys
 import urllib.request
 
-URL = "https://cdn.bibel.wiki/dbt/_app/catalog-index.json"
+URL = "https://cdn.bibel.wiki/catalog/index.json"
 SOURCE_NAMES = {"d": "DBT", "p": "PKF", "h": "helloAO"}
 
 

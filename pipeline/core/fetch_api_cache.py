@@ -36,6 +36,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from paths import API_CACHE  # noqa: E402
+
 try:
     import requests
     from dotenv import load_dotenv
@@ -53,7 +56,7 @@ API_BASE_URL = "https://4.dbt.io/api"
 API_TIMEOUT = 30
 
 # Output directories
-CACHE_DIR = Path("api-cache")
+CACHE_DIR = API_CACHE
 BIBLES_DIR = CACHE_DIR / "bibles"
 BIBLE_DETAILS_DIR = BIBLES_DIR / "bible_details"
 SAMPLES_DIR = CACHE_DIR / "samples"

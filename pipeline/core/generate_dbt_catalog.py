@@ -7,14 +7,24 @@ design discussion this implements).
 Source: ONLY internal-data/api-cache/bibles/bibles_page_*.json (the raw
 paginated DBT bible listing) — confirmed 2026-07-28 that every field this
 script needs (iso, distinct_id/abbr, per-fileset id/type/size/bitrate/
-codec) is already flat in that raw data. Deliberately does NOT read
-bible_details/ (per-bible detail calls — expensive, and only ever feeds
-script/direction fields this catalog doesn't need) or
-samples/audio_timestamps_filesets.json (DBT's own unconfirmed timing
-claim — the CONFIRMED answer to "does this have real timing" already
-lives in generate_audio_metadata.py's media.json, sourced from actual
-alignment work, not DBT's catalog metadata; this file must never try to
-answer that question with weaker data).
+codec/timing_est_err) is already flat in that raw data. Deliberately does
+NOT read bible_details/ (per-bible detail calls — expensive, and only ever
+feeds script/direction fields this catalog doesn't need) or the *derived*
+internal-data/api-cache/samples/audio_timestamps_filesets.json (a local
+summary of the same timing_est_err field this script now reads directly
+from the raw pages — reading the raw field itself makes that derived
+summary redundant, not a second source).
+
+timing_est_err IS published (2026-08-11, as audio variant.dbtTiming) —
+DBT's own catalog-level, unverified claim of per-fileset timing. This is
+explicitly NOT the confirmed answer to "does this have real, working
+timing" — that stronger question is still only answered by
+generate_audio_metadata.py's media.json (timingBooks), sourced from real
+alignment work. Publishing DBT's own claim alongside the confirmed one
+(clearly named, never conflated — see doc/catalog-audio.md) was judged
+worth doing once a client asked whether this signal was available at all;
+before that it was withheld specifically to avoid the two being confused
+for each other in a file with no field distinguishing them.
 
 Two separate output files, not MONO's combined `a:`/`A:`/`t:`/`T:` row
 encoding — single-purpose files, matching this project's established
@@ -25,9 +35,14 @@ guess this project's "verified only, never inferred" principle (see
 doc/catalog-overlap.md) doesn't allow.
 
 Shape (both files): entries["<iso>:<canon>"]["<distinct_id>"] = [variant, ...]
-  Audio variant: {"id": "<encoded>", "br": <int, kbps>, "c": "<codec>"}
+  Audio variant: {"id": "<encoded>", "br": <int, kbps>, "c": "<codec>",
+                   "dbtTiming": "<raw timing_est_err value>"}
     "br"/"c" omitted when the source data has them empty (confirmed
-    real: ~10% of audio filesets have blank bitrate/codec).
+    real: ~10% of audio filesets have blank bitrate/codec). "dbtTiming"
+    omitted when DBT's catalog has no timing_est_err for this fileset
+    (the common case — see doc/catalog-audio.md for what the real
+    observed values mean, and the explicit warning that this is DBT's
+    own unverified claim, not media.json's confirmed timingBooks).
   Text variant:  {"id": "<encoded>", "fmt": ["pl"|"u"|"j"|"f", ...]}
     fmt <- text_plain/text_usx/text_json/text_format, first-letter-ish
     codes chosen 2026-07-28 to avoid "p" colliding with the "p:"
@@ -69,11 +84,11 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, EXPORT  # noqa: E402
+from paths import API_CACHE, CATALOG_DIR  # noqa: E402
 
 BIBLES_DIR = API_CACHE / "bibles"
-TEXT_OUT = EXPORT / "dbt" / "_app" / "catalog-text.json"
-AUDIO_OUT = EXPORT / "dbt" / "_app" / "catalog-audio.json"
+TEXT_OUT = CATALOG_DIR / "text.json"
+AUDIO_OUT = CATALOG_DIR / "audio.json"
 
 AUDIO_TYPES = {"audio", "audio_drama", "audio_stream", "audio_drama_stream"}
 FMT_CODE = {"text_plain": "pl", "text_usx": "u", "text_json": "j", "text_format": "f"}
@@ -191,15 +206,21 @@ def main():
                         encoded_id = f"{tag}:{value}"
                         br = parse_bitrate(fs.get("bitrate", ""))
                         codec = (fs.get("codec") or "").lower()
+                        dbt_timing = fs.get("timing_est_err") or None
                         key = f"{iso}:{canon_key}"
                         existing = audio_entries[key][distinct_id].get(encoded_id)
-                        if existing is not None and (existing.get("br"), existing.get("c")) != (br, codec or None):
+                        if existing is not None and (
+                            (existing.get("br"), existing.get("c"), existing.get("dbtTiming"))
+                            != (br, codec or None, dbt_timing)
+                        ):
                             audio_id_collisions.append((key, distinct_id, encoded_id))
                         variant = {"id": encoded_id}
                         if br is not None:
                             variant["br"] = br
                         if codec:
                             variant["c"] = codec
+                        if dbt_timing is not None:
+                            variant["dbtTiming"] = dbt_timing
                         audio_entries[key][distinct_id][encoded_id] = variant
 
     if skipped_unknown_size:

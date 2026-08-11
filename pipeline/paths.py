@@ -39,6 +39,9 @@ VERSION_EXCLUDE_FILE = DATA / "version-exclude.toml"
 INTERNAL_DATA = REPO_ROOT / "internal-data"
 
 API_CACHE = INTERNAL_DATA / "api-cache"
+SORTED_DIR = INTERNAL_DATA / "sorted" / "BB"
+PKF_BOOKS_CACHE = API_CACHE / "pkf-books"
+HELLOAO_BOOKS_CACHE = API_CACHE / "helloao-books"
 DOWNLOADS = INTERNAL_DATA / "downloads"
 TIMING_DIR = INTERNAL_DATA / "timing"
 TEXT_DIR = INTERNAL_DATA / "text"
@@ -68,3 +71,12 @@ ALL_DIAGNOSIS_FILE = COMPARISON_RESULTS_DIR / "all-diagnosis.json"
 # never edited by hand.
 # ---------------------------------------------------------------------------
 EXPORT = REPO_ROOT / "export"
+
+# The cross-source discovery files (index/overlap/text/audio) — genuinely
+# multi-source (DBT+PKF+helloAO), so published under their own /catalog/
+# namespace rather than /dbt/, which they'd previously been misplaced under
+# (cdn.bibel.wiki/dbt/_app/catalog-*.json — a real inconsistency, fixed
+# 2026-08-11 via a hard cutover: new location is canonical going forward,
+# old location is left live and un-updated, not deleted — see
+# publish-dbt.sh's cleanup-mode exclusion list for why that's safe).
+CATALOG_DIR = EXPORT / "catalog"

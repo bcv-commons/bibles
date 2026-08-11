@@ -14,7 +14,7 @@ import json
 import sys
 import urllib.request
 
-URL = "https://cdn.bibel.wiki/dbt/_app/catalog-overlap.json"
+URL = "https://cdn.bibel.wiki/catalog/overlap.json"
 SOURCE_NAME = {"d": "dbt", "h": "helloao", "p": "pkf"}
 
 

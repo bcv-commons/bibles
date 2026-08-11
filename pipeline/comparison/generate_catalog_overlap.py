@@ -91,7 +91,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, EXPORT  # noqa: E402
+from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR  # noqa: E402
 
 SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p"}
 
@@ -182,7 +182,7 @@ def likely_for(diagnosis: dict, iso: str, canon: str, a: str, b: str, score: flo
 
 def main():
     args = sys.argv[1:]
-    out_path = Path(args[args.index("--out") + 1]) if "--out" in args else EXPORT / "dbt" / "_app" / "catalog-overlap.json"
+    out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "overlap.json"
 
     comparisons = json.loads(ALL_COMPARISONS_FILE.read_text())
     diagnosis = json.loads(ALL_DIAGNOSIS_FILE.read_text()) if ALL_DIAGNOSIS_FILE.exists() else {}

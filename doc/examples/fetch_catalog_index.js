@@ -4,7 +4,7 @@
 //
 // Usage: node fetch_catalog_index.js <iso>
 
-const URL = "https://cdn.bibel.wiki/dbt/_app/catalog-index.json";
+const URL = "https://cdn.bibel.wiki/catalog/index.json";
 const SOURCE_NAMES = { d: "DBT", p: "PKF", h: "helloAO" };
 
 async function main() {

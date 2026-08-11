@@ -2,10 +2,11 @@
 """
 Sort and organize API cache data into a downloads-like directory structure.
 
-This script computes all categorization logic directly from api-cache/.
+This script computes all categorization logic directly from
+internal-data/api-cache/ (see pipeline/paths.py's API_CACHE).
 
 Key features:
-- Single script execution: api-cache/ → sorted/BB/
+- Single script execution: internal-data/api-cache/ -> internal-data/sorted/BB/
 - Computes syncable pairs on-the-fly
 - Filters dramatized versions automatically
 - Determines book sets from fileset structure
@@ -17,11 +18,16 @@ Usage:
     python sort_cache_data.py
 
 Output:
-    sorted/BB/{iso}/{fileset_id}/metadata.json
+    internal-data/sorted/BB/{iso}/{fileset_id}/metadata.json — read directly
+    by generate_audio_metadata.py's count_audio_books() and
+    generate_version_info.py's get_sorted_meta(), both of which import
+    SORTED_DIR from pipeline/paths.py the same way this script does.
 
 Requirements:
-    - api-cache/bibles/bibles_page_*.json (Bible catalog)
-    - api-cache/samples/audio_timestamps_filesets.json (Timing data list)
+    - internal-data/api-cache/bibles/bibles_page_*.json (Bible catalog) —
+      run fetch_api_cache.py first if missing or stale.
+    - internal-data/api-cache/samples/audio_timestamps_filesets.json
+      (Timing data list) — also produced by fetch_api_cache.py.
 """
 
 import json
@@ -30,6 +36,9 @@ from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from paths import API_CACHE, SORTED_DIR  # noqa: E402
 
 
 # Helper functions for simplification
@@ -63,7 +72,7 @@ def _is_text_type(fileset_type: str) -> bool:
 class IndependentCacheDataSorter:
     """Sort cache data independently - no stats/ dependencies."""
 
-    def __init__(self, cache_dir: str = "api-cache", output_dir: str = "sorted/BB"):
+    def __init__(self, cache_dir: Path = API_CACHE, output_dir: Path = SORTED_DIR):
         self.cache_dir = Path(cache_dir)
         self.bibles_dir = self.cache_dir / "bibles"
         self.output_dir = Path(output_dir)

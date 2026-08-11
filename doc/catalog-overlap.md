@@ -1,6 +1,6 @@
 # `catalog-overlap.json`
 
-`https://cdn.bibel.wiki/dbt/_app/catalog-overlap.json`
+`https://cdn.bibel.wiki/catalog/overlap.json`
 
 The verified relationship data between sources, wherever more than one has
 content for a language. Every comparison here is a **real text

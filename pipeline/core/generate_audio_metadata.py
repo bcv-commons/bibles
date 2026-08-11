@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, EXPORT, TIMING_DIR, LEGACY_TIMING_DIR, ALIGN_CACHE_DIR  # noqa: E402
+from paths import API_CACHE, EXPORT, TIMING_DIR, LEGACY_TIMING_DIR, ALIGN_CACHE_DIR, SORTED_DIR  # noqa: E402
 
 EXPORT_DIR = EXPORT / "ALL-langs"
 OUTPUT_DIR = EXPORT / "dbt"
@@ -85,7 +85,7 @@ def count_timing_books() -> dict[tuple[str, str, str], set[str]]:
 
 def count_audio_books() -> dict[tuple[str, str], int]:
     """Count books with audio per (canon, iso) from sorted metadata."""
-    sorted_dir = Path("sorted/BB")
+    sorted_dir = SORTED_DIR
     if not sorted_dir.is_dir():
         return {}
 
