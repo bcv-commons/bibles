@@ -21,6 +21,16 @@ EXPORT_DIR = EXPORT / "ALL-langs"
 OUTPUT_DIR = EXPORT / "dbt"
 V11N_INDEX = EXPORT / "versification" / "index.json"
 
+# Canonical 66-book set, same list generate_catalog_index.py uses, to decide
+# whether a canon's timingBooks/audioBooks count represents FULL coverage
+# (no need for the book codes themselves) or partial (list them explicitly).
+OT_BOOKS = {"GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI",
+            "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER",
+            "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL"}
+NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL",
+            "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
+FULL_CANON_SIZE = {"nt": len(NT_BOOKS), "ot": len(OT_BOOKS)}
+
 CATEGORY_TO_MEDIA = {
     "with-timecode": "at",
     "audio-with-timecode": "at",
@@ -83,8 +93,8 @@ def count_timing_books() -> dict[tuple[str, str, str], set[str]]:
     return books_by_fileset
 
 
-def count_audio_books() -> dict[tuple[str, str], int]:
-    """Count books with audio per (canon, iso) from sorted metadata."""
+def count_audio_books() -> dict[tuple[str, str], set[str]]:
+    """Book codes with audio per (canon, iso) from sorted metadata."""
     sorted_dir = SORTED_DIR
     if not sorted_dir.is_dir():
         return {}
@@ -118,7 +128,7 @@ def count_audio_books() -> dict[tuple[str, str], int]:
             except Exception:
                 continue
 
-    return {k: len(v) for k, v in books_by_lang.items()}
+    return dict(books_by_lang)
 
 
 def find_audio_filesets_from_timing(canon: str, iso: str, fileset_id: str) -> set[str]:
@@ -157,7 +167,7 @@ def main():
     timing_books_map = count_timing_books()
 
     print("[INFO] Counting audio books from sorted metadata...")
-    audio_books_map = count_audio_books()
+    audio_books_set_map = count_audio_books()
 
     # Versification scheme per DBT fileset (iso/fileset -> scheme code)
     v11n = {}
@@ -265,16 +275,24 @@ def main():
             if hao_ids:
                 canon_out["h"] = sorted(hao_ids)
 
-            # Book counts
+            # Book counts. The count alone is ambiguous ("8 of how many?") —
+            # when it's a full canon (27 NT / 39 OT), that's self-evident and
+            # the set would be redundant; when it's partial, also publish the
+            # actual book codes so a client can grey out unavailable books
+            # without a per-book fetch.
             timing_books = set()
             for fs in filesets:
                 timing_books.update(timing_books_map.get((canon, iso, fs["id"]), set()))
             if timing_books:
                 canon_out["timingBooks"] = len(timing_books)
+                if len(timing_books) < FULL_CANON_SIZE[canon]:
+                    canon_out["timingBooksSet"] = sorted(timing_books)
 
-            ab = audio_books_map.get((canon, iso))
-            if ab:
-                canon_out["audioBooks"] = ab
+            ab_set = audio_books_set_map.get((canon, iso))
+            if ab_set:
+                canon_out["audioBooks"] = len(ab_set)
+                if len(ab_set) < FULL_CANON_SIZE[canon]:
+                    canon_out["audioBooksSet"] = sorted(ab_set)
 
             canons_out[canon] = canon_out
 
