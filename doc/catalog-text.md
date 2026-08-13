@@ -57,9 +57,11 @@ answer.
   encoded: `t:<suffix>` means "append `<suffix>` to `distinct_id` to
   reconstruct the real id" (the common case — most fileset ids share
   `distinct_id`'s prefix); `T:<literal>` means "this is the real id
-  verbatim" (a real, confirmed-common case — roughly 14% of filesets don't
-  share the prefix). Verified by direct round-trip check against the full
-  real catalog: 0 failures across every id in this file.
+  verbatim" — a real, confirmed-common case (a meaningful minority of
+  filesets don't share the prefix), not a rare exception a client can
+  skip handling. Verified by direct round-trip check against the full
+  real catalog on every generation run: 0 failures across every id in
+  this file.
 - **`variant.fmt`** — always a list, even for a single format:
   `pl`=plain verse text (the inline, directly-fetchable shape most
   clients want), `u`=USX, `j`=JSON, `f`=a generic downloadable format.

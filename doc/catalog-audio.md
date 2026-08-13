@@ -55,16 +55,20 @@ just `a:`/`A:` instead of `t:`/`T:`.
 
 - **`variant.br`** — bitrate in kbps, as a bare integer (`64`, not
   `"64kbps"`). **Omitted** when the source data has no bitrate on record
-  — real, not rare: about 10% of real audio filesets have this blank
-  (see `lid:nt`'s `LIDWBT` above, a real case).
+  — real, not rare, not a corner case worth coding around (see `lid:nt`'s
+  `LIDWBT` above, a real case). Exact prevalence isn't quoted here since
+  it drifts with every catalog refresh — count `br`-less variants in the
+  live file yourself if you need a current figure.
 - **`variant.c`** — codec (`"mp3"`, `"opus"`), lowercased. Also omitted
   when blank in the source data.
 - **`variant.dbtTiming`** — DBT's own catalog-level claim that this
   specific fileset has verse-level audio timing, passed through
   **verbatim** from DBT's raw `timing_est_err` field. **Omitted** when
-  DBT's catalog has no such claim for this fileset — real, and the
-  common case: only ~23% of audio variants carry this field (1,980 of
-  8,471 in the current build).
+  DBT's catalog has no such claim for this fileset — the common case,
+  not the exception (most audio variants don't carry it). As with `br`
+  above, treat the exact share as something to compute from the live
+  file, not a number pinned here — it moves every time DBT's catalog is
+  refetched.
 
   This is deliberately named and documented to avoid the confusion
   `doc/catalog-audio.md` used to warn about before this field existed:
@@ -76,10 +80,10 @@ just `a:`/`A:` instead of `t:`/`T:`.
 
   Only one of the four real observed values is confidently understood:
   `"mms_align"` (near-certainly forced-alignment via an MMS —
-  Massively Multilingual Speech — model) accounts for 1,290 of the
-  1,980 variants that carry this field. The other three real values —
-  `"4"`, `"0"`, `"5"` — are passed through as-is; their exact meaning
-  (an error/confidence bucket? an alternate method id?) isn't
+  Massively Multilingual Speech — model), which accounts for the
+  majority of variants that carry this field. The other three real
+  values — `"4"`, `"0"`, `"5"` — are passed through as-is; their exact
+  meaning (an error/confidence bucket? an alternate method id?) isn't
   documented anywhere DBT publishes, and isn't guessed at here. Treat
   any value's mere *presence* as "DBT claims some form of timing
   exists for this fileset," and don't read more into the specific
@@ -93,5 +97,6 @@ this file doesn't try to guess which one a client "should" want). Unlike
 here — if the exact same audio id were ever found with two different
 `br`/`c`/`dbtTiming` values (a genuine anomaly, not the same "one id, two
 catalog tags" pattern text has), the generator flags it as a warning
-rather than silently merging or dropping data. None found in the current
-build.
+rather than silently merging or dropping data. None found as of this
+writing — check the generator's own stderr output on any given run for
+the current state, rather than assuming that holds indefinitely.

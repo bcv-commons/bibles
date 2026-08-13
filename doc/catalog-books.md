@@ -144,10 +144,14 @@ populate the caches it reads:
 - DBT's `bible_details/` cache (`internal-data/api-cache/bibles/bible_details/`)
   is shared with the rest of the pipeline — no separate fetch step needed.
 
-Coverage in the current build: 2,288 languages with a DBT entry, 585 with
-PKF, 1,003 with helloAO (2,513 `books.json` files total — a language with
-entries from more than one source still gets exactly one file). Not every
-DBT/PKF/helloAO language is guaranteed to appear — this reflects whatever
-was actually fetched, not a promise of full coverage; re-run both fetch
-scripts (they're resumable, skip already-cached files) to pick up new
-languages as sources add them.
+Coverage reflects whatever was actually fetched into those caches, not a
+promise of full coverage — not every DBT/PKF/helloAO language is
+guaranteed to have a `books.json` yet (the two fetch scripts are
+resumable and get re-run periodically to pick up new languages as sources
+add them). Rather than a snapshot count here (this file gets regenerated
+independently of this doc and would go stale the next time it does),
+derive current coverage from [`catalog-index.json`](catalog-index.md)
+instead — it's published alongside `books.json` from the same pipeline
+run and already lists every `(iso, canon, source)` combination, so
+counting distinct isos per source letter (`d`/`p`/`h`) there gives you a
+live answer instead of a fixed-in-time one.
