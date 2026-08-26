@@ -284,6 +284,11 @@ def main():
             n_clusters += len(clusters_out)
 
     output = {
+        # Bump on any breaking change to entries'/cluster's shape (added
+        # 2026-08-26 after a consumer hit a silent TypeError on the
+        # 2026-07-28 object-keyed-by-"iso:canon" migration, which predates
+        # this field and is therefore schema_version 2, not 1).
+        "schema_version": 2,
         "generated_at": None,  # stamped at publish time, not by this generator
         "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
         "priority": ["pkf", "helloao", "dbt"],

@@ -1,0 +1,23 @@
+# Curated, hand-verified helloAO audio editions.
+#
+# helloAO's own catalog (available_translations.json) has no audio-existence
+# field at all — the only way to know a translation has audio is to check
+# thisChapterAudioLinks on a real per-chapter API response. Scanning all
+# ~1,250 translations live on every generation run isn't practical, so this
+# is a small, curated list instead — same convention as
+# data/version-exclude.toml / data/version-notes.toml (real, hand-curated,
+# tracked source data this repo owns).
+#
+# Add an entry only after directly verifying real audio links resolve for
+# every canon claimed — never infer from a translation's name/shortName or
+# from another edition's audio (see the AAB/BSB note below for exactly the
+# mistake that would be).
+
+[[edition]]
+id = "BSB"
+iso = "eng"
+canons = ["nt", "ot"]
+narrators = ["david", "hays", "souer"]
+verified = "2026-08-14"
+sample_url = "https://audio.bible.helloao.org/api/BSB/GEN/1/audio/hays.mp3"
+note = "Checked GEN 1 (OT) and JHN 1 (NT) directly, both real. AAB (helloAO's own edition) reports the same audio links verbatim under its own translation id — same underlying production, not a second real one; not listed here as its own entry for that reason."

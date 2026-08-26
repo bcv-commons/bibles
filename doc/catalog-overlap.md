@@ -45,6 +45,7 @@ relationship to `SPNR02` (see the example below).
 
 ```json
 {
+  "schema_version": 2,
   "generated_at": "...",
   "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
   "priority": ["pkf", "helloao", "dbt"],
@@ -277,6 +278,15 @@ still separately preserved — see `generate_catalog_overlap.py`'s
 
 ## Top-level fields
 
+- **`schema_version`** (added 2026-08-26) — an integer, bumped only on a
+  breaking change to `entries`'/cluster shape, never on data changes (new
+  languages, new clusters, score changes never bump it). Currently `2`:
+  the 2026-07-28 migration to this object-keyed-by-`"iso:canon"` shape
+  (see "Row format" above) predates this field and counts as the version-2
+  break — a consumer built against the pre-2026-07-28 array-of-triples
+  shape hit a silent `TypeError` destructuring `entries` with no way to
+  detect the change short of diffing this doc. Check this field before
+  parsing if you want to fail loudly on a future shape change instead.
 - **`probes`** — which chapter(s) each comparison was actually based on.
   OT has two: `PSA117` (short, 2 verses, the default) and `PSA51` (longer,
   used automatically whenever PSA117 leaves any id in a group unfetched —

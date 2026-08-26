@@ -69,11 +69,16 @@ real localized book titles for a UI, not for discovery.
 
 ## Audio, video, pictures
 
-- **Audio** — currently DBT is the only source with published audio
-  (see `catalog-audio.json` above for its own fileset routing). A
-  dedicated audio-sync pipeline is being built in a separate repo; once
-  it publishes, this doc and the catalog files will be extended to cover
-  it.
+- **Audio** — **[`catalog-audio-index.json`](catalog-audio-index.md)** is
+  the source-agnostic existence check: "does source X have audio for this
+  `(iso, canon)`" across DBT and helloAO (PKF has a real audio endpoint
+  too, not yet cataloged here — see that doc). DBT has by far the broadest
+  real coverage; see `catalog-audio.json` above for its fileset routing.
+  helloAO's real audio is small and specific (currently one edition, `BSB`)
+  — check `catalog-audio-index.md` before assuming a helloAO translation
+  has audio just because it has text. A dedicated audio-sync pipeline is
+  being built in a separate repo; once it publishes, this doc and the
+  catalog files will be extended to cover it.
 - **Video, pictures** — not yet covered by anything published here.
 
 ## New, first-published-here texts

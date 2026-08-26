@@ -30,6 +30,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA = REPO_ROOT / "data"
 VRS_DIR = DATA / "vrs"
 VERSION_EXCLUDE_FILE = DATA / "version-exclude.toml"
+HELLOAO_AUDIO_FILE = DATA / "helloao-audio.toml"
 
 # ---------------------------------------------------------------------------
 # Internal working data — entirely gitignored, entirely rebuildable

@@ -2,8 +2,8 @@
 
 ## DBT (Bible Brain, Digital Bible Platform, by Faith Comes By Hearing)
 
-The largest catalog by far, and currently the **only source with published
-audio**. Real-time API, no bulk download.
+The largest catalog by far, and the only source with **broad, catalog-wide**
+published audio (thousands of versions). Real-time API, no bulk download.
 
 - Catalog: `https://cdn.bibel.wiki/dbt/_catalog.json` — one row per
   `[iso, distinct_id, canon, ...tags]`. `canon` is `nt`/`ntp`/`ot`/`otp`
@@ -41,6 +41,22 @@ audio**. Real-time API, no bulk download.
 - Per-translation book list: `https://bible.helloao.org/api/<id>/books.json`
   — use this to check exactly which books a translation actually has
   before assuming coverage from a book count alone.
+- **Has real published audio for one edition: `BSB`** (Berean Standard
+  Bible), three narrators (`david`/`hays`/`souer`), verified directly
+  (2026-08-14) via `thisChapterAudioLinks`/`nextChapterAudioLinks` on the
+  per-chapter endpoint — e.g.
+  `https://audio.bible.helloao.org/api/BSB/GEN/1/audio/hays.mp3`. Checked
+  across a random sample of ~40 other translations (English and non-English)
+  and found audio on none of them — this is not a general helloAO
+  capability, it's one specific attached recording. `AAB` ("Accessible
+  Ancients Bible", helloAO's own edition) also *reports* audio links, but
+  they resolve to the same `/api/BSB/...` URLs — there is exactly one real
+  audio production in helloAO's system, not two. No per-verse timing
+  accompanies it (`thisChapterAudioTimings` is present in the response
+  shape but empty on every chapter checked). Not currently cataloged
+  anywhere this repo publishes — see
+  `internal-docs/catalog-audio-ownership-architecture.md` §8 for the
+  scoping notes on adding it.
 
 ## Priority (when more than one source has the same content)
 
@@ -58,6 +74,9 @@ otherwise; check the alternatives if you do.
 
 ## Audio
 
-DBT is the only source with published audio today. A separate audio-sync
-pipeline (different repo) is expected to add more over time — once it
-publishes, it'll be reflected here.
+DBT is the only source with **broad** published audio (thousands of
+versions, cataloged today in `catalog-audio.json`). helloAO has one real
+edition with audio (`BSB` — see above), not yet cataloged by this repo. A
+separate audio-sync pipeline (different repo) is expected to add more over
+time via its own alignment work — once it publishes, it'll be reflected
+here too.

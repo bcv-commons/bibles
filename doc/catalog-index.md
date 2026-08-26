@@ -11,6 +11,7 @@ for that.
 
 ```json
 {
+  "schema_version": 1,
   "generated_at": "...",
   "sources": [
     {"d": "https://cdn.bibel.wiki/dbt/_catalog.json"},
@@ -26,6 +27,13 @@ for that.
   ]
 }
 ```
+
+`schema_version` (added 2026-08-26) — an integer, bumped only on a breaking
+change to `entries`'/row shape (never on data changes — new languages,
+count changes, etc. never bump it). Check this before parsing if you want
+to fail loudly on a future shape change instead of hitting a confusing
+runtime error. Currently `1`; this file's row shape hasn't changed since
+it was first published.
 
 ## Row format
 

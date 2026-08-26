@@ -179,6 +179,7 @@ def main():
         entries.append(row)
 
     output = {
+        "schema_version": 1,
         "generated_at": None,
         "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL}],
         "entries": entries,
