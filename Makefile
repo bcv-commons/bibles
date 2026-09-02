@@ -4,7 +4,8 @@ CORE := pipeline/core
 .PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry \
-        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry check help
+        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
+        fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles pull-obs-align obs-metadata publish-obs publish-obs-dry check help
 
 help: ## Show available targets
 	@echo "bibles — CDN publish pipeline"
@@ -27,6 +28,8 @@ help: ## Show available targets
 	@echo "  make cleanup-dbt-dry  Dry-run orphan cleanup"
 	@echo "  make publish-catalog     Upload export/catalog/ to cdn.bibel.wiki/catalog/"
 	@echo "  make publish-catalog-dry Dry-run (no writes to CDN)"
+	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
+	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
 	@echo ""
 	@echo "  Data fetch"
 	@echo "  ──────────"
@@ -36,6 +39,12 @@ help: ## Show available targets
 	@echo "  make fetch-catalog-books Fetch PKF + helloAO per-language book data (for catalog-books)"
 	@echo "  make align-pull       Pull new audio-sync align/ output into internal-data/align-cache/"
 	@echo "  make align-pull-dry   Dry-run align pull (no writes)"
+	@echo "  make fetch-obs-batches Fetch OBS narration batch manifests into internal-data/obs-batches/"
+	@echo "  make fetch-obs-catalog Fetch door43's OBS catalog stats, text+audio (existence source of truth)"
+	@echo "  make fetch-obs-repos  Resolve door43 detail (content, license, audio) for every OBS language (run fetch-obs-catalog first)"
+	@echo "  make fetch-obs-titles Fetch per-story vernacular titles for every OBS language (run fetch-obs-repos first)"
+	@echo "  make pull-obs-align   Pull real audio-sync OBS alignment output into internal-data/obs-align-cache/"
+	@echo "  make obs-metadata     Generate export/obs/<iso>/{media,timing}.json + catalog/obs-index.json"
 	@echo ""
 	@echo "  Pass extra args via ARGS, e.g.:"
 	@echo "    make versification ARGS=\"--fetch\""
@@ -82,6 +91,11 @@ dbt-catalog: ## Generate catalog-text.json / catalog-audio.json from the fetched
 catalog-books: ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
 	$(PYTHON) $(CORE)/generate_catalog_books.py $(ARGS)
 
+obs-metadata: ## Generate export/obs/<iso>/{media,timing}.json + catalog/obs-index.json (run fetch-obs-catalog, fetch-obs-repos, fetch-obs-titles, pull-obs-align first; fetch-obs-batches optional, enrichment only)
+	$(PYTHON) $(CORE)/generate_obs_metadata.py $(ARGS)
+	$(PYTHON) $(CORE)/generate_obs_timing.py $(ARGS)
+	$(PYTHON) pipeline/comparison/generate_obs_index.py $(ARGS)
+
 # ---------------------------------------------------------------------------
 # CDN publishing
 # ---------------------------------------------------------------------------
@@ -103,6 +117,12 @@ publish-catalog: ## Upload export/catalog/ to cdn.bibel.wiki/catalog/
 
 publish-catalog-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-catalog.sh
+
+publish-obs: ## Upload export/obs/ to cdn.bibel.wiki/obs/
+	bash $(CORE)/publish-obs.sh
+
+publish-obs-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-obs.sh
 
 # ---------------------------------------------------------------------------
 # Data fetch
@@ -127,6 +147,21 @@ align-pull: ## Pull new audio-sync align/ output (Contract B) into internal-data
 
 align-pull-dry: ## Dry-run align pull (no writes)
 	$(PYTHON) $(CORE)/pull_align_cache.py --dry-run
+
+fetch-obs-batches: ## Fetch OBS narration batch manifests into internal-data/obs-batches/
+	$(PYTHON) $(CORE)/fetch_obs_batches.py
+
+fetch-obs-catalog: ## Fetch door43's OBS catalog stats, text+audio (existence source of truth)
+	$(PYTHON) $(CORE)/fetch_obs_catalog.py
+
+fetch-obs-repos: ## Resolve door43 detail (content, license, audio) for every OBS language (run fetch-obs-catalog first)
+	$(PYTHON) $(CORE)/fetch_obs_repos.py
+
+fetch-obs-titles: ## Fetch per-story vernacular titles for every OBS language (run fetch-obs-repos first)
+	$(PYTHON) $(CORE)/fetch_obs_titles.py $(ARGS)
+
+pull-obs-align: ## Pull real audio-sync OBS alignment output into internal-data/obs-align-cache/
+	$(PYTHON) $(CORE)/pull_obs_align.py
 
 # ---------------------------------------------------------------------------
 # Housekeeping

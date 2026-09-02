@@ -1,0 +1,61 @@
+# door43's OBS catalog tags 36 of its 214 languages with a 2-letter ISO
+# 639-1 code (am, ar, en, fr, ...) instead of the 3-letter ISO 639-3 code
+# every other file in this repo uses (catalog-index.json, catalog-overlap.json,
+# /dbt/<iso>/media.json, etc all use 639-3 exclusively, zero 639-1 codes).
+#
+# Left unnormalized, this silently breaks cross-referencing: catalog-obs-index.json
+# would say "am" has OBS content while catalog-index.json says "amh" has Bible
+# text — same real language (Amharic), two different codes, no way for a
+# client to connect them without this table. Found 2026-09-02.
+#
+# 30 of 36 map to a plain, unambiguous ISO 639-3 individual-language code,
+# verified directly against this repo's own DBT catalog (the target code
+# genuinely appears there under that exact form).
+#
+# 6 are macrolanguage-level 639-1 codes (ar, fa, sw, zh, uz, ne) whose
+# textbook 639-3 equivalent (ara/fas/swa/zho/uzb/nep) is ALSO a
+# macrolanguage code that nothing in this repo's DBT/PKF/helloAO catalogs
+# actually publishes under. DBT instead uses a specific individual-language
+# code for each (see table). Door43's OBS manifest doesn't specify which
+# variant it means at the macrolanguage level, so mapping to DBT's
+# individual-language choice is a practical default for cross-referencing,
+# NOT a verified "this is definitely the same variant" fact the way the
+# other 30 are. Decided 2026-09-02: use DBT's code anyway, documented here.
+
+[iso639_1_to_3]
+am = "amh"
+ar = "arb"  # macrolanguage -> DBT's Standard Arabic (ambiguous, see note above)
+as = "asm"
+bn = "ben"
+en = "eng"
+es = "spa"
+fa = "pes"  # macrolanguage -> DBT's Iranian Persian (ambiguous, see note above)
+fr = "fra"
+gu = "guj"
+ha = "hau"
+hi = "hin"
+hr = "hrv"
+hu = "hun"
+id = "ind"
+kk = "kaz"
+kn = "kan"
+lo = "lao"
+ml = "mal"
+mr = "mar"
+ne = "npi"  # macrolanguage -> DBT's Nepali (ambiguous, see note above)
+or = "ory"
+pa = "pan"
+ru = "rus"
+sd = "snd"  # DBT has snd audio-only, no text — see doc/catalog-obs.md
+sw = "swh"  # macrolanguage -> DBT's Swahili (ambiguous, see note above)
+ta = "tam"
+te = "tel"
+tg = "tgk"
+tk = "tuk"
+tl = "tgl"
+tr = "tur"
+uk = "ukr"
+ur = "urd"
+uz = "uzn"  # macrolanguage -> DBT's Northern Uzbek (ambiguous, see note above)
+vi = "vie"
+zh = "cmn"  # macrolanguage -> DBT's Mandarin (ambiguous, see note above)

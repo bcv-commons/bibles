@@ -39,8 +39,9 @@ use when a client just wants one good default without deciding for itself.
 
 **[`examples/`](examples/)** — small Python and JavaScript scripts that
 actually fetch content: reading `catalog-index.json`/`catalog-overlap.json`,
-pulling a chapter from DBT or helloAO, and downloading a `.pkf` file. No
-packages to install. Start there if you want to see real output quickly.
+pulling a chapter from DBT or helloAO, downloading a `.pkf` file, and
+fetching an OBS story (both `contentLayout`s). No packages to install.
+Start there if you want to see real output quickly.
 
 **[`tools/pkf-decode/`](../tools/pkf-decode/)** — a real, runnable decoder
 that turns a `.pkf` file (the format PKF publishes) into plain USFM text.
@@ -80,6 +81,33 @@ real localized book titles for a UI, not for discovery.
   being built in a separate repo; once it publishes, this doc and the
   catalog files will be extended to cover it.
 - **Video, pictures** — not yet covered by anything published here.
+
+## Open Bible Stories (OBS)
+
+Story-format content (Open Bible Stories: 50 fixed stories, no
+book/chapter/verse/canon) is a different content shape from a Bible
+edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
+
+- **[`catalog-obs-index.json`](catalog-obs.md)** — existence signal, same
+  `/catalog/` family as the two files above. Covers all 214 languages
+  door43 has real OBS content for (92 with audio, 122 text-only), sourced
+  directly from door43's own catalog — same principle as DBT audio
+  existence being derived from DBT's own catalog, not a downstream
+  pipeline.
+- **[`/obs/<iso>/media.json`](obs-media.md)** — per-language detail
+  (content routing, license, resolved audio URLs, per-story titles).
+  Resolved directly from door43 too; exists for **every** language in the
+  index above, full stop — no dependency on any staging pipeline's pace.
+  Two different story-text layouts exist across languages
+  (`contentLayout: "md"` for 197, `"ts-desktop"` for 17) — that doc shows
+  the fetch code for both.
+- **[`/obs/<iso>/timing.json`](obs-media.md#obsisotimingjson)** —
+  per-story `[start, end]` timing, same shape convention as
+  `/dbt/<iso>/timing/<BOOK>.json`. This one genuinely does lag: it depends
+  on audio-sync's real, ongoing alignment work and covers a small,
+  growing subset of the 92 audio-bearing languages — check
+  `media.json`'s `timingStories` field for current coverage of a specific
+  language.
 
 ## New, first-published-here texts
 

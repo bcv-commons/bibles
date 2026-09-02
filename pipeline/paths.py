@@ -31,6 +31,7 @@ DATA = REPO_ROOT / "data"
 VRS_DIR = DATA / "vrs"
 VERSION_EXCLUDE_FILE = DATA / "version-exclude.toml"
 HELLOAO_AUDIO_FILE = DATA / "helloao-audio.toml"
+OBS_ISO_MAP_FILE = DATA / "obs-iso-639-1.toml"
 
 # ---------------------------------------------------------------------------
 # Internal working data — entirely gitignored, entirely rebuildable
@@ -49,6 +50,44 @@ TEXT_DIR = INTERNAL_DATA / "text"
 LEGACY_TIMING_DIR = INTERNAL_DATA / "legacy-timing-data"
 ALIGN_CACHE_DIR = INTERNAL_DATA / "align-cache"
 ALIGN_INGESTED_FILE = INTERNAL_DATA / ".align-ingested.json"
+
+# Local cache of audio-sync's OBS narration batch manifests
+# (cdn.bibel.wiki/_obs_batches/<iso>.json), fetched by fetch_obs_batches.py.
+# Small, whole-tree refetch each run (unlike align-cache, no delta/state
+# tracking — the whole set is currently ~1-92 files, not worth the machinery).
+OBS_BATCHES_CACHE_DIR = INTERNAL_DATA / "obs-batches"
+
+# Local cache of door43's own OBS-with-audio catalog stats (the actual
+# existence source of truth for catalog/obs-index.json — audio-sync's
+# _obs_batches/ staging above is a narrower "already resolved for detail"
+# signal, not the existence signal itself; see fetch_obs_catalog.py).
+OBS_DOOR43_CATALOG_FILE = API_CACHE / "obs-door43-catalog.json"
+
+# Resolved per-language door43 repo detail (content base URL, license,
+# checking level, real story-id list, and — where a repo's release assets
+# match the audio-filename pattern — resolved per-story audio URLs) for
+# EVERY OBS language, text-only or audio-bearing alike. Fetched directly
+# from door43's own catalog/release APIs, independent of audio-sync's
+# _obs_batches/ staging pace: a language only becomes visible here once
+# audio-sync has staged it, which lags real door43 availability and lags
+# real align/obs/ alignment output even more (see doc/catalog-obs.md's
+# note on this — a client-reported gap). See fetch_obs_repos.py.
+OBS_REPOS_FILE = API_CACHE / "obs-repos.json"
+
+# Per-story vernacular titles ({iso: {story_id: title}}), fetched by
+# fetch_obs_titles.py. The ONE place this pipeline fetches real story
+# CONTENT (door43's raw .md files) rather than pure existence/routing
+# metadata — Range requests aren't honored by door43's raw endpoint, so
+# each story's full text is fetched to read its first line; only that
+# line (the title) is ever kept, the body is discarded immediately and
+# never written to disk. See fetch_obs_titles.py's docstring.
+OBS_TITLES_FILE = API_CACHE / "obs-titles.json"
+
+# Local cache of audio-sync's real OBS alignment output
+# (cdn.bibel.wiki/align/obs/<iso>/<story>_timing.json), fetched by
+# pull_obs_align.py. Small, whole-tree resync each run (rclone dedupes via
+# its own checksum comparison) — same rationale as OBS_BATCHES_CACHE_DIR.
+OBS_ALIGN_CACHE_DIR = INTERNAL_DATA / "obs-align-cache"
 
 # PKF/DBT/helloAO comparison-pilot outputs (pipeline/comparison/, pipeline/research/).
 COMPARISON_RESULTS_DIR = INTERNAL_DATA / "comparison-results"
@@ -81,3 +120,11 @@ EXPORT = REPO_ROOT / "export"
 # old location is left live and un-updated, not deleted — see
 # publish-dbt.sh's cleanup-mode exclusion list for why that's safe).
 CATALOG_DIR = EXPORT / "catalog"
+
+# Open Bible Stories (OBS) — a genuinely different content shape from a
+# Bible edition (50 fixed stories, no book/chapter/verse/canon), so it gets
+# its own root instead of living under /dbt/. Existence rows still publish
+# into /catalog/ (obs-index.json) alongside index.json/audio-index.json —
+# same family, same row convention — since that part genuinely is a close
+# analogue. See doc/catalog-obs.md and doc/obs-media.md.
+OBS_DIR = EXPORT / "obs"

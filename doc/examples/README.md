@@ -19,9 +19,12 @@ python3 fetch_catalog_index.py spa       # or: node fetch_catalog_index.js spa
 | `fetch_helloao` | Fetch a chapter of readable text from helloAO | No |
 | `fetch_dbt` | Fetch a chapter of readable text from DBT | **Yes** — your own [Bible Brain API key](https://www.faithcomesbyhearing.com/bible-brain) |
 | `fetch_pkf` | Fetch a language's `.pkf` file | No, but see below |
+| `fetch_obs` | Fetch an OBS story (Open Bible Stories), either `contentLayout` | No |
 
 Try them against `spa` (Spanish) or `aai` (Arifama-Miniafia) — both used
-as examples throughout the rest of `doc/`.
+as examples throughout the rest of `doc/`. For `fetch_obs`, try `ahr`
+(standard layout, has audio) or `am` (standard layout, text-only) —
+`node fetch_obs.js ahr` / `python3 fetch_obs.py ahr`.
 
 ## PKF needs one more step
 
