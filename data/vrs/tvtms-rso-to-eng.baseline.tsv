@@ -4,6 +4,11 @@
 # whitelist, valid-source filter). NOTE: rso follows KJV/MT order for the protocanon
 # (JER/JOL = KJV, not LXX) — Synodal uses Masoretic protocanon; 307 LXX-order rows were
 # correctly dropped against our rso.vrs. 99% consistent (1 eng-recension row -> exception).
+# Fixed 2026-09-05: 5 JOL rows (3:1-5 -> 2:28-32) had leaked in from the
+# 4-chapter-Joel schemes (org/lxx/catm) — wrong for rso, whose Joel is
+# already 3-chapter/KJV-shaped per rso.vrs (needs zero renumbering).
+# Client-reported (audio-sync, cross-checked via independent Whisper-
+# transcript alignment against bul/BULCBV, confirmed +1 not -1 offset).
 # rso -> eng (KJV) versification; single-verse diffs (identity elsewhere); protestant-OT (Esther/Daniel additions excluded — dedicated handling). source_ref validated present in rso.vrs. TVTMS-derived (CC-BY).
 source_ref	standard_ref	action
 1CH 6:1	1CH 6:16	Renumber verse
@@ -1396,11 +1401,6 @@ JOB 41:23	JOB 41:32	Renumber verse
 JOB 41:24	JOB 41:33	Renumber verse
 JOB 41:25	JOB 41:34	Renumber verse
 JOB 41:26	JOB 41:34	Renumber verse
-JOL 3:1	JOL 2:28	Renumber verse
-JOL 3:2	JOL 2:29	Renumber verse
-JOL 3:3	JOL 2:30	Renumber verse
-JOL 3:4	JOL 2:31	Renumber verse
-JOL 3:5	JOL 2:32	Renumber verse
 JON 2:1	JON 1:17	Renumber verse
 JON 2:2	JON 2:1	Renumber verse
 JON 2:3	JON 2:2	Renumber verse

@@ -3,6 +3,10 @@
 # project (dedicated pass: Hebrew column extracted vs our orgw.vrs = org numbering with
 # Western/eng chaptering). protestant-OT whitelist, valid-source filter. 100% vs orgw.vrs.
 # orgw -> eng (KJV) versification; single-verse diffs (identity elsewhere); protestant-OT (Esther/Daniel additions excluded — dedicated handling). source_ref validated present in orgw.vrs. TVTMS-derived (CC-BY).
+# Fixed 2026-09-05: 5 JOL rows (3:1-5 -> 2:28-32) had leaked in from the
+# 4-chapter-Joel schemes (org/lxx/catm) — wrong for orgw, whose Joel is
+# already 3-chapter/KJV-shaped per orgw.vrs (needs zero renumbering).
+# Same bug as tvtms-rso-to-eng.baseline.tsv, found via the same report.
 source_ref	standard_ref	action
 1CH 6:1	1CH 6:16	Renumber verse
 1CH 6:2	1CH 6:17	Renumber verse
@@ -623,11 +627,6 @@ JOB 41:22	JOB 41:30	Renumber verse
 JOB 41:23	JOB 41:31	Renumber verse
 JOB 41:24	JOB 41:32	Renumber verse
 JOB 41:25	JOB 41:33	Renumber verse
-JOL 3:1	JOL 2:28	Renumber verse
-JOL 3:2	JOL 2:29	Renumber verse
-JOL 3:3	JOL 2:30	Renumber verse
-JOL 3:4	JOL 2:31	Renumber verse
-JOL 3:5	JOL 2:32	Renumber verse
 JON 2:1	JON 1:17	Renumber verse
 JON 2:2	JON 2:1	Renumber verse
 JON 2:3	JON 2:2	Renumber verse

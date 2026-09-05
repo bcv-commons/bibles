@@ -362,6 +362,15 @@ def classify(sig: dict) -> tuple[str, bool]:
 
     Deuterocanon does NOT force 'vul': a Catholic Bible with Masoretic Psalms
     still uses eng/org verse structure — vul.vrs (LXX Psalms) would mis-map it.
+
+    Byzantine NT book order does NOT force 'rso' on its own — fixed
+    2026-09-04 after a real, confirmed misclassification: BULCBV has
+    Byzantine NT ordering but genuinely Masoretic-numbered Psalms (live
+    DBT: PSA 117 = 2 verses, PSA 51 = 21 verses -> org), not rso. NT book
+    order and OT Psalm-numbering scheme are independent axes; byz is now
+    only a CONFIRMING signal alongside real lxx-numbering evidence
+    (matching a client-reported bug in audio-sync's alignment pipeline,
+    traced to this exact classifier bug — see doc/versification-fixes.md).
     """
     p117 = sig.get("ps117")
     p51 = sig.get("ps51")
@@ -371,9 +380,14 @@ def classify(sig: dict) -> tuple[str, bool]:
     masoretic = p117 is not None and p117 < 15
     lxx_num = (p117 is not None and p117 >= 15) or sig["ps151"]
 
-    if byz:
-        return "rso", False               # Byzantine order -> Russian Orthodox
+    if p117 is None:
+        # No Psalm-numbering evidence at all yet — book order alone is not
+        # sufficient (see docstring note above). Always probe before
+        # committing to any scheme, byz included.
+        return "?", True
     if lxx_num:
+        if byz:
+            return "rso", False           # confirmed: Byzantine order + real LXX Psalm numbering
         if sa17 is None:
             return "?", True              # need 1SA17 to split lxx vs vul
         true_lxx = sa17 <= 40 and (ki4 is None or ki4 <= 25)
@@ -385,8 +399,16 @@ def classify(sig: dict) -> tuple[str, bool]:
             return "eng", False           # superscription unnumbered/folded (KJV)
         # org Psalm-superscription numbering; Western (4-chapter) Malachi marks
         # the org-western hybrid (French Segond / Czech Kralická tradition).
+        # `mal==4` alone is NOT enough — it's DBT's own catalog *listing*
+        # (free, unfetched), not confirmed content. Fixed 2026-09-04:
+        # BULCBV's bible_details claims 4 Malachi chapters but MAL/4 is a
+        # real 404 (no such content) — DBT's own metadata was simply wrong.
+        # `mal4` is the CONFIRMED signal (did we actually fetch real
+        # content for chapter 4); only trust it once known.
         if sig.get("mal") == 4:
-            return "orgw", False
+            if sig.get("mal4") is None:
+                return "?", True          # need to confirm chapter 4 is real, not just listed
+            return ("orgw" if sig["mal4"] else "org"), False
         return "org", False               # Hebrew: superscription = vv.1-2, Mal 3
     # PS117 unavailable (audio-only fileset with no DBT text)
     return "?", True
@@ -398,6 +420,7 @@ def main():
     ps51 = load_probe("PSA", "051")
     sa17 = load_probe("1SA", "017")
     ki4 = load_probe("1KI", "004")
+    mal4 = load_probe("MAL", "004")  # confirms bible_details' free mal==4 claim against real content
 
     # First gather all filesets + free signals
     filesets = []
@@ -426,6 +449,7 @@ def main():
             "mal": ch("MAL"), "jol": ch("JOL"),
             "ps117": ps117.get(abbr), "ps51": ps51.get(abbr),
             "sa17": sa17.get(abbr), "ki4": ki4.get(abbr),
+            "mal4": (True if abbr in mal4 else None),
         })
 
     # Optionally fetch probes for undetermined filesets that actually have DBT text
@@ -440,7 +464,14 @@ def main():
             if f["ps117"] is not None and f["ps117"] < 15 and f["ps51"] is None:
                 # Masoretic: heading probe (eng vs org)
                 f["ps51"] = fetch_verse_count(f["abbr"], f["iso"], "PSA", 51)
-            elif f["ps117"] is not None and f["ps117"] >= 15 and f["sa17"] is None:
+            if (f["ps117"] is not None and f["ps117"] < 15 and f["ps51"] is not None
+                    and f["ps51"] > 20 and f["mal"] == 4 and f["mal4"] is None):
+                # org-family, free metadata claims a 4th Malachi chapter —
+                # confirm it's real content, not just a catalog listing
+                # (BULCBV: bible_details claims 4, MAL/4 is a real 404).
+                confirmed = fetch_verse_count(f["abbr"], f["iso"], "MAL", 4)
+                f["mal4"] = confirmed is not None
+            if f["ps117"] is not None and f["ps117"] >= 15 and f["sa17"] is None:
                 # LXX Psalms: structure probe (true Septuagint vs Vulgate/Western)
                 f["sa17"] = fetch_verse_count(f["abbr"], f["iso"], "1SA", 17)
                 f["ki4"] = fetch_verse_count(f["abbr"], f["iso"], "1KI", 4)

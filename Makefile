@@ -5,7 +5,8 @@ CORE := pipeline/core
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
-        fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles pull-obs-align obs-metadata publish-obs publish-obs-dry check help
+        fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles pull-obs-align obs-metadata publish-obs publish-obs-dry \
+        langs-catalog check help
 
 help: ## Show available targets
 	@echo "bibles — CDN publish pipeline"
@@ -45,6 +46,7 @@ help: ## Show available targets
 	@echo "  make fetch-obs-titles Fetch per-story vernacular titles for every OBS language (run fetch-obs-repos first)"
 	@echo "  make pull-obs-align   Pull real audio-sync OBS alignment output into internal-data/obs-align-cache/"
 	@echo "  make obs-metadata     Generate export/obs/<iso>/{media,timing}.json + catalog/obs-index.json"
+	@echo "  make langs-catalog    Generate catalog/langs.json + langs-mini.json (run dbt-metadata + obs-metadata first)"
 	@echo ""
 	@echo "  Pass extra args via ARGS, e.g.:"
 	@echo "    make versification ARGS=\"--fetch\""
@@ -90,6 +92,9 @@ dbt-catalog: ## Generate catalog-text.json / catalog-audio.json from the fetched
 
 catalog-books: ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
 	$(PYTHON) $(CORE)/generate_catalog_books.py $(ARGS)
+
+langs-catalog: ## Generate catalog/langs.json + langs-mini.json (Phase 2 — self-derived, no external dependency; run dbt-metadata + obs-metadata first)
+	$(PYTHON) pipeline/comparison/generate_langs_catalog.py $(ARGS)
 
 obs-metadata: ## Generate export/obs/<iso>/{media,timing}.json + catalog/obs-index.json (run fetch-obs-catalog, fetch-obs-repos, fetch-obs-titles, pull-obs-align first; fetch-obs-batches optional, enrichment only)
 	$(PYTHON) $(CORE)/generate_obs_metadata.py $(ARGS)

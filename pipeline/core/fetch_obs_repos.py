@@ -172,6 +172,12 @@ def resolve_one(iso: str) -> dict | None:
         "storyIds": story_ids,
         "titleUrls": title_urls,
         "audio": resolve_audio(entry),
+        # Not published in media.json — only used by generate_langs_catalog.py
+        # as a name fallback for languages DBS/helloAO don't cover at all
+        # (mostly the dialect/private-use-tagged ones, e.g. bfz-x-baghati
+        # "Baghati" — confirmed real, not a placeholder).
+        "language_title": entry.get("language_title"),
+        "language_direction": entry.get("language_direction"),
     }
 
 
@@ -187,7 +193,14 @@ def main():
     all_isos = sorted(door43.get("languages_all", {}).keys())
 
     cache = json.loads(OBS_REPOS_FILE.read_text()) if OBS_REPOS_FILE.exists() else {}
-    todo = all_isos if refresh else [iso for iso in all_isos if iso not in cache]
+    if refresh:
+        todo = all_isos
+    else:
+        # Also retries any cached entry from before the language_title/
+        # language_direction fields existed (2026-09-03) or that failed
+        # mid-refresh (e.g. a transient network/resource error) — not
+        # just isos missing outright.
+        todo = [iso for iso in all_isos if iso not in cache or "language_title" not in cache[iso]]
     if limit:
         todo = todo[:limit]
 

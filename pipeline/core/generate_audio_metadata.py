@@ -306,24 +306,18 @@ def main():
 
     print(f"[INFO] Written {files_written} media.json files to export/dbt/")
 
-    # Load language names: ALL-langs-compact → helloAO catalog → DBS cache
+    # Load language names: helloAO catalog -> DBS cache -> ALL-langs-compact
+    # (last resort only). Reordered 2026-09-03: ALL-langs-compact.json used
+    # to be checked FIRST, but it's a frozen, external, unmaintained
+    # snapshot (bible-story-builder went private; see doc/catalog-langs.md)
+    # — helloAO+DBS combined actually cover MORE languages than it does
+    # (2996 vs 2165, verified), so preferring them first is a pure
+    # improvement, not a tradeoff. The compact file is now optional and
+    # only fills in the ~116 languages neither live source has; nothing
+    # here breaks if it's absent.
     names = {}
-    compact_path = EXPORT / "ALL-langs-compact.json"
-    if compact_path.exists():
-        with open(compact_path) as f:
-            compact = json.load(f)
-        for canon_data in compact.get("canons", {}).values():
-            for cat_data in canon_data.values():
-                for iso, entry in cat_data.items():
-                    if iso not in names and "n" in entry:
-                        nm = {"nm": entry["n"]}
-                        if "v" in entry:
-                            nm["v"] = entry["v"]
-                        if "s" in entry:
-                            nm["sc"] = entry["s"]
-                        names[iso] = nm
 
-    # Fallback: helloAO catalog
+    # helloAO catalog
     helloao_path = API_CACHE / "helloao" / "available_translations.json"
     if helloao_path.exists():
         with open(helloao_path) as f:
@@ -339,7 +333,15 @@ def main():
                         nm["v"] = vern
                     names[iso] = nm
 
-    # Fallback: DBS bible details cache
+    # DBS bible details cache — also carries a top-level `script` field
+    # (e.g. "Arab", "Beng"), sibling to the nested `language` block; not
+    # read before 2026-09-03, confirmed real and populated on inspection.
+    # Two separate concerns here, deliberately not combined into one
+    # "first source wins" pass: name resolution (fill only if no name yet)
+    # vs script-code enrichment (fill for ANY entry missing `sc`,
+    # regardless of which source supplied its name — a name found via
+    # helloAO shouldn't forfeit a real script code DBS has for that iso).
+    dbs_scripts = {}
     dbs_dir = API_CACHE / "dbs" / "bibles"
     if dbs_dir.is_dir():
         for p in sorted(dbs_dir.glob("*.json")):
@@ -349,6 +351,9 @@ def main():
                 with open(p) as f:
                     d = json.load(f)
                 iso = d.get("iso", "")
+                script = d.get("script", "")
+                if iso and script and iso not in dbs_scripts:
+                    dbs_scripts[iso] = script
                 if iso and iso not in names:
                     lang = d.get("language", {})
                     eng = lang.get("name", "")
@@ -360,6 +365,27 @@ def main():
                         names[iso] = nm
             except (json.JSONDecodeError, IOError):
                 continue
+
+    for iso, script in dbs_scripts.items():
+        if iso in names and "sc" not in names[iso]:
+            names[iso]["sc"] = script
+
+    # Last resort: frozen ALL-langs-compact.json, only for names neither
+    # live source above has. Optional — this file may not exist at all.
+    compact_path = EXPORT / "ALL-langs-compact.json"
+    if compact_path.exists():
+        with open(compact_path) as f:
+            compact = json.load(f)
+        for canon_data in compact.get("canons", {}).values():
+            for cat_data in canon_data.values():
+                for iso, entry in cat_data.items():
+                    if iso not in names and "n" in entry:
+                        nm = {"nm": entry["n"]}
+                        if "v" in entry:
+                            nm["v"] = entry["v"]
+                        if "s" in entry:
+                            nm["sc"] = entry["s"]
+                        names[iso] = nm
 
     # Build media-index.json roll-up (compact: omit "m" when "", omit canon when empty)
     index = {}

@@ -109,6 +109,26 @@ edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
   `media.json`'s `timingStories` field for current coverage of a specific
   language.
 
+## Language display names + coverage summary
+
+**[`langs.json` / `langs-mini.json`](catalog-langs.md)** — per-language
+display names (`{n, v, s}`) and NT/OT/OBS canon coverage by category
+(`with-timecode`/`audio-with-timecode`/`syncable`/`text-only`/
+`audio-only`). Self-derived from `catalog-index.json` +
+`catalog-audio-index.json` + `/dbt/`/`/obs/` media data — no external
+dependency, 2566 languages including the OBS canon.
+
+## Versification per edition
+
+**[`dbt/_vrs/index.json`](vrs-index.md)** fingerprints each DBT (and
+helloAO/eBible) text edition's versification scheme (`eng`/`org`/`orgw`/
+`rso`/`lxx`/`vul`/`catm`) — useful for detecting text/audio versification
+mismatches within an edition, or just knowing which `.vrs` shape applies.
+**[`_vrs/map/<scheme>-to-eng.json`](vrs-maps.md)** gives the real,
+verse-precise crosswalk from any non-`eng` scheme to `eng` — read that doc
+before assuming the (usually empty, and *not* what you want)
+`crosswalk` field is the real data; the real per-verse rows are in `map`.
+
 ## New, first-published-here texts
 
 This repo is starting to publish some Bible texts that aren't available
