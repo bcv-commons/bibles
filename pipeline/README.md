@@ -11,8 +11,8 @@ split; see `internal-docs/` in MONO for the split design docs.
 
 - **`core/`** — the original CDN-generation pipeline: versification
   scheme/fingerprint generation, `media.json`/timing metadata, the
-  DBT↔helloAO id crosswalk, audio-sync alignment pull
-  (`pull_align_cache.py`), and CDN publishing (`publish-dbt.sh`).
+  DBT↔helloAO id crosswalk, audio-sync manifest pull
+  (`pull_align_manifests.py`), and CDN publishing (`publish-dbt.sh`).
 - **`comparison/`** — the routine, re-runnable PKF/DBT/helloAO
   version-identity comparison pipeline: fetches, char-/word-level text
   comparison, and the two generators that produce `catalog-index.json` /
@@ -27,16 +27,23 @@ split; see `internal-docs/` in MONO for the split design docs.
   literals in each script. See its module docstring for the
   tracked-vs-gitignored rationale.
 
-## An undocumented external dependency worth knowing about
+## External dependencies worth knowing about
 
-`generate_audio_metadata.py`, `fingerprint_versification.py`, and
-`generate_version_info.py` all **read** `export/ALL-langs/` (and
-`generate_audio_metadata.py` also reads `export/ALL-langs-compact.json`).
-Nothing in this repo produces that directory — it's an upstream export
-from MONO's own "export-stories" step (see the `[ERROR] export/ALL-langs
-not found. Run export-stories first.` message in
-`generate_audio_metadata.py` if it's missing). It must already exist
-before running `make dbt-metadata`; this repo doesn't fetch or generate it.
+`generate_audio_metadata.py` no longer depends on MONO's `export/ALL-langs/`
+export (migrated 2026-09-12 to discover DBT filesets live from
+`internal-data/sorted/BB`, itself derived from `internal-data/api-cache/`
+via `sort-dbt-catalog` — run `make fetch-dbt-catalog sort-dbt-catalog`
+first if that directory is missing or stale). `fingerprint_versification.py`
+and `generate_version_info.py` still read `export/ALL-langs/` — that
+migration hasn't reached them yet.
+
+Real per-verse audio timing depends on audio-sync's `align/_runs/`
+manifests, pulled via `make align-pull` (also runs automatically as part
+of `make dbt-metadata`) into `internal-data/align-index.json`. See
+`doc/dbt-timing.md` for the published path-formula standard clients (and
+this repo) use to construct real timing URLs — no resolved index is
+published for that; see `pull_align_manifests.py`'s module docstring for
+why.
 
 ## Running it
 
@@ -44,7 +51,7 @@ before running `make dbt-metadata`; this repo doesn't fetch or generate it.
 make dbt-metadata     # generate all CDN artifacts into export/
 make publish-dbt      # upload export/ to cdn.bibel.wiki (incremental delta)
 make publish-dbt-dry  # dry-run (no writes)
-make align-pull       # pull new audio-sync alignment output (see below)
+make align-pull       # pull new audio-sync manifests (small metadata only; also runs inside dbt-metadata)
 make help             # full target list
 ```
 
@@ -67,6 +74,6 @@ own credentials) with:
 
 - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`
   (Cloudflare R2 — `pipeline/core/publish-dbt.sh` and
-  `pipeline/core/pull_align_cache.py` use `rclone` against this)
+  `pipeline/core/pull_align_manifests.py` use `rclone` against this)
 - `BIBLE_API_KEY` — DBT (Bible Brain, Digital Bible Platform, by Faith
   Comes By Hearing), for `fingerprint_versification.py`'s text probes

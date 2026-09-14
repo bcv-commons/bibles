@@ -156,34 +156,41 @@ nothing to extract for the other 197 languages, not an oversight. The 17
 not one of the standard org submissions) that genuinely has no
 `front/title.txt`.
 
-## `/obs/<iso>/timing.json`
+## OBS story timing
 
-`https://cdn.bibel.wiki/obs/<iso>/timing.json`
+**Redesigned 2026-09-14, same day and same reasoning as
+[`dbt-timing.md`](dbt-timing.md): bibles publishes no timing file for
+OBS either.** The earlier `/obs/<iso>/timing.json` (a per-language merge
+of audio-sync's real alignment, mirrored into a local cache first) is
+retired — it was never actually published live. Real per-segment timing
+comes straight from audio-sync's own CDN, at a pure formula:
 
-Per-segment timing for stories audio-sync has aligned, in the same nested
-`[start, end]`-pair shape [`/dbt/<iso>/timing/<BOOK>.json`](README.md)
-already uses — `story` in place of `chapter`, `segment` in place of
-`verse`. Deliberately the same shape as an explicit client ask: a direct
-drop-in for existing `loadBookTiming()`-style client code, just pointed at
-a different endpoint.
-
-```json
-{
-  "iso": "ahr",
-  "01": {
-    "1": [5.0, 18.04],
-    "2": [18.04, 31.68]
-  }
-}
+```
+https://cdn.bibel.wiki/align/obs/<raw_iso>/<story>_timing.json
 ```
 
-`end` is the next segment's start; the last segment's own `end` equals its
-own `start` — same convention as DBT timing — use the audio file's real
-duration for that segment's true end.
+OBS has only one real source (audio-sync) — no priority list to apply,
+unlike DBT's four. Check `/obs/<iso>/media.json`'s `timingStories`/
+`timingStoriesSet` first (bibles' own existence signal — audio-sync
+publishes a completion manifest for OBS too, same `align/_runs/` stream
+as Bible text, distinguished by a `story` field; bibles reads that, never
+a content mirror) to know whether a story has real timing before
+fetching; a 404 on the formula above means the same thing either way.
 
-**One file per language**, not split per-story — OBS only has 50 stories
-total, none of the sharding reasons that apply to DBT's much larger
-book/chapter space apply here.
+**`raw_iso` is door43's own code, not always bibles' published `iso`.**
+door43 tags 36 of its 214 OBS languages with an ISO 639-1 code (`en`)
+instead of 639-3 (`eng`) — bibles normalizes to 639-3 everywhere it
+publishes (including this file's own `<iso>` directory), but audio-sync
+mirrors door43's raw directory names as-is. Reverse the 36-entry table at
+[`data/obs-iso-639-1.toml`](../data/obs-iso-639-1.toml) (`iso639_1_to_3`,
+inverted) to get `raw_iso` from bibles' `iso`; unchanged for the other
+178 languages.
+
+Response shape, straight from audio-sync, unchanged: `{"id": "<iso>
+story <NN>", "pos": [<segment start seconds>, ...], "score": [...]}` —
+`pos` is index-aligned to segment order starting at segment 1; `end` for
+a segment = the next entry's start, last segment's `end` = its own start
+(use the audio's real duration for that one).
 
 Source data (`align/obs/<iso>/<story>_timing.json`, a flat array of
 `{story, segment, timestamp, score, source}` point timestamps — audio-sync's

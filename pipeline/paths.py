@@ -48,8 +48,18 @@ DOWNLOADS = INTERNAL_DATA / "downloads"
 TIMING_DIR = INTERNAL_DATA / "timing"
 TEXT_DIR = INTERNAL_DATA / "text"
 LEGACY_TIMING_DIR = INTERNAL_DATA / "legacy-timing-data"
-ALIGN_CACHE_DIR = INTERNAL_DATA / "align-cache"
+# 2026-09-14: retired mirroring audio-sync's actual timing/words bytes
+# (internal-data/align-cache) in favor of a lightweight digest built from
+# their small _runs/ manifests — see pull_align_manifests.py. bibles points
+# clients at audio-sync's own live URLs directly instead of copying them.
+ALIGN_INDEX_FILE = INTERNAL_DATA / "align-index.json"
 ALIGN_INGESTED_FILE = INTERNAL_DATA / ".align-ingested.json"
+# {"<iso>/<distinct_id>": {"text": {...}, "audio": {...}}} — audio-sync's
+# own text_sources/audio_sources manifest maps, distilled by
+# pull_align_manifests.py. Makes a real, confirmed non-DBT edition (e.g.
+# ENGBSBHAY) or a DBT-audio-but-non-DBT-text edition actually discoverable
+# in media.json, not just resolvable once you already know its id.
+ALIGN_SOURCES_FILE = INTERNAL_DATA / "align-sources.json"
 
 # Local cache of audio-sync's OBS narration batch manifests
 # (cdn.bibel.wiki/_obs_batches/<iso>.json), fetched by fetch_obs_batches.py.
@@ -83,11 +93,15 @@ OBS_REPOS_FILE = API_CACHE / "obs-repos.json"
 # never written to disk. See fetch_obs_titles.py's docstring.
 OBS_TITLES_FILE = API_CACHE / "obs-titles.json"
 
-# Local cache of audio-sync's real OBS alignment output
-# (cdn.bibel.wiki/align/obs/<iso>/<story>_timing.json), fetched by
-# pull_obs_align.py. Small, whole-tree resync each run (rclone dedupes via
-# its own checksum comparison) — same rationale as OBS_BATCHES_CACHE_DIR.
-OBS_ALIGN_CACHE_DIR = INTERNAL_DATA / "obs-align-cache"
+# 2026-09-14: retired mirroring audio-sync's actual OBS timing content
+# (internal-data/obs-align-cache) in favor of a lightweight existence
+# digest. Briefly built from a live listing; same day, audio-sync added
+# a completion manifest for OBS too (same align/_runs/ stream Bible text
+# uses, distinguished by a `story` field) — now built by
+# pull_align_manifests.py in the same pass as ALIGN_INDEX_FILE, no
+# separate script. bibles points clients at audio-sync's own live URLs
+# directly instead of copying them.
+OBS_ALIGN_INDEX_FILE = INTERNAL_DATA / "obs-align-index.json"
 
 # PKF/DBT/helloAO comparison-pilot outputs (pipeline/comparison/, pipeline/research/).
 COMPARISON_RESULTS_DIR = INTERNAL_DATA / "comparison-results"

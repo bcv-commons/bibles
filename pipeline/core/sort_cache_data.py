@@ -84,6 +84,7 @@ class IndependentCacheDataSorter:
         self.timing_filesets = set()
         self.timing_bibles_metadata = {}  # Map bible abbr to extended metadata
         self.bible_details_metadata = {}  # Map bible abbr to {direction, script}
+        self.bible_books_metadata = {}  # Map bible abbr to [{book_id, chapters, testament, book_seq}]
 
         # Language data organized by ISO
         self.language_data = defaultdict(
@@ -233,6 +234,23 @@ class IndependentCacheDataSorter:
                                 if key not in self.timing_bibles_metadata[abbr]:
                                     self.timing_bibles_metadata[abbr][key] = value
                         extended_count += 1
+
+                    # Extract per-book chapter coverage (real, not assumed
+                    # full-canon) — bible-level, since /bibles/{abbr} only
+                    # accepts the bible abbr, not an individual fileset id
+                    # (confirmed live: a fileset-suffix id 404s).
+                    books = bible_data.get("books")
+                    if isinstance(books, list) and books:
+                        self.bible_books_metadata[abbr] = [
+                            {
+                                "book_id": b.get("book_id", ""),
+                                "chapters": b.get("chapters", []),
+                                "testament": b.get("testament", ""),
+                                "book_seq": b.get("book_seq", ""),
+                            }
+                            for b in books
+                            if b.get("book_id")
+                        ]
 
             except Exception as e:
                 print(f"Warning: Could not load bible detail {detail_file.name}: {e}")
@@ -938,6 +956,18 @@ class IndependentCacheDataSorter:
                     bible_dict["description"] = extended["description"]
                 if extended.get("vdescription"):
                     bible_dict["vdescription"] = extended["vdescription"]
+
+        # Add real per-book chapter coverage (book_id -> chapters), filtered
+        # to this fileset's own testament for NT/OT-only filesets so an
+        # NT-only audio fileset doesn't inherit OT books from the bible's
+        # aggregate /bibles/{abbr} response (which is bible-level, covering
+        # every canon the bible has any fileset for).
+        books = self.bible_books_metadata.get(bible_abbr)
+        if books:
+            if canon in ("NT", "OT"):
+                books = [b for b in books if b.get("testament") == canon]
+            if books:
+                metadata["books"] = books
 
         # Add per-resource script/direction for multi-script languages
         lang_info = self.language_data[iso]["language_info"]

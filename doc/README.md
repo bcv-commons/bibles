@@ -59,6 +59,11 @@ its text/audio, in what format(s)." Narrower and more mechanical than
 should start with those two instead and only reach for these when you
 need DBT's own routing detail.
 
+**[`/dbt/<iso>/coverage.json`](dbt-coverage.md)** gives you, per DBT
+fileset id, the real book/chapter coverage — needed because a partial
+edition's actual book set (e.g. `PORALM`: 4 NT books + 1 OT book) can't be
+assumed from an `"nt"`/`"ot"` canon label alone.
+
 ## Book names, license, and edition metadata
 
 **[`books.json` (per-language)](catalog-books.md)** — vernacular book
@@ -101,13 +106,14 @@ edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
   Two different story-text layouts exist across languages
   (`contentLayout: "md"` for 197, `"ts-desktop"` for 17) — that doc shows
   the fetch code for both.
-- **[`/obs/<iso>/timing.json`](obs-media.md#obsisotimingjson)** —
-  per-story `[start, end]` timing, same shape convention as
-  `/dbt/<iso>/timing/<BOOK>.json`. This one genuinely does lag: it depends
-  on audio-sync's real, ongoing alignment work and covers a small,
-  growing subset of the 92 audio-bearing languages — check
-  `media.json`'s `timingStories` field for current coverage of a specific
-  language.
+- **OBS story timing** — like DBT's real per-verse timing
+  ([`dbt-timing.md`](dbt-timing.md)), bibles publishes no timing file for
+  this either as of 2026-09-14 — see
+  [`obs-media.md`](obs-media.md#obs-story-timing) for the computable URL
+  formula. Depends on audio-sync's real, ongoing alignment work and
+  covers a small, growing subset of the 92 audio-bearing languages —
+  check `media.json`'s `timingStories` field for current coverage of a
+  specific language.
 
 ## Language display names + coverage summary
 

@@ -34,7 +34,7 @@ OBS_BATCHES_PREFIX = "_obs_batches"
 
 
 def rclone_env():
-    """Same R2/Cloudflare credential resolution as pull_align_cache.py."""
+    """Same R2/Cloudflare credential resolution as pull_align_manifests.py."""
     access = os.getenv("R2_ACCESS_KEY_ID") or os.getenv("CLOUDFLARE_ACCESS_KEY_ID", "")
     secret = os.getenv("R2_SECRET_ACCESS_KEY") or os.getenv("CLOUDFLARE_SECRET_ACCESS_KEY", "")
     account = os.getenv("R2_ACCOUNT_ID") or os.getenv("CLOUDFLARE_ACCOUNT_ID", "")

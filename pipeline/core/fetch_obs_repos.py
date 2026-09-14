@@ -53,6 +53,30 @@ path finds nothing (never override a real value):
 only checking-level-shaped field describes the *source* text being
 translated from, not this translation's own) — stays `null`.
 
+## media.yaml fallback for audio (2026-09-11)
+
+Some repos (confirmed: `unfoldingWord/en_obs`, plus 2 more found by
+scanning all then-audio-less languages) publish audio via a `media.yaml`
+resource-container
+manifest instead of GitHub release attachments — a `chapter_url` template
+like `https://cdn.door43.org/en/obs/v6/{quality}/en_obs_{chapter}_{quality}.mp3`
+under a `media: [{identifier: 'mp3', ...}]` entry. `resolve_audio()` only
+scans release assets; this is a **fallback**, tried only when that finds
+nothing, never overriding a real release-asset result.
+
+**Real landmine found while scoping this** (checked all 124 then-audio-less
+languages' `media.yaml` for a real `mp3` entry — only 3 had one: `en`,
+`id`, `ylb`): `bahtraku/id_obs`'s `media.yaml` `chapter_url` template is
+`en_obs_{chapter}_{quality}.mp3` — literally English's own filename
+pattern, not Indonesian's. A stale copy-paste in door43's own data, not a
+resolution bug on our side — trusting it blindly would have published
+English audio mislabeled as Indonesian. Guarded against with two checks
+before trusting a media.yaml audio source: (1) the resolved filename's
+prefix must match the repo's own short name (`id_obs` requires an
+`id_obs_...` filename, not `en_obs_...`); (2) one story's resolved URL
+must actually be fetched and confirmed to exist (HEAD-equivalent) before
+the whole set is trusted. `id` correctly stays audio-less as a result.
+
 Resumable: skips any iso already present in the cache unless --refresh.
 
 Usage:
@@ -73,10 +97,19 @@ from paths import OBS_DOOR43_CATALOG_FILE, OBS_REPOS_FILE  # noqa: E402
 SEARCH_URL = "https://git.door43.org/api/v1/catalog/search?subject=Open%20Bible%20Stories&lang={iso}&stage=prod"
 STORY_FILE_RE = re.compile(r"^(\d{2})\.md$")
 STORY_DIR_RE = re.compile(r"^(\d{2})$")
-AUDIO_ASSET_RE = re.compile(r"_obs_v\d+_(\d{2})_\d+kbps\.\w+$")
+# [\d.]+ not \d+ (fixed 2026-09-11): fr_obs uses a decimal release version
+# (fr_obs_v4.3_01_128kbps.mp3) — the integer-only version missed real,
+# already-live French audio entirely. Found by cross-checking every
+# door43-flagged "at" language against our own resolved audio and finding
+# one genuine remaining gap that wasn't the media.yaml pattern.
+AUDIO_ASSET_RE = re.compile(r"_obs_v[\d.]+_(\d{2})_\d+kbps\.\w+$")
 RIGHTS_RE = re.compile(r"^\s*rights:\s*['\"]?([^'\"\n]+)['\"]?\s*$", re.MULTILINE)
 CHECKING_LEVEL_RE = re.compile(r"^\s*checking_level:\s*['\"]?(\d+)['\"]?\s*$", re.MULTILINE)
 CC_LICENSE_RE = re.compile(r"creativecommons\.org/licenses/([a-z-]+)/(\d(?:\.\d+)?)")
+MP3_ENTRY_RE = re.compile(
+    r"identifier:\s*['\"]mp3['\"].*?chapter_url:\s*['\"]([^'\"]+)['\"]", re.DOTALL
+)
+QUALITY_RE = re.compile(r"-\s*['\"]?(\d+kbps)['\"]?")
 
 
 def fetch_json(url: str):
@@ -103,6 +136,74 @@ def resolve_audio(entry: dict) -> dict:
         m = AUDIO_ASSET_RE.search(a.get("name", ""))
         if m:
             audio[m.group(1)] = a["browser_download_url"]
+    return audio
+
+
+FULL_STORY_COUNT = 50  # canonical OBS story count
+
+
+def resolve_media_yaml_audio(full_name: str, ref: str, story_ids: list) -> dict:
+    """Fallback audio source: a media.yaml `chapter_url` template, tried only
+    when resolve_audio()'s release-asset scan finds nothing. Two guards,
+    both required, after finding a real door43 data bug (id_obs's
+    media.yaml pointed at en_obs's own filenames — see module docstring):
+    (1) the resolved filename must carry THIS repo's own short prefix, and
+    (2) one sample URL must actually be fetched and confirmed real before
+    the whole per-story set is trusted.
+
+    Once both guards pass, probes the full canonical 01-50 range directly
+    (independent of story_ids/text availability) rather than templating
+    only over chapters we already have text for — confirmed real case,
+    2026-09-11: ylb has 50 real audio chapters (verified: every one of a
+    spread across the full range resolves) but only 1 real story text.
+    Bounding to story_ids would have hidden 49 real audio files. Costs up
+    to 49 extra HEAD requests, but only for the handful of languages that
+    ever reach this fallback at all (3 of 214 as of this date)."""
+    if not story_ids:
+        return {}
+    text = fetch_text(f"https://git.door43.org/{full_name}/raw/tag/{ref}/media.yaml")
+    if not text:
+        return {}
+    m = MP3_ENTRY_RE.search(text)
+    if not m:
+        return {}
+    chapter_url = m.group(1)
+    if "{chapter}" not in chapter_url or "{quality}" not in chapter_url:
+        return {}
+
+    quality_section = text[m.start():m.start(1)]
+    qualities = QUALITY_RE.findall(quality_section)
+    quality = qualities[0] if qualities else "64kbps"
+
+    def resolve_url(sid: str) -> str:
+        return chapter_url.replace("{quality}", quality).replace("{chapter}", sid)
+
+    def url_exists(url: str) -> bool:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}, method="HEAD")
+        try:
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                return resp.status == 200
+        except (urllib.error.HTTPError, urllib.error.URLError):
+            return False
+
+    repo_short = full_name.split("/")[-1]
+    prefix = repo_short[:-4] if repo_short.endswith("_obs") else repo_short
+    sample_id = story_ids[0]
+    sample_url = resolve_url(sample_id)
+    filename = sample_url.rsplit("/", 1)[-1]
+    if not filename.startswith(f"{prefix}_obs_"):
+        return {}
+    if not url_exists(sample_url):
+        return {}
+
+    audio = {sample_id: sample_url}
+    for n in range(1, FULL_STORY_COUNT + 1):
+        sid = f"{n:02d}"
+        if sid == sample_id:
+            continue
+        url = resolve_url(sid)
+        if url_exists(url):
+            audio[sid] = url
     return audio
 
 
@@ -160,6 +261,12 @@ def resolve_one(iso: str) -> dict | None:
         collection_title_text = fetch_text(f"{content_base_url}front/title.txt")
         collection_title = collection_title_text.strip() if collection_title_text else None
 
+    audio = resolve_audio(entry)
+    media_yaml_probed = False
+    if not audio:
+        audio = resolve_media_yaml_audio(full_name, ref, story_ids)
+        media_yaml_probed = True
+
     return {
         "iso": iso,
         "source": entry.get("owner"),
@@ -171,7 +278,13 @@ def resolve_one(iso: str) -> dict | None:
         "checking_level": level_match.group(1) if level_match else None,
         "storyIds": story_ids,
         "titleUrls": title_urls,
-        "audio": resolve_audio(entry),
+        "audio": audio,
+        # Whether the media.yaml fallback was attempted for this language —
+        # used only for backfill resumability (main()'s `todo` selection),
+        # not published in media.json. Lets a plain (non --refresh) run
+        # pick up any audio-less cached entry that predates this fallback,
+        # without needing to re-fetch everything.
+        "mediaYamlProbed": media_yaml_probed,
         # Not published in media.json — only used by generate_langs_catalog.py
         # as a name fallback for languages DBS/helloAO don't cover at all
         # (mostly the dialect/private-use-tagged ones, e.g. bfz-x-baghati
@@ -199,8 +312,21 @@ def main():
         # Also retries any cached entry from before the language_title/
         # language_direction fields existed (2026-09-03) or that failed
         # mid-refresh (e.g. a transient network/resource error) — not
-        # just isos missing outright.
-        todo = [iso for iso in all_isos if iso not in cache or "language_title" not in cache[iso]]
+        # just isos missing outright. Same for any audio-less entry that
+        # predates the media.yaml fallback (2026-09-11, marked by
+        # mediaYamlProbed) — picks it up on the next plain run, no
+        # --refresh needed.
+        def needs_retry(iso: str) -> bool:
+            entry = cache.get(iso)
+            if entry is None:
+                return True
+            if "language_title" not in entry:
+                return True
+            if not entry.get("audio") and not entry.get("mediaYamlProbed"):
+                return True
+            return False
+
+        todo = [iso for iso in all_isos if needs_retry(iso)]
     if limit:
         todo = todo[:limit]
 

@@ -11,28 +11,38 @@ Usage:
 
 Writes to:
     export/.dbt-upload-media.txt    (media.json files, pass 1)
-    export/.dbt-upload-timing.txt   (timing/*.json files, pass 2)
+    export/.dbt-upload-timing.txt   (everything else — coverage.json,
+                                      sync-candidates.json, timing-raw/**,
+                                      etc. — pass 2; the name predates
+                                      several of these, kept for stability)
 
 Two categories are computed but deliberately never written to an upload
-list — held back, not silently dropped (see the [INFO] lines each prints):
+list (see the [INFO] lines each prints):
 
-- Per-book timing/<BOOK>.json (2026-08-12): the bulk of this data isn't
-  real audio-sync alignment yet — data/align-cache (the actual audio-sync
-  integration point) is empty; the overwhelming majority is DBT's own
-  native timing plus a legacy manually-copied re-alignment set. Held back
-  until that's sorted out. Re-enable by folding this bucket back into
-  timing_files below.
-- "other" DBT-root json that isn't media/timing shaped: _text-availability.json
-  (explicitly held back pending an explicit publish decision, per
+- HELD_BACK_OTHER_FILES: _text-availability.json (explicitly held back
+  pending an explicit publish decision, per
   examples/content-availability-confirmation.md) and _helloao-crosswalk.json
-  (fine to publish, just caught in the same net) both land here rather
-  than in timing_files, since neither is timing data — the old bucketing
-  put them there only because "not media-shaped" was the sole test.
-  _app/catalog-{index,overlap,text,audio}.json are also caught here: these
-  are stale, orphaned pre-2026-08-11 duplicates that nothing generates
-  anymore (superseded by export/catalog/) — never intended to be
-  published from this path again; consider deleting them from
-  export/dbt/_app/ locally instead of just excluding them here.
+  (fine to publish, just caught in the same net) — genuinely held back,
+  not excluded permanently.
+- STALE_APP_CATALOG_FILES: _app/catalog-{index,overlap,text,audio}.json —
+  stale, orphaned pre-2026-08-11 duplicates that nothing generates anymore
+  (superseded by export/catalog/), never intended to be published from
+  this path again; consider deleting them from export/dbt/_app/ locally
+  instead of just excluding them here.
+
+timing-raw/** (bibles' own BB/contrib/legacy sources, republished
+byte-for-byte by publish_timing_raw.py) was held back the same way from
+2026-08-12 until 2026-09-12, back when this bucket was instead a
+per-book merge with no way to tell DBT-native/legacy timing apart from
+real audio-sync alignment in the output alone. That merge — and later a
+short-lived pointer-index replacement for it — is retired: audio-sync's
+own align/_runs/ manifests now carry a mandatory `audio_fileset` field
+and `status: "ok"` already IS the existence signal, so the real URL for
+any audio-sync-aligned chapter is a pure formula from their manifests
+directly (see doc/dbt-timing.md) — nothing for bibles to publish for
+that part at all. timing-raw/** publishes normally now (falls into
+timing_files below, no special-casing) since it's just bibles' own raw
+files at a fixed path, same as media.json always was.
 
 Exit code 0 = files to upload, exit code 2 = nothing changed.
 """
@@ -90,7 +100,7 @@ def scan_source(source_dir: Path) -> dict:
 
 def main():
     if not SOURCE_DIR.is_dir():
-        print("[ERROR] export/dbt/ not found. Run generate_audio_metadata.py and generate_timing_by_book.py first.")
+        print("[ERROR] export/dbt/ not found. Run generate_audio_metadata.py and publish_timing_raw.py first.")
         sys.exit(1)
 
     old_state = load_state(STATE_FILE)
@@ -98,7 +108,6 @@ def main():
 
     media_files = []
     timing_files = []
-    held_back_timing = []
     held_back_other = []
     stale_app_catalog = []
 
@@ -113,8 +122,6 @@ def main():
             stale_app_catalog.append(rel)
         elif rel in HELD_BACK_OTHER_FILES:
             held_back_other.append(rel)
-        elif "/timing/" in rel:
-            held_back_timing.append(rel)
         else:
             timing_files.append(rel)
 
@@ -126,9 +133,6 @@ def main():
     MEDIA_LIST.write_text("\n".join(sorted(media_files)) + "\n" if media_files else "")
     TIMING_LIST.write_text("\n".join(sorted(timing_files)) + "\n" if timing_files else "")
 
-    if held_back_timing:
-        print(f"[INFO] {len(held_back_timing)} per-book timing files changed but held back "
-              "(not real audio-sync data yet) — not written to any upload list.")
     if held_back_other:
         print(f"[INFO] {len(held_back_other)} file(s) held back pending an explicit publish "
               f"decision: {sorted(held_back_other)}")

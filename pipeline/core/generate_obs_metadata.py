@@ -21,7 +21,11 @@ segment-count claim per story, not derivable from door43's catalog alone)
   count-always-set-only-when-partial convention as `audioBooks`/
   `audioBooksSet` in generate_audio_metadata.py.
 - `timingStories` / `timingStoriesSet` reflect real audio-sync alignment
-  output pulled by pull_obs_align.py (align/obs/<iso>/<story>_timing.json).
+  output, from audio-sync's own align/_runs/ completion manifests (pulled
+  by pull_align_manifests.py, same mechanism and same pass as Bible-text
+  timing — no OBS-specific pulling code) rather than a content mirror —
+  see doc/obs-media.md for the published path formula a client uses to
+  fetch the real timing directly from audio-sync.
 - `stories` (per-story map) is present whenever `storyCount > 0`, for
   every language — text-only included, not just audio-bearing. Each
   entry always carries `title` (from fetch_obs_titles.py — the one place
@@ -46,7 +50,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from obs_iso import normalize_obs_iso  # noqa: E402
 from paths import (  # noqa: E402
-    OBS_ALIGN_CACHE_DIR,
+    OBS_ALIGN_INDEX_FILE,
     OBS_BATCHES_CACHE_DIR,
     OBS_DIR,
     OBS_REPOS_FILE,
@@ -56,11 +60,12 @@ from paths import (  # noqa: E402
 FULL_STORY_COUNT = 50  # canonical OBS story count
 
 
-def timing_story_ids(iso: str) -> list:
-    lang_dir = OBS_ALIGN_CACHE_DIR / iso
-    if not lang_dir.exists():
-        return []
-    return sorted(f.stem.replace("_timing", "") for f in lang_dir.glob("*_timing.json"))
+def load_obs_align_index() -> dict:
+    """{raw_iso: [story_id, ...]} — real, manifest-confirmed existence,
+    from pull_align_manifests.py's digest (never mirrored content)."""
+    if not OBS_ALIGN_INDEX_FILE.exists():
+        return {}
+    return json.loads(OBS_ALIGN_INDEX_FILE.read_text())
 
 
 def segment_counts_from_batch(iso: str) -> dict:
@@ -72,12 +77,12 @@ def segment_counts_from_batch(iso: str) -> dict:
     return {sid: s.get("segment_count") for sid, s in manifest.get("stories", {}).items()}
 
 
-def build_media(detail: dict, titles: dict) -> dict:
+def build_media(detail: dict, titles: dict, align_index: dict) -> dict:
     raw_iso = detail["iso"]  # door43's own code — needed to key into align/_obs_batches caches
     story_ids = detail.get("storyIds", [])
     audio = detail.get("audio", {})
     audio_ids = sorted(audio.keys())
-    timing_ids = timing_story_ids(raw_iso)
+    timing_ids = sorted(align_index.get(raw_iso, []))
     segment_counts = segment_counts_from_batch(raw_iso)
     lang_titles = titles.get(raw_iso, {})
 
@@ -125,9 +130,10 @@ def main():
 
     repos = json.loads(OBS_REPOS_FILE.read_text())
     titles = json.loads(OBS_TITLES_FILE.read_text()) if OBS_TITLES_FILE.exists() else {}
+    align_index = load_obs_align_index()
     count = 0
     for detail in repos.values():
-        media = build_media(detail, titles)
+        media = build_media(detail, titles, align_index)
         iso_dir = out_dir / media["iso"]
         iso_dir.mkdir(parents=True, exist_ok=True)
         (iso_dir / "media.json").write_text(

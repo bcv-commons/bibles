@@ -1,13 +1,28 @@
 #!/usr/bin/env python3
 """Generate /dbt/<iso>/media.json for each language with audio or text.
 
-Scans export/ALL-langs/ to discover per-language, per-canon audio/timing/text
-availability across all filesets, and emits compact metadata per the
-CDN contract (example/plan-docs/dbt-timecode-feedback.md §3).
+Discovers per-language, per-canon audio/timing/text availability directly
+from this repo's own live caches — internal-data/sorted/BB (DBT, via
+sort_cache_data.py), the helloAO/eBible catalogs, and the local contrib
+timing override directory — and emits compact metadata per the CDN
+contract (example/plan-docs/dbt-timecode-feedback.md §3).
+
+Migrated 2026-09-12 off export/ALL-langs (MONO's frozen, Jul-28-dated
+export-stories output), which was the root cause of new DBT editions
+(e.g. ENGBER) being invisible here indefinitely. Traced and empirically
+verified before the cutover (session history) that this loses nothing
+real: every fileset that reaches media.json's `filesets` array already
+has a real DBT-shaped abbr with no cross-source pairing dependency, and
+the `sources`/`h` fields' live re-derivation was diffed against the old
+ALL-langs-based computation across all (iso, canon) pairs — every
+mismatch traced to the old pipeline being stale or, in two cases, an
+existing detect_sources() mislabeling bug, never a case of the live
+derivation missing real information.
 
 Output: export/dbt/<iso>/media.json
 """
 
+import csv
 import json
 import sys
 from collections import defaultdict
@@ -15,11 +30,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, EXPORT, TIMING_DIR, LEGACY_TIMING_DIR, ALIGN_CACHE_DIR, SORTED_DIR  # noqa: E402
+from paths import (  # noqa: E402
+    API_CACHE, EXPORT, TIMING_DIR, SORTED_DIR, HELLOAO_BOOK_COMPLETENESS_FILE, ALIGN_SOURCES_FILE,
+)
 
-EXPORT_DIR = EXPORT / "ALL-langs"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from timing_index import load_resolved, resolved_of  # noqa: E402
+
 OUTPUT_DIR = EXPORT / "dbt"
 V11N_INDEX = EXPORT / "versification" / "index.json"
+EBIBLE_CSV = API_CACHE / "ebible" / "translations.csv"
+CONTRIB_DIR = TIMING_DIR / "contrib"
 
 # Canonical 66-book set, same list generate_catalog_index.py uses, to decide
 # whether a canon's timingBooks/audioBooks count represents FULL coverage
@@ -45,51 +66,241 @@ SOURCE_ORDER = ["cdn", "helloao", "ebible", "contrib", "dbt"]
 SOURCE_CHAR = {"cdn": "c", "helloao": "h", "contrib": "r", "dbt": "d", "ebible": "e"}
 SOURCE_CHAR_ORDER = ["c", "h", "e", "r", "d"]
 
-TIMING_SOURCES = [
-    TIMING_DIR / "BB",
-    TIMING_DIR / "contrib",
-    TIMING_DIR / "helloao" / "aligned",
-    LEGACY_TIMING_DIR,
-    ALIGN_CACHE_DIR,
-]
+def classify(has_text: bool, has_audio: bool, has_timing: bool) -> str | None:
+    """Same 5-category logic as sort_cache_data.py's determine_category(),
+    applied directly from a fileset's own canon_has_text/canon_has_audio/
+    canon_has_timing flags rather than its precomputed aggregate_category —
+    that field short-circuits to "partial" for PARTIAL-canon bibles without
+    checking these at all, which would lose the real media-code signal for
+    partial editions (e.g. PORALM)."""
+    if has_timing:
+        if has_text and has_audio:
+            return "with-timecode"
+        if has_audio:
+            return "audio-with-timecode"
+        if has_text:
+            return "text-only"
+        return None
+    if has_text and has_audio:
+        return "syncable"
+    if has_text:
+        return "text-only"
+    if has_audio:
+        return "audio-only"
+    return None
 
 
-def detect_sources(data: dict) -> set[str]:
-    a = data.get("a", "")
-    t = data.get("t", "")
-    t_alt = data.get("t_alt", "")
-    sources = set()
-    if a.startswith("contrib:"):
-        sources.add("contrib")
-    elif a:
-        sources.add("dbt")
-    if "helloao:" in t or "helloao:" in t_alt:
-        sources.add("helloao")
-    if "ebible:" in t:
-        sources.add("ebible")
-    return sources
+def discover_dbt_filesets(v11n: dict, resolved: dict, align_sources: dict) -> tuple[dict, dict]:
+    """Walk internal-data/sorted/BB (live, DBT-only) and return
+    (lang_filesets, dbt_has_audio) — lang_filesets[iso][canon] is the same
+    shape the old export/ALL-langs walk produced (one entry per real DBT
+    bible abbr); dbt_has_audio[iso][canon] mirrors the old detect_sources()'s
+    "dbt" tag semantic (audio presence only, not text — verified empirically
+    against the ALL-langs-based computation before this migration)."""
+    flags: dict[tuple[str, str, str], dict] = {}  # (iso, abbr, canon) -> has_text/has_audio/has_timing
 
+    for iso_dir in sorted(p for p in SORTED_DIR.iterdir() if p.is_dir()):
+        iso = iso_dir.name
+        for fileset_dir in sorted(p for p in iso_dir.iterdir() if p.is_dir()):
+            meta_path = fileset_dir / "metadata.json"
+            if not meta_path.exists():
+                continue
+            try:
+                meta = json.loads(meta_path.read_text())
+            except Exception:
+                continue
 
-def count_timing_books() -> dict[tuple[str, str, str], set[str]]:
-    """Count books with timing data per (canon, iso, fileset) from all sources."""
-    books_by_fileset: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+            abbr = meta.get("bible", {}).get("abbr", "")
+            if not abbr:
+                continue
+            canon_raw = meta.get("canon", "")
+            cat = meta.get("categorization", {})
+            books = meta.get("books") or []
+            testaments = {b.get("testament") for b in books if b.get("testament")}
+            fs_id = meta.get("fileset", {}).get("id", "")
 
-    for base in TIMING_SOURCES:
-        if not base.exists():
+            canons = set()
+            if canon_raw == "NT":
+                canons.add("nt")
+            elif canon_raw == "OT":
+                canons.add("ot")
+            elif canon_raw == "FULL":
+                canons.update({"nt", "ot"})
+            else:  # PARTIAL / VARIOUS / STORY — use real testament from books[]
+                if "NT" in testaments:
+                    canons.add("nt")
+                if "OT" in testaments:
+                    canons.add("ot")
+
+            for canon in canons:
+                key = (iso, abbr, canon)
+                flag = flags.setdefault(
+                    key, {"has_text": False, "has_audio": False, "audio_fileset_ids": set()}
+                )
+                flag["has_text"] = flag["has_text"] or bool(cat.get("canon_has_text"))
+                flag["has_audio"] = flag["has_audio"] or bool(cat.get("canon_has_audio"))
+                if cat.get("has_audio") and fs_id:
+                    flag["audio_fileset_ids"].add(fs_id)
+
+    lang_filesets: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
+    dbt_has_audio: dict[str, dict[str, bool]] = defaultdict(lambda: defaultdict(bool))
+
+    for (iso, abbr, canon), flag in sorted(flags.items()):
+        # has_timing must come from timing_index.load_resolved() (real
+        # timing — bibles' own owned sources plus audio-sync's real work,
+        # distilled from their _runs/ manifests by pull_align_manifests.py),
+        # not sort_cache_data.py's DBT-self-declared canon_has_timing
+        # (audio_timestamps_filesets.json)
+        # — that flag is narrower and disagrees with real confirmed timing
+        # we already have for plenty of editions (verified: e.g. eng/ENGNLV
+        # has real legacy-timing-data coverage DBT's own flag doesn't know
+        # about). Using DBT's flag here would wrongly classify such editions
+        # as untimed "syncable" (media="") even though real timing exists.
+        #
+        # Intersect against REAL known audio fileset ids for this abbr, not
+        # a string-prefix guess — verified false negatives from prefix
+        # matching (e.g. abbr "ACRNNT"'s real audio files are literally
+        # named "ACRWB1N2DA_timing.json", no shared prefix at all).
+        audio_fs = resolved_of(resolved, iso, flag["audio_fileset_ids"])
+        category = classify(flag["has_text"], flag["has_audio"], bool(audio_fs))
+        if category is None:
             continue
-        for tf in base.rglob("*_timing.json"):
-            parts = tf.parts
-            for anchor in ("BB", "contrib", "aligned", "legacy-timing-data", "align-cache"):
-                if anchor in parts:
-                    idx = parts.index(anchor)
-                    if idx + 4 < len(parts):
-                        canon = parts[idx + 1]
-                        iso = parts[idx + 2]
-                        distinct_id = parts[idx + 3]
-                        book = parts[idx + 4]
-                        books_by_fileset[(canon, iso, distinct_id)].add(book)
-                    break
+        media_code = CATEGORY_TO_MEDIA[category]
 
+        entry: dict = {"id": abbr, "media": media_code}
+
+        if audio_fs:
+            entry["a"] = sorted(audio_fs)
+
+        if flag["has_text"]:
+            entry["t"] = abbr
+        else:
+            # Real DBT audio, no DBT-native text — audio-sync had to pull
+            # text from elsewhere (usually helloAO) to align against, and
+            # tells us exactly where via the manifest's text_sources map
+            # (confirmed live 2026-09-14: 157+ real DBT editions hit this).
+            # Surface it so a client pairs the same text audio-sync
+            # actually verified, not a guess.
+            pairing = align_sources.get(f"{iso}/{abbr}")
+            if pairing and pairing.get("text"):
+                entry["textSource"] = pairing["text"]
+
+        scheme = v11n.get(f"{iso}/{abbr}")
+        if scheme:
+            entry["v11n"] = scheme
+
+        lang_filesets[iso][canon].append(entry)
+        if flag["has_audio"]:
+            dbt_has_audio[iso][canon] = True
+
+    # Editions with real, confirmed alignment that are NOT DBT editions at
+    # all (e.g. eng/ENGBSBHAY — helloAO audio+text, no DBT abbr backs it)
+    # — invisible to the sorted/BB walk above by construction. Without
+    # this, such an edition is fully resolvable once you already know its
+    # id (doc/dbt-timing.md's formula) but undiscoverable from media.json
+    # itself, which defeats the point of publishing a catalog at all.
+    # Confirmed live 2026-09-14: exactly 1 such edition exists today.
+    known_abbrs = {(iso, abbr) for (iso, abbr, _canon) in flags}
+    for key, pairing in sorted(align_sources.items()):
+        iso, distinct_id = key.split("/", 1)
+        if (iso, distinct_id) in known_abbrs:
+            continue  # already a real DBT abbr, handled above
+        if not pairing.get("audio"):
+            continue  # a text_sources-only entry for a real DBT edition, not foreign audio
+        books = resolved.get(iso, {}).get(distinct_id)
+        if not books:
+            continue  # audio-sync knows about it, but no confirmed timing yet
+        for canon, book_set in (("nt", NT_BOOKS), ("ot", OT_BOOKS)):
+            if not (books & book_set):
+                continue
+            entry = {"id": distinct_id, "media": "at", "a": [distinct_id],
+                      "audioSource": pairing["audio"]}
+            if pairing.get("text"):
+                entry["t"] = distinct_id
+                entry["textSource"] = pairing["text"]
+            scheme = v11n.get(f"{iso}/{distinct_id}")
+            if scheme:
+                entry["v11n"] = scheme
+            # Not marked into dbt_has_audio: this edition's real source is
+            # whatever pairing["audio"]["source"] says (e.g. helloAO), not
+            # DBT — load_helloao_sources() already covers the "sources"
+            # field correctly for that case; tagging "dbt" here would
+            # repeat the exact mislabeling bug found earlier this session
+            # in the old ALL-langs-based detect_sources().
+            lang_filesets[iso][canon].append(entry)
+
+    return lang_filesets, dbt_has_audio
+
+
+def load_helloao_sources() -> tuple[dict, dict]:
+    """Per-canon helloAO TEXT presence, from the live-refreshed completeness
+    cache (internal-data/comparison-results/helloao-book-completeness.json,
+    see refresh_helloao_completeness.py). Returns (lang_sources, lang_helloao)
+    keyed the same way the old ALL-langs-derived dicts were."""
+    lang_sources: dict[str, dict[str, set]] = defaultdict(lambda: defaultdict(set))
+    lang_helloao: dict[str, dict[str, set]] = defaultdict(lambda: defaultdict(set))
+    if not HELLOAO_BOOK_COMPLETENESS_FILE.exists():
+        return lang_sources, lang_helloao
+
+    hao = json.loads(HELLOAO_BOOK_COMPLETENESS_FILE.read_text())
+    for tid, r in hao.items():
+        iso = r.get("iso", "")
+        if not iso:
+            continue
+        if r.get("has_any_nt"):
+            lang_sources[iso]["nt"].add("helloao")
+            lang_helloao[iso]["nt"].add(tid)
+        if r.get("has_any_ot"):
+            lang_sources[iso]["ot"].add("helloao")
+            lang_helloao[iso]["ot"].add(tid)
+    return lang_sources, lang_helloao
+
+
+def load_ebible_sources() -> dict:
+    """Per-canon eBible TEXT presence, straight from the CSV's own NT/OT
+    chapter counts (already live, self-fetched by fetch_ebible_cache.py)."""
+    lang_sources: dict[str, set] = defaultdict(set)
+    if not EBIBLE_CSV.exists():
+        return lang_sources
+
+    with open(EBIBLE_CSV, encoding="utf-8-sig") as f:
+        for row in csv.DictReader(f):
+            iso = row.get("languageCode", "")
+            if not iso:
+                continue
+            if int(row.get("NTchapters") or 0) > 0:
+                lang_sources[iso].add("nt")
+            if int(row.get("OTchapters") or 0) > 0:
+                lang_sources[iso].add("ot")
+    return lang_sources
+
+
+def load_contrib_sources() -> dict:
+    """Per-canon contrib presence — local, git-tracked override directory,
+    inherently live (no fetch step)."""
+    lang_sources: dict[str, set] = defaultdict(set)
+    if not CONTRIB_DIR.is_dir():
+        return lang_sources
+    for canon_dir in CONTRIB_DIR.iterdir():
+        if not canon_dir.is_dir() or canon_dir.name not in ("nt", "ot"):
+            continue
+        for iso_dir in canon_dir.iterdir():
+            if iso_dir.is_dir():
+                lang_sources[iso_dir.name].add(canon_dir.name)
+    return lang_sources
+
+
+def count_timing_books(resolved: dict) -> dict[tuple[str, str, str], set[str]]:
+    """Count books with real timing per (canon, iso, fileset), from
+    timing_index.load_resolved() — bibles' own owned sources plus
+    audio-sync's real work distilled from their manifests."""
+    books_by_fileset: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+    for iso, filesets in resolved.items():
+        for audio_fileset, books in filesets.items():
+            for book in books:
+                canon = "nt" if book in NT_BOOKS else "ot" if book in OT_BOOKS else None
+                if canon:
+                    books_by_fileset[(canon, iso, audio_fileset)].add(book)
     return books_by_fileset
 
 
@@ -131,40 +342,17 @@ def count_audio_books() -> dict[tuple[str, str], set[str]]:
     return dict(books_by_lang)
 
 
-def find_audio_filesets_from_timing(canon: str, iso: str, fileset_id: str) -> set[str]:
-    """Extract audio fileset IDs from timing filenames for a given fileset."""
-    audio_filesets = set()
-    for base in TIMING_SOURCES:
-        if not base.exists():
-            continue
-        for anchor in ("BB", "contrib", "aligned", "legacy-timing-data", "align-cache"):
-            search_dir = base
-            if anchor == "aligned":
-                search_dir = base
-            fileset_path = None
-            for candidate in [
-                base / canon / iso / fileset_id,
-            ]:
-                if candidate.is_dir():
-                    fileset_path = candidate
-                    break
-            if not fileset_path:
-                continue
-            for tf in fileset_path.rglob("*_timing.json"):
-                name = tf.stem.replace("_timing", "")
-                parts = name.split("_", 2)
-                if len(parts) >= 3:
-                    audio_filesets.add(parts[2])
-    return audio_filesets
-
-
 def main():
-    if not EXPORT_DIR.is_dir():
-        print("[ERROR] export/ALL-langs not found. Run export-stories first.")
+    if not SORTED_DIR.is_dir():
+        print(f"[ERROR] {SORTED_DIR} not found. Run: make sort-dbt-catalog")
         return
 
+    print("[INFO] Loading resolved timing (owned sources + audio-sync manifest digest)...")
+    resolved = load_resolved()
+    align_sources = json.loads(ALIGN_SOURCES_FILE.read_text()) if ALIGN_SOURCES_FILE.exists() else {}
+
     print("[INFO] Counting timing books across all sources...")
-    timing_books_map = count_timing_books()
+    timing_books_map = count_timing_books(resolved)
 
     print("[INFO] Counting audio books from sorted metadata...")
     audio_books_set_map = count_audio_books()
@@ -174,73 +362,36 @@ def main():
     if V11N_INDEX.exists():
         v11n = json.loads(V11N_INDEX.read_text())
 
-    # Collect per (iso, canon): all filesets with their details
-    # Structure: lang_data[iso][canon] = list of fileset entries
-    lang_filesets: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
-    lang_sources: dict[str, dict[str, set]] = defaultdict(lambda: defaultdict(set))
-    lang_helloao: dict[str, dict[str, set]] = defaultdict(lambda: defaultdict(set))
+    print("[INFO] Discovering DBT filesets from internal-data/sorted/BB...")
+    lang_filesets, dbt_has_audio = discover_dbt_filesets(v11n, resolved, align_sources)
 
-    for canon_dir in sorted(EXPORT_DIR.iterdir()):
-        if not canon_dir.is_dir():
-            continue
-        canon = canon_dir.name
+    print("[INFO] Loading helloAO/eBible/contrib source presence...")
+    lang_sources, lang_helloao = load_helloao_sources()
+    ebible_sources = load_ebible_sources()
+    contrib_sources = load_contrib_sources()
 
-        for cat_dir in sorted(canon_dir.iterdir()):
-            if not cat_dir.is_dir():
-                continue
-            category = cat_dir.name
+    for iso, canons in dbt_has_audio.items():
+        for canon, present in canons.items():
+            if present:
+                lang_sources[iso][canon].add("dbt")
+    for iso, canons in ebible_sources.items():
+        for canon in canons:
+            lang_sources[iso][canon].add("ebible")
+    for iso, canons in contrib_sources.items():
+        for canon in canons:
+            lang_sources[iso][canon].add("contrib")
 
-            if category not in CATEGORY_TO_MEDIA:
-                continue
-
-            media_code = CATEGORY_TO_MEDIA[category]
-
-            for iso_dir in sorted(cat_dir.iterdir()):
-                if not iso_dir.is_dir():
-                    continue
-                iso = iso_dir.name
-
-                for fileset_dir in sorted(iso_dir.iterdir()):
-                    if not fileset_dir.is_dir():
-                        continue
-                    data_file = fileset_dir / "data.json"
-                    if not data_file.exists():
-                        continue
-
-                    fileset_id = fileset_dir.name
-                    with open(data_file) as f:
-                        data = json.load(f)
-
-                    sources = detect_sources(data)
-                    lang_sources[iso][canon].update(sources)
-
-                    # Collect helloAO text IDs
-                    for field in ("t", "t_alt"):
-                        val = data.get(field, "")
-                        if val.startswith("helloao:"):
-                            lang_helloao[iso][canon].add(val[8:])
-
-                    entry: dict = {"id": fileset_id, "media": media_code}
-
-                    # Add audio filesets
-                    audio_fs = find_audio_filesets_from_timing(canon, iso, fileset_id)
-                    if audio_fs:
-                        entry["a"] = sorted(audio_fs)
-
-                    # Add text fileset if category has text
-                    if category in ("with-timecode", "text-only", "syncable"):
-                        entry["t"] = fileset_id
-
-                    # Add versification scheme if fingerprinted (DBT-native)
-                    scheme = v11n.get(f"{iso}/{fileset_id}")
-                    if scheme:
-                        entry["v11n"] = scheme
-
-                    lang_filesets[iso][canon].append(entry)
+    # Union, not just lang_filesets: a language with only helloAO/eBible/
+    # contrib presence and zero DBT filesets has no entry in sorted/BB at
+    # all (DBT-only by construction), so discover_dbt_filesets() never
+    # sees it — but it still needs a media.json (sources/h at minimum),
+    # same as the old ALL-langs-based pipeline wrote for its ~985 pure-
+    # helloAO/eBible synthetic entries.
+    all_isos = set(lang_filesets) | set(lang_sources)
 
     # Write media.json per language (including text-only)
     files_written = 0
-    for iso in sorted(lang_filesets):
+    for iso in sorted(all_isos):
         canons_out = {}
 
         for canon in ("nt", "ot"):
@@ -389,7 +540,7 @@ def main():
 
     # Build media-index.json roll-up (compact: omit "m" when "", omit canon when empty)
     index = {}
-    for iso in sorted(lang_filesets):
+    for iso in sorted(all_isos):
         entry = {}
         for canon, key in (("nt", "n"), ("ot", "o")):
             filesets = lang_filesets[iso].get(canon, [])

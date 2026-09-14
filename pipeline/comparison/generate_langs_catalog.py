@@ -137,6 +137,9 @@ def load_names():
     if MEDIA_INDEX_FILE.exists():
         media_index = json.loads(MEDIA_INDEX_FILE.read_text())
         for iso, entry in media_index.get("l", {}).items():
+            if "nm" not in entry:
+                continue  # no resolved name for this iso yet — build()'s own
+                # iso-as-last-resort-label fallback covers it, not a silent drop
             nm = {"n": entry["nm"]}
             if "v" in entry:
                 nm["v"] = entry["v"]

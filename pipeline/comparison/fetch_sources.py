@@ -116,7 +116,7 @@ def pkf_text(iso: str, pkf_file: str, book: str, chapter: int, env: dict, bucket
 
 def rclone_env():
     """Same R2/Cloudflare credential resolution as every other script that
-    talks to R2 (scripts/publish-dbt.sh, pull_align_cache.py, the old
+    talks to R2 (scripts/publish-dbt.sh, pull_align_manifests.py, the old
     batch_compare_pkf_*.py scripts)."""
     import os
     from dotenv import load_dotenv
