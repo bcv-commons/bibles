@@ -131,6 +131,14 @@ Building a language picker? Start with these two, in order:
    detail, and OBS presence, joined from the files below so you don't
    have to cross-reference them yourself.
 
+Building a **text-language** picker specifically (one that must exclude
+audio-only languages)? **[`audio-only.json`](audio-only.md)** is a small
+exclusion list (624 isos) — drop anything in it from
+`language-names.json`'s universe to get a reliable text-only selector,
+no category-string guessing. `catalog/index.json` (below) answers the
+same underlying question too, if you're already fetching it for other
+reasons — see `audio-only.md` for the tradeoff.
+
 **[`langs.json` / `langs-mini.json`](catalog-langs.md)** — an older,
 narrower sibling: per-language display names (`{n, v, s}`, DBT-oriented,
 smaller source coverage than `language-names.json` above) bucketed by
