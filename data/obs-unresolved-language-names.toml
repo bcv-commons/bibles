@@ -1,0 +1,152 @@
+# 87 OBS-only ISO codes (export/catalog/obs-index.json) that
+# generate_language_names.py could not resolve a real display name for
+# from any source this repo already has — not DBT-family
+# (media-index.json), not PKF. Found 2026-09-15, same day
+# generate_language_names.py was extended to union OBS-only languages
+# into the selection list.
+#
+# Two resolution passes, both 2026-09-15, both against real external
+# sources (never from memory):
+#
+# PASS 1 — SIL's official ISO 639-3 registry:
+#   https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3.tab
+#   https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3_Retirements.tab
+# For a private-use/extended tag (e.g. `bfz-x-baghati`), SIL only has an
+# entry for the BASE 3-letter code, not the `-x-...` dialect subtag
+# itself, so pass 1 used "<base name> (<raw subtag, capitalized>)".
+#
+# PASS 2 — superseded most of pass 1 with door43's own per-repo title,
+# `internal-data/api-cache/obs-repos.json`'s `language_title` field (the
+# same source doc/catalog-langs.md's older `langs.json` already uses for
+# this exact problem — should have been checked before pass 1, not after;
+# noted so this isn't missed again). This is the actual content owner's
+# own name for their translation project, and proved consistently more
+# specific/accurate than pass 1's generic registry-plus-subtag
+# construction — most notably for the Romani-family codes, where pass 1's
+# `rmr`/`rmy`-based guesses ("Caló", "Vlax Romani") were flatly wrong:
+# door43's own titles reveal real, distinct subgroup names ("Bayash
+# Slavic Ludari", "Čergari", "Gurbet", "Arli") pass 1 had no way to know.
+# Rule applied: door43's title REPLACES pass 1's name whenever it exists
+# and differs, EXCEPT:
+#  - 8 codes where door43's title is in non-Latin script (Arabic/Persian
+#    script) — pass 1's English gloss is kept as the name, door43's title
+#    added as real vernacular text: `ar-xzn`, `bal`, `def`,
+#    `fas-x-eastfars`, `lrc`, `qxq`, `smy`, `tks`.
+#  - 3 codes where door43's Latin-script title is the language's own
+#    vernacular self-name, not an English gloss — same treatment, name
+#    kept + vernacular added: `es-419` ("Español de Latinoamérica"),
+#    `pt-br` ("Português"), `sr-latn` ("srpski (Serbian)").
+# Value shape here follows the same convention as language-names.json
+# itself: a bare string when there's no separate vernacular, a
+# `[name, vernacular]` array when there is.
+#
+# Caveats still worth knowing:
+#  - `rmr-x-bsl` -> "Bayash Slavic Ludari" (door43, pass 2) corrects pass
+#    1's "Caló" — pass 1 was built from a RETIRED ISO code (`rmr` split
+#    into `rmq`/`emx` in 2010) and flagged then as an unconfirmed guess;
+#    door43's own title resolves that uncertainty directly rather than
+#    guessing between the two successor codes.
+#  - `cdg` ("Chamari") is also a RETIRED/withdrawn ISO code (2020, reason
+#    unrecorded) — door43's own title agrees with the registry here, so
+#    pass 1's value stands, cross-verified rather than superseded.
+#  - The four `bfz-x-*` (Mahasu Pahari dialects) and four `und-x-*`
+#    (previously literally "Undetermined") codes lost their pass-1 base-
+#    language prefix in favor of door43's bare dialect-specific title
+#    (e.g. `bfz-x-baghati` -> "Baghati", not "Mahasu Pahari (Baghati)")
+#    — less context, but a real, specific, content-owner-chosen name
+#    instead of a mechanically-constructed one; the four `und-x-*` codes
+#    in particular are no longer confusingly all "Undetermined".
+#
+# [names] holds only VERIFIED real names — generate_language_names.py
+# reads this table before falling back to the bare ISO code. Any future
+# addition here (a name for an iso not yet covered) must be verified
+# against a real source the same way, never guessed from the tag string.
+
+[names]
+ar-xzn = ["Khuzestani Arabic", "عربی-خوزستان"]
+bal = ["Baluchi", "بلوچی"]
+bee = "Byangsi"
+bfz-x-baghati = "Baghati"
+bfz-x-baghliani = "Baghliani"
+bfz-x-karsogi = "Karsogi"
+bfz-x-rampuribusheri = "Rampuri Busheri"
+biy-x-mankidia = "Mankidia"
+bns = "Bundelkhandi"
+cdg = "Chamari"
+cdi = "Chaudhari"
+cdn = "Chaudhansi"
+def = ["Dezfuli", "گویش دزفولی"]
+dho = "Dhodia"
+drd = "Darmia"
+dso-x-korapdesia = "Koraput Desiya"
+emu = "Muria Easten"
+es-419 = ["Spanish (Latin America and the Caribbean)", "Español de Latinoamérica"]
+fas-x-eastfars = ["Persian (Eastfars)", "دری"]
+gaj-x-ymnk = "Gadsup Yomunka"
+gda = "Lohari"
+gdb = "Ollar Gadaba"
+gdx = "Godwari"
+gjk = "Kachi Koli"
+gju = "Gojiri"
+gom-x-malvani = "Malwani"
+gon-x-aheri = "Aheri Gondi"
+gra = "Garasia"
+hii = "Hinduri"
+hmr = "Hmar"
+hne-x-laria = "Laria"
+ins = "Indian Sign Language"
+jnl-x-vanrawat = "Van Rawat"
+kas-x-kashtwari = "Kashtwari"
+kex = "Kukna"
+kff-x-dorli = "Dorli"
+kfr = "Kachchi"
+kfx-x-innerseraji = "Kulvi Inner Seraji"
+kfx-x-outerseraji = "Outer Seraji"
+kfy-x-soriyali = "Soriyali"
+khr = "Kharia"
+kmz = "Khorasani Turkic"
+lae = "Pattani"
+lbm-x-sabar = "Lodha Sabar"
+lpx = "Lopit"
+lrc = ["Northern Luri", "لُری"]
+mjx = "Mahali"
+mke = "Mawchi"
+nhh = "Nahari"
+ntz = "Natanzi"
+ors-x-oranglau = "Suku Laut"
+pcl = "Pardhi"
+ps-x-pathani = "Pathani"
+pt-br = ["Portuguese (Brazil)", "Português"]
+pwr-x-koshti = "Koshti"
+qxq = ["Qashqa'i", "زبان ترکی قشقایی"]
+rji = "Raji"
+rmr-x-bsl = "Bayash Slavic Ludari"
+rmy-x-bsa = "South Slavic Ardilean Bayash"
+rmy-x-vc = "Čergari"
+rmy-x-vg = "Gurbet (Vlach Romani)"
+rmy-x-vwa = "Arli (Romani)"
+rnp = "Rongpo"
+sat = "Santali"
+sbu = "Bhoti"
+scu = "Shumcho"
+smy = ["Semnani", "زبان سمنانی"]
+spv = "Sambalpuri"
+sr-latn = ["Serbian (Latin)", "srpski (Serbian)"]
+srb = "Savara Soura"
+srz = "Shahmirzadi"
+tdj = "Tajio"
+thf = "Thami"
+thl-x-deukhuri = "Deukhuri Tharu"
+thl-x-rautahat = "Rautahad Tharu"
+tks = ["Takestani", "گویش تاتی"]
+tpq = "Tukpa"
+und-x-bhagiliyani = "Bhagiliyani"
+und-x-chopali = "Chopali"
+und-x-choudhancy = "Choudhancy"
+und-x-lahouli = "Lahouli"
+unx-deva = "Munda (Devnagri)"
+ur-deva = "Urdu Devanagari script"
+vav-x-dauri = "Dauri Varli"
+vav-x-dawri = "Varli (Dawri)"
+ylb = "Yaleba"
+zh-hant = "Chinese, Traditional"

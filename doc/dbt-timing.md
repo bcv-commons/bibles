@@ -55,8 +55,33 @@ this fileset id isn't ours or DBT's — go get it from wherever `source`
 says (currently always `"helloao"`). This also appears on some entries
 that otherwise look like ordinary DBT editions (real `distinct_id`, real
 `a[]`) — DBT provides the audio but has no native text for that edition,
-so audio-sync tells us which helloAO text they verified it against;
-`textSource` alone (no `audioSource`) means exactly that case.
+so audio-sync tells us which text they verified it against.
+
+**A handful of editions (4, confirmed 2026-09-15: `nor/NBS` — `src:
+"legacy"`; `deu/DEUSOL` — `src: "contrib"`; `mal/MALBIB` and `xon/XONIBS`
+— `src: "BB"`) carry `media: "at"` and a real `a[]` id with *neither*
+field** — bibles' own pre-this-repo historical timing imports (not DBT,
+not audio-sync), with no preserved record of the real audio's origin.
+Real and resolvable via the formula above (using each one's own `src`
+above — they're not all the same source), just honestly un-attributed
+rather than guessed — e.g. `nor/NBS`'s real DBT text counterpart is very
+likely `NORNBS` by name, but that's an unverified guess, not confirmed
+the way `ENGBSBHAY`'s pairing was, so no `t` is published for these. If
+you can independently verify the real source for one of these, that's
+useful information to send back.
+
+**One of the four, `nor/NBS`, also has a real playable raw audio file** —
+confirmed live: `https://cdn.bibel.wiki/audio/nor/NBS/<BOOK>_<chapter>.mp3`
+(e.g. `.../JHN_1.mp3`, `.../JHN_2.mp3`, `.../JHN_3.mp3`, all real
+`audio/mpeg`, no zero-padding on the chapter number). **This is not a
+general convention** — checked directly and ruled out for the other
+three (`DEUSOL`, `MALBIB`, `XONIBS` all 404 at the equivalent path
+across multiple books/chapters tried) — don't assume it applies beyond
+`NBS` specifically without checking.
+
+`textSource` alone (no `audioSource`) is the DBT-audio-but-non-DBT-text
+case described just above — a real DBT `distinct_id` with real `a[]`,
+just no native DBT text.
 
 **If you already have `media.json`, that's the whole discovery step —
 skip straight to resolving the source below.** The manifest-inspection

@@ -35,7 +35,7 @@ from paths import (  # noqa: E402
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from timing_index import load_resolved, resolved_of  # noqa: E402
+from timing_index import load_resolved, load_local_editions, resolved_of  # noqa: E402
 
 OUTPUT_DIR = EXPORT / "dbt"
 V11N_INDEX = EXPORT / "versification" / "index.json"
@@ -228,6 +228,38 @@ def discover_dbt_filesets(v11n: dict, resolved: dict, align_sources: dict) -> tu
             # repeat the exact mislabeling bug found earlier this session
             # in the old ALL-langs-based detect_sources().
             lang_filesets[iso][canon].append(entry)
+
+    # Same problem, bibles' own historical data instead of audio-sync's:
+    # editions with real confirmed timing (from BB/contrib/legacy-timing-data
+    # — see timing_index.py) that are NOT DBT abbrs and have no
+    # align_sources attribution either (e.g. nor/NBS — a one-time
+    # pre-this-repo import, real cached timing, but no preserved record of
+    # where the actual audio came from). Confirmed live 2026-09-15: DBT's
+    # real Norwegian text edition (NORNBS) has zero audio filesets, so
+    # "NBS" was never resolvable against DBT at all, explaining a real
+    # client-reported 404.
+    #
+    # Published honestly: real audio + real timing (media "at" — same
+    # audio-with-timecode code with or without a text pairing), but no `t`
+    # and no audioSource/textSource — unlike ENGBSBHAY, nothing tells us
+    # the real paired text or the audio's origin, and guessing one (e.g.
+    # assuming NORNBS just because the names are similar) risks asserting
+    # a pairing that was never actually verified. A client already has its
+    # own fallback for this (per the nor bug report, source-catalog.json).
+    foreign_handled = known_abbrs | {tuple(k.split("/", 1)) for k in align_sources}
+    for iso, abbrs in sorted(load_local_editions().items()):
+        for abbr, filesets in sorted(abbrs.items()):
+            if (iso, abbr) in foreign_handled:
+                continue
+            all_books = set().union(*filesets.values()) if filesets else set()
+            for canon, book_set in (("nt", NT_BOOKS), ("ot", OT_BOOKS)):
+                if not (all_books & book_set):
+                    continue
+                entry = {"id": abbr, "media": "at", "a": sorted(filesets)}
+                scheme = v11n.get(f"{iso}/{abbr}")
+                if scheme:
+                    entry["v11n"] = scheme
+                lang_filesets[iso][canon].append(entry)
 
     return lang_filesets, dbt_has_audio
 

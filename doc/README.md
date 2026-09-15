@@ -117,12 +117,29 @@ edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
 
 ## Language display names + coverage summary
 
-**[`langs.json` / `langs-mini.json`](catalog-langs.md)** — per-language
-display names (`{n, v, s}`) and NT/OT/OBS canon coverage by category
-(`with-timecode`/`audio-with-timecode`/`syncable`/`text-only`/
-`audio-only`). Self-derived from `catalog-index.json` +
-`catalog-audio-index.json` + `/dbt/`/`/obs/` media data — no external
-dependency, 2566 languages including the OBS canon.
+Building a language picker? Start with these two, in order:
+
+1. **[`language-names.json`](language-names.md)** — the single,
+   canonical `iso -> {name, vernacular}` lookup, unioned across every
+   source this repo knows about (DBT-family, PKF, and OBS-only
+   languages). Compact, name-only — nothing else. Use this to populate
+   the picker itself; if you maintain your own multi-source name
+   fallback logic today, this file is meant to replace it.
+2. **[`/dbt/<iso>/availability.json`](language-availability.md)** — once
+   a language is picked, one fetch for "what's actually available for
+   it" — real editions (deduped, cross-source), audio/timing book-level
+   detail, and OBS presence, joined from the files below so you don't
+   have to cross-reference them yourself.
+
+**[`langs.json` / `langs-mini.json`](catalog-langs.md)** — an older,
+narrower sibling: per-language display names (`{n, v, s}`, DBT-oriented,
+smaller source coverage than `language-names.json` above) bucketed by
+NT/OT/OBS coverage category (`with-timecode`/`audio-with-timecode`/
+`syncable`/`text-only`/`audio-only`). Useful if you specifically want the
+category bucketing or the ISO 15924 script code (`s`); for a plain
+name lookup or picker, prefer `language-names.json` instead — it has
+broader coverage (PKF- and OBS-only languages this file's DBT-oriented
+derivation doesn't reach) and a smaller wire format.
 
 ## Versification per edition
 

@@ -53,6 +53,33 @@ def load_resolved() -> dict:
     return resolved
 
 
+def load_local_editions() -> dict:
+    """{iso: {abbr: {audio_fileset: {books}}}} — bibles' own owned sources
+    (BB/contrib/legacy-timing-data) ONLY, preserving the directory-level
+    abbr grouping load_resolved() flattens away. Needed to publish a
+    local-only foreign edition (e.g. nor/NBS) correctly: `id` must be the
+    real edition abbr, `a` the real audio fileset id(s) under it — they
+    can differ (confirmed: NBS's real audio file is
+    "..._NBSN2DA_timing.json", same pattern as DBT's own abbr-vs-fileset-id
+    split, e.g. ACRNNT/ACRWB1N2DA)."""
+    editions: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(set)))
+    for base in LOCAL_SOURCES:
+        if not base.exists():
+            continue
+        for tf in base.rglob("*_timing.json"):
+            name_parts = tf.stem.replace("_timing", "").split("_", 2)
+            if len(name_parts) < 3:
+                continue
+            book, _chapter, audio_fileset = name_parts
+            try:
+                parts = tf.relative_to(base).parts
+                iso, abbr = parts[1], parts[2]
+            except (ValueError, IndexError):
+                continue
+            editions[iso][abbr][audio_fileset].add(book)
+    return editions
+
+
 def resolved_of(resolved: dict, iso: str, known_fileset_ids) -> set:
     """Intersect a caller-supplied set of REAL audio fileset ids (read
     directly from sorted/BB's own bible.abbr-scoped metadata — the only
