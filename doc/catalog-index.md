@@ -2,7 +2,7 @@
 
 `https://cdn.bibel.wiki/catalog/index.json`
 
-Thin existence/availability index across all three sources. Answers "what
+Thin existence/availability index across all four sources. Answers "what
 exists, from whom, for this language, complete or partial" — nothing else.
 No comparison data here; see [`catalog-overlap.json`](catalog-overlap.md)
 for that.
@@ -19,6 +19,7 @@ for that.
     {"h": "https://bible.helloao.org/api/available_translations.json"},
     {"o": "https://openbible-api-1.biblica.com/projects"}
   ],
+  "pending_openbible_coverage": 246,
   "entries": [
     ["aai", "nt", "d"],
     ["aai", "nt", "h"],
@@ -37,6 +38,16 @@ to fail loudly on a future shape change instead of hitting a confusing
 runtime error. Currently `1`; this file's row shape hasn't changed since
 it was first published.
 
+`pending_openbible_coverage` (added 2026-09-19) — a real, live count of
+Biblica text projects that exist but aren't in `entries` at all yet,
+purely because they don't have a resolved yaapi.bible abbreviation to
+publish under (see the `o` row note below). This is a machine-detectable
+signal, not just a documentation footnote — a client can watch this
+number and know real content exists beyond what's currently listed,
+without silently assuming completeness. Expected to shrink over time as
+yaapi.bible's own catalog coverage grows (`0` once fully closed); never
+expect it to explain a gap in any other source.
+
 ## Row format
 
 `[iso, canon, source, count?]`
@@ -49,7 +60,14 @@ it was first published.
   assessed independently.
 - **`source`** — single letter: `d` = DBT, `p` = PKF, `h` = helloAO, `o` =
   openbible (Biblica's Open Bible catalog, added 2026-09-16 — see
-  [`sources.md`](sources.md)). A `d` row means DBT's catalog has
+  [`sources.md`](sources.md)). **`o` rows only count Biblica text projects
+  with a real, resolved yaapi.bible abbreviation** (decided 2026-09-19 —
+  publishing a raw Biblica hex project id was judged a bad long-term
+  precedent, since a client depending on it makes migrating away later
+  costly; see `openbible-editions.json`'s doc). A project with no
+  abbreviation yet is temporarily excluded here entirely, not shown under
+  a hex id — see `pending_openbible_coverage` below for how many. A `d`
+  row means DBT's catalog has
   **independently fetchable text of its own** for this `(iso, canon)` —
   not just a catalog entry. Some DBT rows are external-source *pointers*
   (their text tag references helloAO's or eBible's text rather than

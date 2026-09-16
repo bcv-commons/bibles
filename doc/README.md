@@ -37,6 +37,12 @@ to fetch actual content from them, and the default priority order
 `catalog-overlap.json` use when a client just wants one good default
 without deciding for itself.
 
+Want readable openbible **text** specifically, without dealing with
+Biblica's raw whole-edition zips? **[`openbible-chapters.md`](openbible-chapters.md)**
+is a derived, per-chapter-fetchable endpoint (390 non-ND-only editions),
+built as a cache in front of [`yaapi.bible`](https://yaapi.bible/)'s own
+real extraction — no USFM parsing needed on your end.
+
 ## Runnable code examples
 
 **[`examples/`](examples/)** — small Python and JavaScript scripts that

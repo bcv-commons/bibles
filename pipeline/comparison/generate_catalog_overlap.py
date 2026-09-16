@@ -91,7 +91,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR  # noqa: E402
+from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR, API_CACHE  # noqa: E402
 
 SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p", "openbible": "o"}
 
@@ -99,6 +99,18 @@ SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p", "openbible": "o"}
 def shorten(sid: str) -> str:
     source, mid = sid.split(":", 1)
     return f"{SHORT_SOURCE[source]}:{mid}"
+
+
+def pending_openbible_coverage() -> int:
+    """See catalog-index.json's identical field for the full rationale —
+    same computation, kept independent rather than imported cross-module
+    to avoid a real dependency between two otherwise-separate generators."""
+    editions_file = CATALOG_DIR / "openbible-editions.json"
+    if not editions_file.exists():
+        return 0
+    mapped = set(json.loads(editions_file.read_text())["entries"].keys())
+    total_projects = len(list((API_CACHE / "openbible" / "text").glob("*.json")))
+    return total_projects - len(mapped)
 
 
 def load(path, default=None):
@@ -293,6 +305,14 @@ def main():
         "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
         "priority": ["pkf", "helloao", "dbt", "openbible"],
         "audio_source": "dbt",
+        # Same real, deliberate gap catalog-index.json's own field
+        # documents — openbible clusters only ever contain a project with
+        # a resolved yaapi.bible abbreviation (id shown as `o:<abbr>`,
+        # never a raw Biblica hex id, decided 2026-09-19). This number is
+        # how many additional Biblica text projects exist but aren't in
+        # any cluster here yet, purely because they don't have a
+        # client-facing id to publish under.
+        "pending_openbible_coverage": pending_openbible_coverage(),
         "entries": dict(sorted(entries.items())),
     }
 

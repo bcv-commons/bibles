@@ -148,14 +148,27 @@ def openbible_rows():
     fetch_openbible_book_coverage.py's real per-project book list (the zip
     is whole-edition, so this is the only way to know real coverage — no
     external-pointer concern the way DBT's `t:helloao:...` rows have,
-    Biblica's own zips always carry its own real USFM)."""
+    Biblica's own zips always carry its own real USFM).
+
+    Restricted to projects with a real yaapi.bible abbreviation
+    (openbible-editions.json) — decided 2026-09-19: publishing a raw
+    Biblica hex project id as a client-facing identifier was judged a
+    dangerous precedent (once a client depends on it, migrating away is
+    costly), so unmapped projects are temporarily EXCLUDED here entirely
+    rather than exposed under an id meant to be replaced later. This is a
+    real, deliberate content gap, not a bug — see doc/catalog-index.md's
+    note on `pending_openbible_coverage` for how a client can detect it."""
     coverage_file = API_CACHE / "openbible" / "text-book-coverage.json"
+    editions_file = CATALOG_DIR / "openbible-editions.json"
     if not coverage_file.exists():
         return {}
     coverage = json.loads(coverage_file.read_text())
+    mapped_ids = set(json.loads(editions_file.read_text())["entries"].keys()) if editions_file.exists() else set()
     counts = defaultdict(int)
     for project_dir in (API_CACHE / "openbible" / "text").glob("*.json"):
         project_id = project_dir.stem
+        if project_id not in mapped_ids:
+            continue
         books = set(coverage.get(project_id) or [])
         if not books:
             continue
@@ -210,10 +223,24 @@ def main():
             row.append(count)
         entries.append(row)
 
+    # Real, deliberate content gap (decided 2026-09-19) — openbible_rows()
+    # only counts Biblica text projects with a resolved yaapi.bible
+    # abbreviation (see its own docstring). This field makes that gap
+    # machine-detectable, not just documented in prose: a client can see
+    # a real number here and know more content exists but isn't
+    # published under a client-facing id yet — never silently absent.
+    editions_file = CATALOG_DIR / "openbible-editions.json"
+    pending_openbible = 0
+    if editions_file.exists():
+        mapped = set(json.loads(editions_file.read_text())["entries"].keys())
+        total_projects = len(list((API_CACHE / "openbible" / "text").glob("*.json")))
+        pending_openbible = total_projects - len(mapped)
+
     output = {
         "schema_version": 1,
         "generated_at": None,
         "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL}, {"o": OPENBIBLE_PROJECTS_URL}],
+        "pending_openbible_coverage": pending_openbible,
         "entries": entries,
     }
 

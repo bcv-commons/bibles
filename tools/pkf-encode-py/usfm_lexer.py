@@ -10,7 +10,7 @@ HEADER_MARKERS = {"id", "usfm", "ide", "h", "toc1", "toc2", "toc3", "toca1", "to
 
 PARAGRAPH_MARKERS = {
     "mt1", "mt2", "mt3", "mt4", "mte1", "mte2", "ms1", "ms2", "mr",
-    "s1", "s2", "s3", "s4", "sr", "r", "d", "sp",
+    "s", "s1", "s2", "s3", "s4", "sr", "r", "d", "sp",
     "p", "m", "pmo", "pm", "pmc", "pmr", "pi", "pi1", "pi2", "pi3", "pi4",
     "mi", "nb", "cls", "li", "li1", "li2", "li3", "li4", "pc",
     "q", "q1", "q2", "q3", "q4", "qc", "qr", "qm1", "qm2", "qm3", "qm4", "qa", "b",

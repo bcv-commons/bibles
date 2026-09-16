@@ -40,6 +40,9 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, SORTED_DIR  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from timing_index import load_resolved, resolved_of  # noqa: E402
+
 
 # Helper functions for simplification
 def _safe_get_list(data_dict: dict, key: str) -> list:
@@ -82,6 +85,13 @@ class IndependentCacheDataSorter:
         # Data structures
         self.all_bibles = []
         self.timing_filesets = set()
+        # CONFIRMED real timing (bibles' own owned sources + audio-sync's
+        # real work) — the actual "does this audio fileset have real,
+        # working timing" answer. self.timing_filesets above is DBT's own
+        # unverified per-fileset claim (timing_est_err) and must NOT be
+        # used to decide whether a fileset still needs syncing — see
+        # has_confirmed_timing()'s docstring for the real bug this fixes.
+        self.resolved_timing: dict = {}
         self.timing_bibles_metadata = {}  # Map bible abbr to extended metadata
         self.bible_details_metadata = {}  # Map bible abbr to {direction, script}
         self.bible_books_metadata = {}  # Map bible abbr to [{book_id, chapters, testament, book_seq}]
@@ -107,7 +117,10 @@ class IndependentCacheDataSorter:
         }
 
     def load_timing_filesets(self):
-        """Load the list of filesets that have timing data."""
+        """Load DBT's own UNVERIFIED per-fileset timing claim
+        (timing_est_err, via audio_timestamps_filesets.json) — kept for
+        informational/reporting use only. Do NOT use this to decide
+        whether a fileset still needs syncing; see has_confirmed_timing()."""
         timing_file = self.cache_dir / "samples" / "audio_timestamps_filesets.json"
         if not timing_file.exists():
             print(f"Warning: {timing_file} not found")
@@ -118,7 +131,35 @@ class IndependentCacheDataSorter:
             for item in data:
                 self.timing_filesets.add(item["fileset_id"])
 
-        print(f"Loaded {len(self.timing_filesets)} filesets with timing data")
+        print(f"Loaded {len(self.timing_filesets)} filesets with DBT's own unverified timing claim")
+
+    def load_confirmed_timing(self):
+        """Load CONFIRMED real timing (bibles' own owned sources +
+        audio-sync's real work, via timing_index.load_resolved()) — the
+        actual answer to "does this fileset have real, working timing".
+
+        FIXED 2026-09-19 (real, confirmed bug): every "has_timing"/
+        "syncable" decision in this file used to check
+        self.timing_filesets (DBT's own UNVERIFIED per-fileset claim,
+        timing_est_err) instead of this. generate_audio_metadata.py had
+        already hit and fixed this exact mistake once (see its own
+        detailed comment) but sort_cache_data.py was never updated to
+        match. Confirmed concretely: DBT's catalog claims fra/FRNTLSN2SA
+        has timing (timing_est_err="4", same value as fra/FRNTLSN2DA,
+        which DOES have real published timing) — but cdn.bibel.wiki/dbt/
+        fra/timing/JHN.json has no FRNTLSN2SA entry at all, and neither
+        internal-data/align-index.json (audio-sync's real work) nor
+        internal-data/legacy-timing-data/ (bibles' own owned sources)
+        has ever produced real timing for it. Trusting DBT's claim here
+        silently excluded FRNTLSN2SA from ever being proposed as a sync
+        candidate (compute_syncable_pairs()'s "audio does NOT have timing
+        data already" pre-filter) even though no real timing exists for
+        it anywhere — the actual, deeper cause of DA getting synced
+        instead of SA (the never-triggering filter_dramatized_versions()
+        bug, fixed separately, only matters for languages that make it
+        past THIS gate in the first place)."""
+        self.resolved_timing = load_resolved()
+        print(f"Loaded confirmed real timing for {len(self.resolved_timing)} languages")
 
     def load_timing_bibles_metadata(self):
         """
@@ -331,6 +372,12 @@ class IndependentCacheDataSorter:
                 return fileset_id[: -len(suffix)]
         return fileset_id
 
+    def has_confirmed_timing(self, iso: str, fileset_id: str) -> bool:
+        """The real "does this fileset have real, working timing" check —
+        see load_confirmed_timing()'s docstring for the bug this replaces.
+        Use this everywhere instead of `... in self.timing_filesets`."""
+        return bool(resolved_of(self.resolved_timing, iso, {self.normalize_fileset_id(fileset_id)}))
+
     def normalize_bible_abbr(self, abbr: str) -> str:
         """
         Normalize bible abbreviation to 6 letters.
@@ -350,40 +397,66 @@ class IndependentCacheDataSorter:
 
     def filter_dramatized_versions(self, filesets: list[str]) -> list[str]:
         """
-        Filter out dramatized versions when non-dramatized version exists.
+        Filter out dramatized versions when a non-dramatized version of the
+        SAME recording exists.
 
-        Dramatized check: Position -3 (third from end) == '2'
-        Non-dramatized: Position -3 == '1'
+        FIXED 2026-09-19 (real, confirmed bug — see internal-docs / the
+        conversation that found it): this function's name and docstring
+        always claimed to prefer non-dramatized audio, but its comparison
+        looked at position -3 ('1' vs '2'), which is DBT's recording
+        generation/edition digit (the "N1"/"N2" in e.g. FRNTLSN2DA) — NOT
+        the dramatized/standard marker. That marker is the real LAST TWO
+        characters of the fileset id: "DA" (dramatized) vs "SA" (standard).
+        Because the old grouping key included those last two characters
+        verbatim, a DA fileset and its real SA sibling (e.g. FRNTLSN2DA /
+        FRNTLSN2SA — same generation, same base recording) were always
+        placed in DIFFERENT groups and so were NEVER compared — the
+        intended suppression never fired. Confirmed at scale: of 800
+        already-aligned DA filesets in internal-data/align-index.json, 351
+        (44%) have a DBT-confirmed-timing-capable SA sibling that was never
+        aligned — this was silently exposing DA as an equally-valid sync
+        candidate in nearly half of all cases, not just an edge case.
+
+        This fix does NOT retroactively touch any already-aligned/published
+        DA timing data (internal-data/align-index.json,
+        internal-data/legacy-timing-data/, or anything already exported) —
+        those stay exactly as-is, deliberately (do not "fix" a fileset
+        choice that already shipped). It only changes which candidates get
+        PROPOSED going forward.
 
         Example:
-            If both ENGWEBN1DA and ENGWEBN2DA exist, keep only ENGWEBN1DA
+            If both FRNTLSN2DA and FRNTLSN2SA exist, keep only FRNTLSN2SA.
+            FRNTLSN2DA alone (no SA sibling) is kept as a last resort.
 
         Args:
             filesets: List of fileset IDs
 
         Returns:
-            Filtered list with dramatized versions removed where non-dramatized exists
+            Filtered list with dramatized versions removed where a
+            same-generation standard (SA) version exists.
         """
-        # Group by base pattern (all except position -3)
+        # Group by base pattern: everything except the real DA/SA marker
+        # (the last two characters) — this correctly keeps the generation
+        # digit (N1/N2/etc.) as PART of the comparison key, since a DA/SA
+        # pair only makes sense to compare within the same generation.
         base_groups = defaultdict(list)
 
         for fs_id in filesets:
-            if len(fs_id) >= 3:
-                # Create base key: everything except position -3
-                base = fs_id[:-3] + fs_id[-2:]
-                base_groups[base].append(fs_id)
+            if len(fs_id) >= 2:
+                base_groups[fs_id[:-2]].append(fs_id)
 
         filtered = []
         for base, fs_list in base_groups.items():
-            # Check for version 1 and version 2
-            has_version_1 = any(len(fs) >= 3 and fs[-3] == "1" for fs in fs_list)
-            version_2_ids = [fs for fs in fs_list if len(fs) >= 3 and fs[-3] == "2"]
+            standard_ids = [fs for fs in fs_list if fs.endswith("SA")]
+            dramatized_ids = [fs for fs in fs_list if fs.endswith("DA")]
 
-            if has_version_1 and version_2_ids:
-                # Keep only non-dramatized (version 1)
-                filtered.extend([fs for fs in fs_list if fs not in version_2_ids])
+            if standard_ids and dramatized_ids:
+                # Prefer standard (SA) — drop the dramatized sibling(s).
+                filtered.extend(standard_ids)
+                filtered.extend(fs for fs in fs_list if fs not in dramatized_ids and fs not in standard_ids)
             else:
-                # Keep all
+                # No SA alternative for this base — keep everything
+                # (including a lone DA, as a last resort).
                 filtered.extend(fs_list)
 
         return filtered
@@ -638,11 +711,11 @@ class IndependentCacheDataSorter:
         audio_filesets = lang_data.get("audio_filesets", [])
         text_filesets: list[str] = lang_data.get("text_filesets") or []
 
-        # Filter out audio that already has timing
+        # Filter out audio that already has CONFIRMED timing
         audio_without_timing = [
             fs
             for fs in (audio_filesets or [])
-            if self.normalize_fileset_id(fs) not in self.timing_filesets
+            if not self.has_confirmed_timing(iso, fs)
         ]
 
         # Filter dramatized versions
@@ -663,7 +736,7 @@ class IndependentCacheDataSorter:
         return syncable_pairs
 
     def determine_data_source(
-        self, fileset_id: str, is_audio: bool, syncable_pairs: list[dict]
+        self, iso: str, fileset_id: str, is_audio: bool, syncable_pairs: list[dict]
     ) -> Optional[str]:
         """
         Determine data source category for a fileset.
@@ -688,9 +761,8 @@ class IndependentCacheDataSorter:
                     return "sync"
             return None
 
-        # Check timing availability
-        normalized = self.normalize_fileset_id(fileset_id)
-        if normalized in self.timing_filesets:
+        # Check CONFIRMED timing availability
+        if self.has_confirmed_timing(iso, fileset_id):
             return "timing"
 
         # Check if syncable
@@ -760,8 +832,8 @@ class IndependentCacheDataSorter:
 
             if bible_abbr == distinct_id and detail_canon == canon:
                 audio_filesets.append(fileset_id)
-                # Check if any audio fileset has timing
-                if self.normalize_fileset_id(fileset_id) in self.timing_filesets:
+                # Check if any audio fileset has CONFIRMED timing
+                if self.has_confirmed_timing(iso, fileset_id):
                     has_timing = True
 
         # Collect text filesets
@@ -801,7 +873,7 @@ class IndependentCacheDataSorter:
             else:
                 return None  # No content - skip
 
-    def determine_fileset_category(self, fileset_detail: dict) -> str:
+    def determine_fileset_category(self, iso: str, fileset_detail: dict) -> str:
         """
         Determine category for individual fileset based on its own capabilities.
 
@@ -820,7 +892,7 @@ class IndependentCacheDataSorter:
             "audio_drama_stream",
         ]
         is_text = fileset_type.startswith("text")
-        has_timing = self.normalize_fileset_id(fileset_id) in self.timing_filesets
+        has_timing = self.has_confirmed_timing(iso, fileset_id)
 
         if has_timing:
             return "timing"
@@ -857,12 +929,12 @@ class IndependentCacheDataSorter:
                 if pair["audio_fileset_id"] == fileset_id:
                     audio_text_pairs.append(pair)
 
-        # Check timing availability
-        has_timing = self.normalize_fileset_id(fileset_id) in self.timing_filesets
+        # Check CONFIRMED timing availability
+        has_timing = self.has_confirmed_timing(iso, fileset_id)
 
         # Determine categories
         distinct_id = bible.get("abbr", "")
-        individual_category = self.determine_fileset_category(fileset_detail)
+        individual_category = self.determine_fileset_category(iso, fileset_detail)
         aggregate_category = self.determine_category(iso, distinct_id, canon)
 
         # Check aggregate capabilities for this (distinct_id, canon) combination
@@ -880,10 +952,7 @@ class IndependentCacheDataSorter:
 
                 if bible_abbr == distinct_id and detail_canon == canon:
                     canon_has_audio = True
-                    if (
-                        self.normalize_fileset_id(audio_fileset_id)
-                        in self.timing_filesets
-                    ):
+                    if self.has_confirmed_timing(iso, audio_fileset_id):
                         canon_has_timing = True
 
             # Check text filesets for this distinct_id/canon
@@ -923,7 +992,7 @@ class IndependentCacheDataSorter:
                 "canon_has_timing": canon_has_timing,
                 # Other fields
                 "data_source": self.determine_data_source(
-                    fileset_id, is_audio, syncable_pairs
+                    iso, fileset_id, is_audio, syncable_pairs
                 ),
                 "syncable": self.is_syncable(fileset_id, syncable_pairs),
                 "audio_text_pairs": audio_text_pairs,
@@ -1202,7 +1271,7 @@ class IndependentCacheDataSorter:
             for audio_detail in lang_data.get("audio_details") or []:
                 audio_count += 1
                 fileset_id = audio_detail["fileset"]["id"]
-                if self.normalize_fileset_id(fileset_id) in self.timing_filesets:
+                if self.has_confirmed_timing(iso, fileset_id):
                     timing_count += 1
 
             text_details = lang_data.get("text_details")
@@ -1234,6 +1303,7 @@ class IndependentCacheDataSorter:
 
         steps = [
             ("Loading timing filesets", self.load_timing_filesets),
+            ("Loading confirmed real timing", self.load_confirmed_timing),
             (
                 "Loading extended metadata from timing bibles",
                 self.load_timing_bibles_metadata,

@@ -50,6 +50,7 @@ relationship to `SPNR02` (see the example below).
   "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
   "priority": ["pkf", "helloao", "dbt", "openbible"],
   "audio_source": "dbt",
+  "pending_openbible_coverage": 246,
   "entries": {
     "aai:nt": [
       {"ids": ["d:AAIWBT", "h:aai_wbt", "p:AAIPKF"], "pkf_ref": "aai_C01"}
@@ -63,6 +64,12 @@ relationship to `SPNR02` (see the example below).
   }
 }
 ```
+
+`pending_openbible_coverage` (added 2026-09-19) — same field, same real
+count, as [`catalog-index.json`](catalog-index.md)'s — how many more
+Biblica text projects exist but have no cluster here yet, purely because
+they lack a resolved yaapi.bible abbreviation to publish an `o:` id
+under.
 
 `d:SPAERV`/`d:SPAWTC` are a DBT-vs-DBT same-source cluster — an exact
 duplicate found by comparing DBT against itself, with no other source
@@ -89,14 +96,20 @@ doesn't repeat the same two strings on every row.
   in the index against this file's plain `nt`/`ot` key.
 - **`cluster.ids`** — every id in this cluster, always source-prefixed with
   a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF), `o:`
-  (openbible/Biblica, added 2026-09-16 — the id is the real Biblica
-  project id, queryable directly against `/projects/{id}`) — matching
-  `catalog-index.json`'s own source-code convention, never a bare id.
-  Checked directly: there's no collision across DBT/PKF-minted/helloAO/
-  openbible id spaces today, but nothing structurally guarantees that
-  stays true forever, so a bare id is never published as unambiguous on
-  its own. Each id here is the source's own **real, queryable
-  identifier** — never a borrowed display label — with one deliberate
+  (openbible/Biblica, added 2026-09-16) — matching `catalog-index.json`'s
+  own source-code convention, never a bare id. **`o:` is the yaapi.bible
+  edition abbreviation (e.g. `o:MGJ`), not Biblica's own raw project id**
+  (changed 2026-09-19 — publishing the hex project id directly was judged
+  a bad long-term precedent, since a client depending on it makes
+  migrating away later costly). Only clusters for Biblica projects with a
+  resolved abbreviation exist here at all — see `catalog-index.json`'s
+  `pending_openbible_coverage` field for how many more exist but aren't
+  published under a client-facing id yet. Checked directly: there's no
+  collision across DBT/PKF-minted/helloAO/openbible id spaces today, but
+  nothing structurally guarantees that stays true forever, so a bare id
+  is never published as unambiguous on its own. Each id here is the
+  source's own **real, queryable identifier** — never a borrowed display
+  label — with one deliberate
   exception: `p:<ISO>PKF` is always a *minted* label (PKF has no natural
   per-language id of its own), so the real fetchable reference for it is
   `pkf_ref` (the `.pkf` collection filename prefix), present on any

@@ -59,7 +59,7 @@ from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, rclo
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
+from paths import API_CACHE, COMPARISON_RESULTS_DIR, CATALOG_DIR  # noqa: E402
 
 # Added 2026-09-15: Biblica's Open Bible catalog as a fourth source
 # (`openbible:`). Unlike PKF (one ambiguous manifest entry per language,
@@ -69,6 +69,7 @@ from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
 # special-case single-slot scoring logic. 18% of Biblica text-having
 # languages (75/412) have more than one project, a real, not-rare case.
 OPENBIBLE_PROJECTS_FILE = API_CACHE / "openbible" / "projects.json"
+OPENBIBLE_EDITIONS_FILE = CATALOG_DIR / "openbible-editions.json"
 
 OUT_PATH = COMPARISON_RESULTS_DIR / "all-comparisons.json"
 
@@ -117,17 +118,33 @@ def pkf_candidates(pkf_manifest: dict, iso: str, canon: str) -> list:
     return [c["pkf"] for c in collections]
 
 
-def openbible_candidates(openbible_by_iso: dict, iso: str) -> list:
-    """Every non-disabled Biblica text project id for this iso — canon
-    membership isn't filtered here (Biblica's cached project data has no
-    NT/OT scope field); a project's zip either has the requested book or
+def openbible_candidates(openbible_by_iso: dict, openbible_abbr: dict, iso: str) -> list:
+    """(project_id, abbr) pairs for every Biblica text project for this
+    iso that has a resolved yaapi.bible abbreviation — canon membership
+    isn't filtered here (Biblica's cached project data has no NT/OT scope
+    field); a project's zip either has the requested book or
     openbible_text() returns None for it, same as any other source's
-    ordinary fetch failure. No extra candidate-level filtering needed."""
-    return openbible_by_iso.get(iso, [])
+    ordinary fetch failure.
+
+    Restricted to abbr-mapped projects only, decided 2026-09-19: a raw
+    Biblica hex project id was judged a dangerous id to publish (once a
+    client depends on it, migrating away later is costly) — unmapped
+    projects are excluded from comparison entirely here, the same
+    restriction already applied to catalog-index.json/overlap.json's `o`
+    rows, so this candidate list stays consistent with what actually gets
+    published rather than producing ids that would need filtering out
+    downstream."""
+    project_ids = openbible_by_iso.get(iso, [])
+    out = []
+    for pid in project_ids:
+        entry = openbible_abbr.get(pid)
+        if entry:
+            out.append((pid, entry["abbr"]))
+    return out
 
 
 def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
-                    openbible_by_iso: dict, canon: str) -> dict:
+                    openbible_by_iso: dict, openbible_abbr: dict, canon: str) -> dict:
     """iso -> (dbt_ids, hao_ids, pkf_files, ob_ids), restricted to isos with
     >=1 total candidate id for this canon. The threshold is deliberately
     >=1, not >=2: even a single known id (e.g. niy:ot, which has only a PKF
@@ -147,7 +164,7 @@ def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
         dbt_ids = dbt_candidates(catalog, iso, canon)
         hao_ids = helloao_by_iso.get(iso, [])
         pkf_files = pkf_candidates(pkf_manifest, iso, canon)
-        ob_ids = openbible_candidates(openbible_by_iso, iso)
+        ob_ids = openbible_candidates(openbible_by_iso, openbible_abbr, iso)
         n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
         if n >= 1:
             out[iso] = (dbt_ids, hao_ids, pkf_files, ob_ids)
@@ -167,7 +184,7 @@ def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list, o
         return f"helloao:{hao_ids[0]}"
     if pkf_files:
         return f"pkf:{iso.upper()}PKF"
-    return f"openbible:{ob_ids[0]}"
+    return f"openbible:{ob_ids[0][1]}"
 
 
 def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list,
@@ -183,9 +200,9 @@ def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_fil
         t = helloao_text(hid, book, chapter)
         (texts.__setitem__(f"helloao:{hid}", t) if t else failed.append(f"helloao:{hid}"))
 
-    for project_id in ob_ids:
+    for project_id, abbr in ob_ids:
         t = openbible_text(iso, project_id, book, chapter, tmpdir)
-        (texts.__setitem__(f"openbible:{project_id}", t) if t else failed.append(f"openbible:{project_id}"))
+        (texts.__setitem__(f"openbible:{abbr}", t) if t else failed.append(f"openbible:{abbr}"))
 
     pkf_source_ref = None
     if pkf_files:
@@ -256,8 +273,12 @@ def main():
     for p in openbible_projects:
         if p.get("type") == "text" and not p.get("disabled"):
             openbible_by_iso[p["languageCode"]].append(p["id"])
+    openbible_abbr = (
+        json.loads(OPENBIBLE_EDITIONS_FILE.read_text())["entries"]
+        if OPENBIBLE_EDITIONS_FILE.exists() else {}
+    )
 
-    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, canon)
+    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon)
     if iso_filter:
         candidates = {iso: v for iso, v in candidates.items() if iso in iso_filter}
 

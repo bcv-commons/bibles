@@ -83,6 +83,12 @@ same underlying catalog).
   (a marker-track export, `label<TAB>HH:MM:SS,fraction` per line, one
   `.txt` per chapter inside a whole-edition zip) — different shape from
   DBT's own timing JSON, not yet consumed by anything this repo publishes.
+- **Per-chapter text access**: `doc/openbible-chapters.md` — a derived,
+  CDN-published per-chapter endpoint (390 of Biblica's 452 yaapi.bible-
+  covered editions, non-ND-only), built as a caching layer in front of
+  [`yaapi.bible`](https://yaapi.bible/)'s own real per-verse API rather
+  than a second USFM extraction pipeline. Use this instead of the raw
+  whole-edition zips for any client that just wants readable text.
 - **Licensing is real and mixed, not uniformly "open"** — every version
   carries a real `licenses[]` field; roughly a third of both audio and
   text editions carry an NC and/or ND clause. NC is fine to use (with
