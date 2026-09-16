@@ -34,10 +34,16 @@ Per-source population, as of this build:
     caches it yet — see internal-docs/catalog-audio-ownership-architecture.md
     §8's open items. Returns zero rows, not a guess, until that ingestion
     work happens.
+  - openbible (Biblica's Open Bible catalog, added 2026-09-16): real,
+    book-level — fetch_openbible_cache.py's phase 2 already confirms real
+    per-book audio coverage per version (`audioBooks`), not just a claimed
+    `type: "audio"` — same NT/OT/Portions classification logic as DBT's own
+    rows, applied to the CURRENT version's real book list.
 
 Usage:
     python3 pipeline/comparison/generate_catalog_audio_index.py [--out PATH]
 """
+import glob
 import json
 import sys
 import tomllib
@@ -49,6 +55,13 @@ from paths import API_CACHE, CATALOG_DIR, HELLOAO_AUDIO_FILE  # noqa: E402
 
 DBT_CATALOG_URL = "https://cdn.bibel.wiki/dbt/_catalog.json"
 HELLOAO_CATALOG_URL = "https://bible.helloao.org/api/available_translations.json"
+OPENBIBLE_PROJECTS_URL = "https://openbible-api-1.biblica.com/projects"
+
+OT_BOOKS = {"GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI",
+            "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER",
+            "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL"}
+NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL",
+            "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
 
 
 def dbt_rows():
@@ -82,12 +95,36 @@ def pkf_rows():
     return {}
 
 
+def openbible_rows():
+    counts = defaultdict(int)
+    for f in glob.glob(str(API_CACHE / "openbible" / "audio" / "*.json")):
+        d = json.loads(Path(f).read_text())
+        iso = d["project"].get("languageCode")
+        if not iso:
+            continue
+        for v in d.get("versions", []):
+            if not v.get("current"):
+                continue
+            books = set(v.get("audioBooks") or [])
+            if not books:
+                continue
+            if NT_BOOKS.issubset(books):
+                counts[(iso, "nt", "o")] += 1
+            elif books & NT_BOOKS:
+                counts[(iso, "ntp", "o")] += 1
+            if OT_BOOKS.issubset(books):
+                counts[(iso, "ot", "o")] += 1
+            elif books & OT_BOOKS:
+                counts[(iso, "otp", "o")] += 1
+    return counts
+
+
 def main():
     args = sys.argv[1:]
     out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "audio-index.json"
 
     all_counts = defaultdict(int)
-    for counts in (dbt_rows(), pkf_rows(), helloao_rows()):
+    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows()):
         for k, v in counts.items():
             all_counts[k] += v
 
@@ -101,7 +138,7 @@ def main():
     output = {
         "schema_version": 1,
         "generated_at": None,
-        "sources": [{"d": DBT_CATALOG_URL}, {"h": HELLOAO_CATALOG_URL}],
+        "sources": [{"d": DBT_CATALOG_URL}, {"h": HELLOAO_CATALOG_URL}, {"o": OPENBIBLE_PROJECTS_URL}],
         "entries": entries,
     }
 

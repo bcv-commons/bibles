@@ -7,7 +7,7 @@ e.g. `https://cdn.bibel.wiki/catalog/a/aai/books.json`,
 
 Per-language **edition metadata** — vernacular book names, license/year
 attribution, script direction, and font hints — merged across DBT, PKF,
-and helloAO. A different axis from
+helloAO, and openbible (Biblica, added 2026-09-16). A different axis from
 [`catalog-text.md`](catalog-text.md)/[`catalog-audio.md`](catalog-audio.md)
 (fileset *routing*) and [`catalog-overlap.md`](catalog-overlap.md)
 (cross-source text *identity*): this file answers "what is this edition
@@ -27,7 +27,7 @@ language of at a time. Sharded by the language's first letter
 ## Discoverability
 
 Not indexed anywhere else — `catalog-index.json` already tells you which
-sources (`d`/`p`/`h`) have *some* content for a language; if a source is
+sources (`d`/`p`/`h`/`o`) have *some* content for a language; if a source is
 listed there, its `books.json` entry exists here too (same convention
 `/dbt/<iso>/media.json` already uses: fetch the per-language file
 directly rather than checking a central flag first).
@@ -70,12 +70,13 @@ source list; `eng` alone has 74.)
 
 ## Row format
 
-`entries["<d:|p:|h:><version_id>"] = { n, license, year, dir, font, books }`
+`entries["<d:|p:|h:|o:><version_id>"] = { n, license, year, dir, font, books }`
 
-- **`<source>:<version_id>`** — same `d:`/`p:`/`h:` source-prefix
+- **`<source>:<version_id>`** — same `d:`/`p:`/`h:`/`o:` source-prefix
   convention as `catalog-index.json`/`catalog-overlap.json`. `d:` uses
   DBT's `abbr`; `p:` uses PKF's collection id (e.g. `C01`); `h:` uses
-  helloAO's translation id.
+  helloAO's translation id; `o:` uses Biblica's real project id (queryable
+  directly against `openbible-api-1.biblica.com/projects/{id}`).
 - **`n`** — the edition's own title.
   - DBT: **`vname`** preferred over `name` — confirmed against real data
     that DBT's `name` field is consistently publisher/year attribution
@@ -85,6 +86,9 @@ source list; `eng` alone has 74.)
     fallback when `vname` is genuinely absent from DBT's data.
   - PKF: the language's manifest name.
   - helloAO: the translation's English name.
+  - openbible: the project's `titleEnglish` (falls back to `title`) —
+    note this is the *edition's* title, in English; per-book titles
+    (below) are the real vernacular ones.
 - **`license`** — **source-shaped, never normalized across sources** — DBT's
   free-text `mark` and PKF's structured license block are different
   enough that forcing a common shape would mean guessing a structured
@@ -94,35 +98,50 @@ source list; `eng` alone has 74.)
   - PKF: `{"license", "holder", "source", "noticeUrl"}` — PKF's own
     structured copyright block, field names kept close to source.
   - helloAO: `{"licenseUrl": "<url>"}`.
+  - openbible: `{"licenses": [{"type", "url"}, ...]}` — a real array, not
+    a single value: some editions carry more than one license tag at once
+    (e.g. dual CC BY-SA + CC BY-NC-ND) and both are kept, never collapsed
+    to "the more permissive one" or similar.
   - Omitted entirely when the source has nothing.
 - **`year`** — bare int. DBT's `date` (string) and PKF's `copyright.year`
-  (already int) both normalize cleanly. helloAO has no year field at all
-  in its data — omitted, not guessed.
+  (already int) both normalize cleanly. openbible uses the project's
+  `originalArchiveDate` (year only). helloAO has no year field at all in
+  its data — omitted, not guessed.
 - **`dir`** — `"ltr"`/`"rtl"`, from whichever source has it (DBT
   `alphabet.direction`, PKF `app-config.json`'s `collection.textDirection`,
-  helloAO `textDirection`).
+  helloAO `textDirection`, openbible `scriptDirection` lowercased).
 - **`font`** — source-shaped:
   - DBT: `{"requiresFont": bool, "primaryFont": "<name>"}` — a hint, not a
     real file. `primaryFont` omitted when null.
   - PKF: array of `{"name", "url"}` — **real, downloadable font files**
     (confirmed real: PKF's `info.json` lists actual `.ttf` assets with
     working URLs, not just a boolean flag).
-  - helloAO: omitted — no font data of any kind in helloAO's API.
-- **`books[]`** — one entry per book DBT/PKF/helloAO's own data lists (not
-  cross-validated against this repo's versification schemes):
+  - helloAO, openbible: omitted — no font data fetched for either.
+- **`books[]`** — one entry per book DBT/PKF/helloAO/openbible's own data
+  lists (not cross-validated against this repo's versification schemes):
   - **`code`** — USFM/Paratext book code.
   - **`n`**/**`ns`** — full/short localized book name.
     DBT: `name`/`name_short`. PKF: `h`/`toc3`. helloAO: `name`/`commonName`.
-  - **`toc2`** — **PKF only**, its third, distinct title tier
-    (`documents[].toc2`) — kept rather than dropped just because DBT and
-    helloAO only have two tiers each; real extra richness one source has
-    is never discarded for uniformity with the others.
+    openbible: real, per-book USFM header markers read directly out of
+    the (already locally cached) text zip — `\toc1` (falls back to
+    `\mt1`, then `\h`) for `n`, `\h` (falls back to `\toc3`) for `ns`. Not
+    derived from anything this repo fetched separately — the same zip
+    already cached for book-coverage classification (see
+    [`sources.md`](sources.md)) is read a second time, locally, for this.
+  - **`toc2`** — PKF's third, distinct title tier (`documents[].toc2`),
+    and now also openbible's own `\toc2` USFM marker when it differs from
+    `n`/`ns` — kept rather than dropped just because DBT and helloAO only
+    have two tiers; real extra richness one source has is never discarded
+    for uniformity with the others.
   - **`title`** — **helloAO only**, same reasoning: its own third tier
     (`books[].title`), included only when it actually differs from `n`/`ns`.
   - **`t`** — `"nt"`/`"ot"`, derived from the book code against a fixed
     canonical list. **Omitted** for deuterocanon/peripheral books rather
     than guessed.
-  - **`c`** — chapter count (bare int; all three sources have this).
+  - **`c`** — chapter count (bare int; DBT/PKF/helloAO have this;
+    **openbible does not** — book-level coverage is confirmed real via
+    `text-book-coverage.json`, but no chapter-count field is populated,
+    since nothing here parses that deep into the USFM).
   - **`v`** — **PKF only**, array of verse counts per chapter (`v[0]` =
     chapter 1's count, etc.) — PKF is the only source with real
     per-chapter granularity; not faked from a bare chapter count for the
@@ -143,6 +162,11 @@ populate the caches it reads:
 - `pipeline/core/fetch_helloao_book_data.py` → `internal-data/api-cache/helloao-books/<id>.json`
 - DBT's `bible_details/` cache (`internal-data/api-cache/bibles/bible_details/`)
   is shared with the rest of the pipeline — no separate fetch step needed.
+- openbible: `pipeline/core/fetch_openbible_cache.py` (projects + per-project
+  detail) and `pipeline/core/fetch_openbible_book_coverage.py` (real book
+  coverage + the persistent zip cache this generator reads a second time
+  for per-book titles) — both already run for `catalog-index.json`'s `o`
+  rows, no separate fetch needed here either.
 
 Coverage reflects whatever was actually fetched into those caches, not a
 promise of full coverage — not every DBT/PKF/helloAO language is
@@ -153,5 +177,5 @@ independently of this doc and would go stale the next time it does),
 derive current coverage from [`catalog-index.json`](catalog-index.md)
 instead — it's published alongside `books.json` from the same pipeline
 run and already lists every `(iso, canon, source)` combination, so
-counting distinct isos per source letter (`d`/`p`/`h`) there gives you a
+counting distinct isos per source letter (`d`/`p`/`h`/`o`) there gives you a
 live answer instead of a fixed-in-time one.

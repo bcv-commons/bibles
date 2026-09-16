@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
-"""Republish bibles' own raw timing sources (BB, contrib, legacy-timing-data)
+"""Republish bibles' own raw timing sources (contrib, legacy-timing-data)
 under /dbt/<iso>/timing-raw/<source>/... unchanged, at the fixed path the
 published standard (doc/dbt-timing.md) defines.
+
+`BB` (DBT's own bulk export) deliberately EXCLUDED as of 2026-09-15 — it's
+DBT's own data, reachable directly from DBT itself, so bibles republishing
+a verbatim mirror of it isn't adding anything a client couldn't already
+get from the real source. `contrib` and `legacy` stay: both are one-time/
+community imports with NO other host anywhere (internal-data/ is entirely
+gitignored — not even in this repo's own git history), so bibles is the
+only access path for those two, including for audio-sync's own
+investigation of the BB/legacy conflict (see doc/dbt-timing.md).
 
 Replaces generate_timing_index.py (2026-09-14): that script also built a
 per-audioFileset pointer index (timing/<audioFileset>.json) resolving
@@ -37,9 +46,9 @@ from paths import EXPORT, TIMING_DIR, LEGACY_TIMING_DIR  # noqa: E402
 OUTPUT_DIR = EXPORT / "dbt"
 
 # (source name, local base dir) — matches doc/dbt-timing.md's documented
-# source list for the two sources with no external producer.
+# source list for the two sources with no external producer. BB
+# excluded — see module docstring.
 LOCAL_SOURCES = [
-    ("BB", TIMING_DIR / "BB"),
     ("contrib", TIMING_DIR / "contrib"),
     ("legacy", LEGACY_TIMING_DIR),
 ]

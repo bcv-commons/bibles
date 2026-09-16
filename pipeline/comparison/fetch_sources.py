@@ -32,23 +32,39 @@ deleting the tmpdir contents immediately after use, preserving the
 license-driven verdict-only discipline established from the start of the
 PKF/DBT pilot (PKF is NC-ND licensed; only comparison verdicts are ever
 published, never the text itself).
+
+openbible (Biblica's Open Bible catalog, added 2026-09-15): direct HTTPS
+GET of the whole-edition USFM zip from openbible-api-1.biblica.com's
+`artifactContent/<id>` (real, direct, no-auth, confirmed live) — no rclone
+involved, this isn't in our own R2 bucket. The zip is real USFM (same
+format family DBT/PKF use), so `extract_pkf_chapter` (generic USFM chapter
+extraction, not actually PKF-specific despite the name) is reused
+directly, no new parsing logic needed. The zip itself is now cached
+persistently (openbible_zip_cache.py, added 2026-09-16, cache-first — a
+real bandwidth saving, not a licensing workaround) — only the single
+extracted chapter stays ephemeral (tmpdir, deleted after use), same as
+before.
 """
+import io
 import subprocess
 import sys
 import time
+import zipfile
 from pathlib import Path
 
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "core"))
+from openbible_zip_cache import get_zip_bytes  # noqa: E402
 import download_language_content as dl  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_pkf_dbt import normalize_chars, extract_pkf_chapter  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import TEXT_DIR  # noqa: E402
+from paths import API_CACHE, TEXT_DIR  # noqa: E402
 
 SAMPLE_DIR = TEXT_DIR / "BB"
 HELLOAO_API = "https://bible.helloao.org/api"
+OPENBIBLE_TEXT_CACHE = API_CACHE / "openbible" / "text"
 
 
 def dbt_text(iso: str, canon: str, distinct_id: str, fileset_id: str, book: str, chapter: int) -> str | None:
@@ -112,6 +128,63 @@ def pkf_text(iso: str, pkf_file: str, book: str, chapter: int, env: dict, bucket
     )
     matches = list(out_dir.glob(f"*-{book}.usfm")) if out_dir.is_dir() else []
     return extract_pkf_chapter(matches[0], chapter) if matches else None
+
+
+def openbible_current_usfm_artifact(project_id: str) -> str | None:
+    """The real USFM artifact id for a Biblica text project's CURRENT
+    version, or None if no such version/artifact exists. Reads the
+    already-cached project detail (fetch_openbible_cache.py phase 3) —
+    no live API call here."""
+    cache_path = OPENBIBLE_TEXT_CACHE / f"{project_id}.json"
+    if not cache_path.is_file():
+        return None
+    detail = __import__("json").loads(cache_path.read_text(encoding="utf-8"))
+    for v in detail.get("versions", []):
+        if not v.get("current"):
+            continue
+        for a in v.get("artifacts", []):
+            if a.get("format") == "USFM":
+                return a.get("id")
+    return None
+
+
+def openbible_text(iso: str, project_id: str, book: str, chapter: int, tmpdir: Path) -> str | None:
+    """A Biblica text project's current-version USFM zip (persistent cache —
+    see openbible_zip_cache.py — cache-first, real fetch only on a miss),
+    one chapter extracted. Whole-edition zip (66 books), not per-book —
+    same extract_pkf_chapter() logic works directly since it's real USFM,
+    not a PKF-specific format. Only the extracted per-chapter USFM stays
+    ephemeral (tmpdir, deleted after use) — the zip itself is cached
+    persistently now (2026-09-16), not re-fetched every run."""
+    artifact_id = openbible_current_usfm_artifact(project_id)
+    if not artifact_id:
+        return None
+
+    try:
+        data = get_zip_bytes(project_id, artifact_id)
+        if data is None:
+            return None
+
+        out_dir = tmpdir / f"ob_{project_id}_out"
+        with zipfile.ZipFile(io.BytesIO(data)) as z:
+            matches = [n for n in z.namelist() if n.endswith(f"/{book}.usfm") or n.endswith(f"{book}.usfm")]
+            if not matches:
+                return None
+            out_dir.mkdir(exist_ok=True)
+            z.extract(matches[0], out_dir)
+            usfm_path = out_dir / matches[0]
+        return extract_pkf_chapter(usfm_path, chapter)
+    except zipfile.BadZipFile:
+        return None
+    finally:
+        # Only the extracted single-chapter USFM is ephemeral now — the
+        # zip itself lives in the persistent cache (openbible_zip_cache.py),
+        # never written under tmpdir at all, so there's nothing zip-shaped
+        # to clean up here anymore.
+        out_dir = tmpdir / f"ob_{project_id}_out"
+        if out_dir.is_dir():
+            import shutil
+            shutil.rmtree(out_dir, ignore_errors=True)
 
 
 def rclone_env():

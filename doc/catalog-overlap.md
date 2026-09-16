@@ -48,7 +48,7 @@ relationship to `SPNR02` (see the example below).
   "schema_version": 2,
   "generated_at": "...",
   "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
-  "priority": ["pkf", "helloao", "dbt"],
+  "priority": ["pkf", "helloao", "dbt", "openbible"],
   "audio_source": "dbt",
   "entries": {
     "aai:nt": [
@@ -88,16 +88,19 @@ doesn't repeat the same two strings on every row.
   canon label to match exactly — check both `nt` and `ntp` (or `ot`/`otp`)
   in the index against this file's plain `nt`/`ot` key.
 - **`cluster.ids`** — every id in this cluster, always source-prefixed with
-  a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF) — matching
+  a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF), `o:`
+  (openbible/Biblica, added 2026-09-16 — the id is the real Biblica
+  project id, queryable directly against `/projects/{id}`) — matching
   `catalog-index.json`'s own source-code convention, never a bare id.
-  Checked directly: there's no collision across DBT/PKF-minted/helloAO id
-  spaces today, but nothing structurally guarantees that stays true
-  forever, so a bare id is never published as unambiguous on its own. Each
-  id here is the source's own **real, queryable identifier** — never a
-  borrowed display label — with one deliberate exception: `p:<ISO>PKF`
-  is always a *minted* label (PKF has no natural per-language id of its
-  own), so the real fetchable reference for it is `pkf_ref` (the `.pkf`
-  collection filename prefix), present on any cluster containing a `p:`
+  Checked directly: there's no collision across DBT/PKF-minted/helloAO/
+  openbible id spaces today, but nothing structurally guarantees that
+  stays true forever, so a bare id is never published as unambiguous on
+  its own. Each id here is the source's own **real, queryable
+  identifier** — never a borrowed display label — with one deliberate
+  exception: `p:<ISO>PKF` is always a *minted* label (PKF has no natural
+  per-language id of its own), so the real fetchable reference for it is
+  `pkf_ref` (the `.pkf` collection filename prefix), present on any
+  cluster containing a `p:`
   member.
 - **No `default` field.** A multi-id cluster used to carry a computed
   `default` (the highest-priority source present, per `priority` below) —

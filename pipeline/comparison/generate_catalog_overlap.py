@@ -93,7 +93,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR  # noqa: E402
 
-SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p"}
+SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p", "openbible": "o"}
 
 
 def shorten(sid: str) -> str:
@@ -291,7 +291,7 @@ def main():
         "schema_version": 2,
         "generated_at": None,  # stamped at publish time, not by this generator
         "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
-        "priority": ["pkf", "helloao", "dbt"],
+        "priority": ["pkf", "helloao", "dbt", "openbible"],
         "audio_source": "dbt",
         "entries": dict(sorted(entries.items())),
     }

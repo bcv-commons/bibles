@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
 """Generate /catalog/<iso[0]>/<iso>/books.json — per-language edition
 metadata (vernacular book names, license/year, script direction, font
-hints) merged across DBT, PKF, and helloAO. See internal-docs/ design
-conversation (2026-08-11) for the full format rationale.
+hints) merged across DBT, PKF, helloAO, and openbible. See internal-docs/
+design conversation (2026-08-11) for the full format rationale.
 
 Source: purely local, already-cached data — no live fetch happens here
 (that's fetch_pkf_book_data.py / fetch_helloao_book_data.py, run first):
-  - DBT:     internal-data/api-cache/bibles/bible_details/*.json
-  - PKF:     internal-data/api-cache/pkf-books/<iso>/{app-config,info}.json
-             + <collection>.json (from pkf-manifest.json's catalog field)
-  - helloAO: internal-data/api-cache/helloao/available_translations.json
-             + internal-data/api-cache/helloao-books/<id>.json
+  - DBT:       internal-data/api-cache/bibles/bible_details/*.json
+  - PKF:       internal-data/api-cache/pkf-books/<iso>/{app-config,info}.json
+               + <collection>.json (from pkf-manifest.json's catalog field)
+  - helloAO:   internal-data/api-cache/helloao/available_translations.json
+               + internal-data/api-cache/helloao-books/<id>.json
+  - openbible: internal-data/api-cache/openbible/{projects,text/*.json,
+               text-book-coverage.json} + the persistent zip cache
+               (internal-data/api-cache/openbible/text-zips/*.zip, added
+               2026-09-16) — real per-book vernacular titles come straight
+               out of each book's own USFM header markers (\\h/\\toc1/
+               \\toc2), the same real data already fetched for book-
+               coverage classification, not a new network round-trip.
 
 Deliberately NOT a forced common shape across sources — DBT's free-text
 `mark` field is passed through verbatim rather than parsed into a
@@ -18,12 +25,18 @@ structured license code (would be a guess, against this project's
 "verified only, never inferred" principle); PKF's richer toc2/per-chapter
 verse counts and helloAO's third name tier are kept even though the other
 sources don't have an equivalent, rather than dropped for uniformity.
+openbible follows the same discipline — its `licenses[]` array (often
+more than one license tag per edition, e.g. dual CC BY-SA + CC BY-NC-ND)
+is kept as a real list, not collapsed to one value.
 
 Sharded by iso[0] (first letter) so the top-level /catalog/ directory
 doesn't end up with ~2000 iso subdirectories.
 """
+import io
 import json
+import re
 import sys
+import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -271,6 +284,119 @@ def load_helloao():
     return out
 
 
+# ---- openbible ----
+
+_USFM_MARKER_RE = re.compile(r"^\\(h|toc1|toc2|toc3|mt1)\s+(.+)$")
+
+
+def _book_titles_from_zip(zip_path: Path, book_codes: set) -> dict:
+    """{code: {"n":.., "ns":.., "toc2":..}} — real per-book titles read
+    straight from each book's own USFM header markers. \\toc1 (long) ->
+    n, \\h (short running header) -> ns, \\toc2 kept as a third tier when
+    it differs (same "don't discard real extra richness" principle
+    PKF/helloAO's own third tiers already follow)."""
+    out = {}
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            for name in z.namelist():
+                if not name.endswith(".usfm"):
+                    continue
+                code = name.split("/")[-1].replace(".usfm", "")
+                if code not in book_codes:
+                    continue
+                marks = {}
+                with z.open(name) as f:
+                    for raw in io.TextIOWrapper(f, encoding="utf-8"):
+                        m = _USFM_MARKER_RE.match(raw.strip())
+                        if m and m.group(1) not in marks:
+                            marks[m.group(1)] = m.group(2).strip()
+                        if raw.startswith("\\c "):
+                            break  # header markers are always before chapter 1
+                if marks:
+                    out[code] = marks
+    except zipfile.BadZipFile:
+        return {}
+    return out
+
+
+def load_openbible():
+    """iso -> {"o:<projectId>": {...}}"""
+    out = {}
+    projects_path = API_CACHE / "openbible" / "projects.json"
+    coverage_path = API_CACHE / "openbible" / "text-book-coverage.json"
+    zip_dir = API_CACHE / "openbible" / "text-zips"
+    if not projects_path.exists():
+        print("[catalog-books] WARNING: no openbible projects.json — openbible skipped", file=sys.stderr)
+        return out
+    projects = json.loads(projects_path.read_text())
+    coverage = json.loads(coverage_path.read_text()) if coverage_path.exists() else {}
+
+    for p in projects:
+        if p.get("type") != "text" or p.get("disabled"):
+            continue
+        iso = p.get("languageCode")
+        pid = p.get("id")
+        if not iso or not pid:
+            continue
+
+        entry = {"n": p.get("titleEnglish") or p.get("title") or pid}
+        archive_date = p.get("originalArchiveDate")
+        if archive_date:
+            try:
+                entry["year"] = int(str(archive_date)[:4])
+            except ValueError:
+                pass
+        script_dir = p.get("scriptDirection")
+        if script_dir:
+            entry["dir"] = script_dir.lower()
+
+        detail_path = API_CACHE / "openbible" / "text" / f"{pid}.json"
+        licenses = []
+        current_version = None
+        if detail_path.exists():
+            detail = json.loads(detail_path.read_text())
+            for v in detail.get("versions", []):
+                if v.get("current"):
+                    current_version = v
+                    for lic in v.get("licenses") or []:
+                        row = {}
+                        if lic.get("licenseType"):
+                            row["type"] = lic["licenseType"].strip("[]")
+                        if lic.get("licenseUrl"):
+                            row["url"] = lic["licenseUrl"]
+                        if row:
+                            licenses.append(row)
+        if licenses:
+            entry["license"] = {"licenses": licenses}
+
+        book_codes = set(coverage.get(pid) or [])
+        if not book_codes:
+            continue
+
+        zip_path = zip_dir / f"{pid}.zip"
+        titles = _book_titles_from_zip(zip_path, book_codes) if zip_path.exists() else {}
+
+        books = []
+        for code in sorted(book_codes):
+            marks = titles.get(code, {})
+            row = {
+                "code": code,
+                "n": marks.get("toc1") or marks.get("mt1") or marks.get("h") or code,
+                "ns": marks.get("h") or marks.get("toc3") or code,
+            }
+            if marks.get("toc2") and marks["toc2"] not in (row["n"], row["ns"]):
+                row["toc2"] = marks["toc2"]
+            t = testament_of(code)
+            if t:
+                row["t"] = t
+            books.append(row)
+        if books:
+            entry["books"] = books
+
+        out.setdefault(iso, {})[f"o:{pid}"] = entry
+    return out
+
+
 def merge(*sources):
     merged = {}
     for source in sources:
@@ -283,7 +409,8 @@ def main():
     dbt = load_dbt()
     pkf = load_pkf()
     helloao = load_helloao()
-    merged = merge(dbt, pkf, helloao)
+    openbible = load_openbible()
+    merged = merge(dbt, pkf, helloao, openbible)
 
     written = 0
     for iso, entries in sorted(merged.items()):
@@ -295,8 +422,8 @@ def main():
         out_path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")))
         written += 1
 
-    print(f"[catalog-books] {len(dbt)} iso with DBT, {len(pkf)} with PKF, {len(helloao)} with helloAO "
-          f"-> {written} books.json files under {BOOKS_OUT_DIR}")
+    print(f"[catalog-books] {len(dbt)} iso with DBT, {len(pkf)} with PKF, {len(helloao)} with helloAO, "
+          f"{len(openbible)} with openbible -> {written} books.json files under {BOOKS_OUT_DIR}")
 
 
 if __name__ == "__main__":

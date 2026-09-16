@@ -55,11 +55,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_pkf_dbt import compare  # noqa: E402
-from fetch_sources import dbt_text, helloao_text, pkf_text, rclone_env  # noqa: E402
+from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, rclone_env  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
+
+# Added 2026-09-15: Biblica's Open Bible catalog as a fourth source
+# (`openbible:`). Unlike PKF (one ambiguous manifest entry per language,
+# needing empirical disambiguation), each Biblica text project is already
+# a separate, named, licensed edition — so it's a LIST of candidates per
+# iso, handled the same way helloAO's hao_ids list already is, not PKF's
+# special-case single-slot scoring logic. 18% of Biblica text-having
+# languages (75/412) have more than one project, a real, not-rare case.
+OPENBIBLE_PROJECTS_FILE = API_CACHE / "openbible" / "projects.json"
 
 OUT_PATH = COMPARISON_RESULTS_DIR / "all-comparisons.json"
 
@@ -108,10 +117,20 @@ def pkf_candidates(pkf_manifest: dict, iso: str, canon: str) -> list:
     return [c["pkf"] for c in collections]
 
 
-def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict, canon: str) -> dict:
-    """iso -> (dbt_ids, hao_ids, pkf_files), restricted to isos with >=1
-    total candidate id for this canon. The threshold is deliberately >=1,
-    not >=2: even a single known id (e.g. niy:ot, which has only a PKF
+def openbible_candidates(openbible_by_iso: dict, iso: str) -> list:
+    """Every non-disabled Biblica text project id for this iso — canon
+    membership isn't filtered here (Biblica's cached project data has no
+    NT/OT scope field); a project's zip either has the requested book or
+    openbible_text() returns None for it, same as any other source's
+    ordinary fetch failure. No extra candidate-level filtering needed."""
+    return openbible_by_iso.get(iso, [])
+
+
+def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
+                    openbible_by_iso: dict, canon: str) -> dict:
+    """iso -> (dbt_ids, hao_ids, pkf_files, ob_ids), restricted to isos with
+    >=1 total candidate id for this canon. The threshold is deliberately
+    >=1, not >=2: even a single known id (e.g. niy:ot, which has only a PKF
     collection and no DBT/helloAO OT content) still gets a placeholder row
     in the published output — matching the original generate_catalog_overlap.py's
     behavior (it built its node set from catalog/manifest presence directly,
@@ -121,33 +140,37 @@ def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict, cano
     isos = {row[0] for row in catalog["versions"] if row[2].rstrip("p") == canon}
     isos |= set(helloao_by_iso.keys())
     isos |= set(pkf_manifest.keys())
+    isos |= set(openbible_by_iso.keys())
 
     out = {}
     for iso in sorted(isos):
         dbt_ids = dbt_candidates(catalog, iso, canon)
         hao_ids = helloao_by_iso.get(iso, [])
         pkf_files = pkf_candidates(pkf_manifest, iso, canon)
-        n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0)
+        ob_ids = openbible_candidates(openbible_by_iso, iso)
+        n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
         if n >= 1:
-            out[iso] = (dbt_ids, hao_ids, pkf_files)
+            out[iso] = (dbt_ids, hao_ids, pkf_files, ob_ids)
     return out
 
 
-def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list) -> str:
+def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list) -> str:
     """The single source-prefixed id for an (iso,canon) with exactly one
     total candidate — nothing to compare against, so no fetch is needed at
     all; the published row is the same bare placeholder regardless of
-    whether the id would have fetched successfully. Whichever of the three
+    whether the id would have fetched successfully. Whichever of the four
     is non-empty is, by construction (all_candidates() only calls this when
     the total count is exactly 1), the sole candidate."""
     if dbt_ids:
         return f"dbt:{next(iter(dbt_ids))}"
     if hao_ids:
         return f"helloao:{hao_ids[0]}"
-    return f"pkf:{iso.upper()}PKF"
+    if pkf_files:
+        return f"pkf:{iso.upper()}PKF"
+    return f"openbible:{ob_ids[0]}"
 
 
-def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_files: list,
+def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list,
                       book: str, chapter: int, env: dict, bucket: str, tmpdir: Path) -> dict:
     texts = {}
     failed = []
@@ -159,6 +182,10 @@ def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_fil
     for hid in hao_ids:
         t = helloao_text(hid, book, chapter)
         (texts.__setitem__(f"helloao:{hid}", t) if t else failed.append(f"helloao:{hid}"))
+
+    for project_id in ob_ids:
+        t = openbible_text(iso, project_id, book, chapter, tmpdir)
+        (texts.__setitem__(f"openbible:{project_id}", t) if t else failed.append(f"openbible:{project_id}"))
 
     pkf_source_ref = None
     if pkf_files:
@@ -224,8 +251,13 @@ def main():
     for e in helloao_translations:
         helloao_by_iso[e["language"]].append(e["id"])
     pkf_manifest = json.loads((API_CACHE / "pkf-manifest.json").read_text())["languages"]
+    openbible_projects = json.loads(OPENBIBLE_PROJECTS_FILE.read_text()) if OPENBIBLE_PROJECTS_FILE.exists() else []
+    openbible_by_iso = defaultdict(list)
+    for p in openbible_projects:
+        if p.get("type") == "text" and not p.get("disabled"):
+            openbible_by_iso[p["languageCode"]].append(p["id"])
 
-    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, canon)
+    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, canon)
     if iso_filter:
         candidates = {iso: v for iso, v in candidates.items() if iso in iso_filter}
 
@@ -241,7 +273,25 @@ def main():
     never_attempted = [iso for iso in candidates if key(iso) not in results]
     retry_candidates = [iso for iso in candidates
                          if key(iso) in results and results[key(iso)].get("ids_failed")]
-    todo = never_attempted + retry_candidates
+    # New source added after this iso was already fully compared (found
+    # 2026-09-15 adding openbible: a "compared" entry with zero ids_failed
+    # otherwise looks permanently done, and never gets a candidate-count
+    # recheck — so a language that succeeded on 2 sources yesterday would
+    # silently never pick up a 3rd source added today). Recompare whenever
+    # today's real candidate count exceeds what was actually attempted
+    # (fetched + failed) last time.
+    def total_candidate_count(iso):
+        dbt_ids, hao_ids, pkf_files, ob_ids = candidates[iso]
+        return len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
+
+    growing_candidates = [
+        iso for iso in candidates
+        if key(iso) in results and not results[key(iso)].get("ids_failed")
+        and iso not in retry_candidates
+        and total_candidate_count(iso)
+            > len(results[key(iso)].get("ids_fetched", [])) + len(results[key(iso)].get("ids_failed", []))
+    ]
+    todo = never_attempted + retry_candidates + growing_candidates
     if limit:
         todo = todo[:limit]
 
@@ -253,24 +303,24 @@ def main():
     tmpdir = Path(tempfile.mkdtemp(prefix="compare_all_"))
     try:
         for i, iso in enumerate(todo, 1):
-            dbt_ids, hao_ids, pkf_files = candidates[iso]
-            n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0)
+            dbt_ids, hao_ids, pkf_files, ob_ids = candidates[iso]
+            n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
             if n < 2:
                 # Nothing to compare against — skip the fetch entirely
                 # (the published row is the same bare placeholder either
                 # way). This is the majority case (roughly half the full
                 # population): most languages have exactly one DBT version
-                # and no PKF/helloAO coverage at all.
-                entry = {"status": "single_source", "ids_fetched": [sole_candidate_id(iso, dbt_ids, hao_ids, pkf_files)],
+                # and no PKF/helloAO/openbible coverage at all.
+                entry = {"status": "single_source", "ids_fetched": [sole_candidate_id(iso, dbt_ids, hao_ids, pkf_files, ob_ids)],
                          "ids_failed": [], "scores": {}}
                 results[key(iso)] = {**entry, "iso": iso, "canon": canon}
                 print(f"  [{i}/{len(todo)}] {key(iso)}: single_source (no fetch needed)")
                 continue
             try:
-                entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, book, chapter, env, bucket, tmpdir)
+                entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, book, chapter, env, bucket, tmpdir)
                 if canon == "ot" and entry.get("ids_failed") and (book, chapter) != OT_FALLBACK:
                     fb_book, fb_chapter = OT_FALLBACK
-                    fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, fb_book, fb_chapter, env, bucket, tmpdir)
+                    fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, fb_book, fb_chapter, env, bucket, tmpdir)
                     if len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
                         fb_entry["probe"] = f"{fb_book}{fb_chapter}"
                         entry = fb_entry

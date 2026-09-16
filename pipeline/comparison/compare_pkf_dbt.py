@@ -146,7 +146,28 @@ def normalize_chars(text: str) -> str:
     return "".join(_KEEP_RE.findall(text))
 
 
-_SECTION_HEADING_RE = re.compile(r"\\s\d?\b")
+# \cl (numbered chapter label, e.g. "\cl 15 অধ্যায়" — "chapter 15" in
+# Assamese) added 2026-09-16, found via the first real Biblica (Open
+# Bible) comparison: asm/ASMDPI scored 0.997 instead of 1.0 against a
+# Biblica edition already otherwise identical — the "extra content only
+# on the new source's side" symptom, same class as the original \s bug.
+# Confirmed directly (raw USFM inspection): \cl is single-line, self-
+# contained, same skip treatment as \s/\s1/\s2 works correctly.
+#
+# \r (parallel-passage reference, e.g. "\r (Deuteronomy 32:1-47)" right
+# after a section heading) added 2026-09-16, same batch — found via eng
+# scoring 0.9943 against 3 different helloAO editions all at once (a
+# consistent score across multiple comparison partners was the tell that
+# this was structural, not content variance). `\b` after `r` deliberately
+# excludes `\rq` (a different, already-handled marker in _DROP_BLOCK_RE)
+# — "r" and "q" are both word characters, so \r\b does not match \rq.
+#
+# \ms/\ms1/\ms2 (major section heading — a mid-chapter division, distinct
+# from \s/\s1/\s2's ordinary section heading) added 2026-09-16, same
+# batch — found via lin: a single long inserted phrase on the Biblica
+# side, traced to "\ms1 Bakopo sambo ya kanda ya Nzambe" sitting between
+# v3 and v7 in the raw USFM.
+_SECTION_HEADING_RE = re.compile(r"\\s\d?\b|\\ms\d?\b|\\cl\b|\\r\b")
 
 
 def extract_pkf_chapter(usfm_path: Path, chapter: int) -> str:

@@ -65,7 +65,11 @@ you've actually picked a language.
    source `media-index.json` never included, and the direct cause of the
    `ivv` bug above. Adds languages PKF has that no DBT-family source
    does (19 as of 2026-09-15).
-3. **OBS existence** (`catalog/obs-index.json`) — unions in every
+3. **openbible (Biblica) project catalog** (added 2026-09-16 — see
+   [`sources.md`](sources.md)) — every non-disabled Biblica project
+   carries a real `languageName` field directly, no manual resolution
+   needed (185 new languages as of the initial union).
+4. **OBS existence** (`catalog/obs-index.json`) — unions in every
    OBS-only language too, so a language whose only real content is Open
    Bible Stories is still selectable. OBS's own per-language
    `media.json` carries no name field at all, so these are resolved via

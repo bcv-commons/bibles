@@ -105,10 +105,19 @@ absent entirely if the language has no real OBS content. Fetch
 [`/obs/<iso>/media.json`](obs-media.md) for full OBS detail (story
 titles, resolved audio, license).
 
-## Not yet covered
+## openbible (Biblica) coverage
 
-Biblica's Open Bible catalog (`openbible-api-1.biblica.com`) isn't
-published anywhere yet — still local cache from investigation work, no
-CDN artifact exists for it. Once it is, it'll join `bible[canon].sources`
-as a new source letter and `editions[].ids` with an `o:` prefix, the same
-way `d`/`p`/`h` already work — not a new sibling key.
+Added 2026-09-16 — see [`sources.md`](sources.md) for the full source
+description. Biblica joins `bible[canon].sources` as a new source letter
+(`o`) and `editions[].ids` with an `o:` prefix, the same way `d`/`p`/`h`
+already work — no new sibling key, no special-casing needed on the
+consuming side.
+
+One real asymmetry worth knowing: Biblica's **audio** existence
+(`catalog/audio-index.json`'s `o` rows) is not yet joined into `obs`-style
+detail the way DBT's is — there's no Biblica equivalent of
+`catalog-audio.json`'s fileset routing published yet, only existence. A
+client wanting to actually fetch a specific Biblica audio edition needs to
+query `/projects/{id}/versions` → `/versions/{id}/artifacts` directly
+against Biblica's own API for the real per-book artifact ids — see
+`sources.md`.

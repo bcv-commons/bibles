@@ -64,6 +64,7 @@ from paths import API_CACHE, DATA, EXPORT  # noqa: E402
 
 MEDIA_INDEX = EXPORT / "dbt" / "_app" / "media-index.json"
 PKF_MANIFEST = API_CACHE / "pkf-manifest.json"
+OPENBIBLE_PROJECTS = API_CACHE / "openbible" / "projects.json"
 OBS_INDEX = EXPORT / "catalog" / "obs-index.json"
 OBS_UNRESOLVED_NAMES = DATA / "obs-unresolved-language-names.toml"
 OUTPUT = EXPORT / "dbt" / "_app" / "language-names.json"
@@ -112,6 +113,25 @@ def main():
     else:
         print(f"[generate-language-names] WARNING: {PKF_MANIFEST} missing, skipping PKF source")
 
+    openbible_added = 0
+    if OPENBIBLE_PROJECTS.exists():
+        with open(OPENBIBLE_PROJECTS) as f:
+            projects = json.load(f)
+        # Every non-disabled Biblica project carries a real languageName —
+        # unlike OBS, no manual resolution table needed here (checked
+        # directly, 2026-09-16: 0 of however-many non-disabled projects are
+        # missing it).
+        for p in projects:
+            if p.get("disabled"):
+                continue
+            iso = p.get("languageCode")
+            nm = p.get("languageName")
+            if iso and nm and iso not in names:
+                names[iso] = (nm, None)
+                openbible_added += 1
+    else:
+        print(f"[generate-language-names] WARNING: {OPENBIBLE_PROJECTS} missing, skipping openbible source")
+
     obs_resolved_from_table = 0
     resolved_names = {}
     if OBS_UNRESOLVED_NAMES.exists():
@@ -154,7 +174,8 @@ def main():
         json.dump(output, f, ensure_ascii=False, separators=(",", ":"))
 
     print(f"[generate-language-names] {dbt_family_count} from media-index.json, "
-          f"+{pkf_added} new from PKF, +{obs_resolved_from_table} OBS-only resolved via "
+          f"+{pkf_added} new from PKF, +{openbible_added} new from openbible, "
+          f"+{obs_resolved_from_table} OBS-only resolved via "
           f"{OBS_UNRESOLVED_NAMES.name}, +{obs_unnamed} OBS-only still with no real name "
           f"(code used as-is) -> {len(compact)} total -> {OUTPUT}")
 

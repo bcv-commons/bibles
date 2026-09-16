@@ -1,4 +1,4 @@
-# The three sources
+# The four sources
 
 ## DBT (Bible Brain, Digital Bible Platform, by Faith Comes By Hearing)
 
@@ -58,13 +58,64 @@ published audio (thousands of versions). Real-time API, no bulk download.
   `internal-docs/catalog-audio-ownership-architecture.md` §8 for the
   scoping notes on adding it.
 
+## openbible (Biblica's Open Bible catalog, `openbible-api-1.biblica.com`)
+
+Added 2026-09-16. A real, independent Spring Data REST catalog — 943
+projects (554 text, 357 audio, 32 video as of the initial fetch), not the
+same thing as `yaapi.bible` (a smaller, curated, text-only subset of this
+same underlying catalog).
+
+- Project catalog: `https://openbible-api-1.biblica.com/projects`
+  (paginated, `?page=N&size=100`) — each project has `languageCode` (real
+  ISO 639-3), `languageName`, `type` (`"text"`/`"audio"`/`"video"`),
+  `title`/`titleEnglish`, `scope`, `disabled`.
+- Per-project versions: `/projects/{id}/versions` — **the version objects
+  here carry no `_links` at all** (confirmed live, unlike the flat
+  `/versions` collection) — don't rely on a `_links.artifacts.href`;
+  construct `/versions/{id}/artifacts` directly from the version id
+  instead.
+- Real content download: `/artifactContent/{artifactId}` — direct,
+  no-auth, CloudFront-served. **Audio** artifacts are per-BOOK zips (one
+  MP3 per chapter inside). **Text** artifacts are per-EDITION zips (the
+  whole Bible in one zip, one `.usfm`/`.usx` file per book inside) —
+  genuinely different granularity from audio, confirmed by inspection.
+  Real per-verse **Timing** artifacts also exist for some audio versions
+  (a marker-track export, `label<TAB>HH:MM:SS,fraction` per line, one
+  `.txt` per chapter inside a whole-edition zip) — different shape from
+  DBT's own timing JSON, not yet consumed by anything this repo publishes.
+- **Licensing is real and mixed, not uniformly "open"** — every version
+  carries a real `licenses[]` field; roughly a third of both audio and
+  text editions carry an NC and/or ND clause. NC is fine to use (with
+  attribution); ND specifically blocks any *derivative* work (e.g.
+  extracting a whole-edition text zip's per-book files and republishing
+  them individually) — check the license on the specific edition before
+  assuming otherwise.
+- This repo maintains a persistent local cache of current-version text
+  USFM zips (`internal-data/api-cache/openbible/text-zips/`, ~380MB) —
+  fetched once, reused for both book-coverage classification and text
+  comparison, rather than re-fetched per use.
+- Text-identity comparison against DBT/PKF/helloAO uses the exact same
+  algorithm as the PKF/DBT comparison work (`compare_pkf_dbt.py`'s
+  char-level, homoglyph-corrected comparator) — real USFM, no new parsing
+  logic needed. Three additional structural-marker bugs were found and
+  fixed via this comparison (`\cl`, `\r`, `\ms`/`\ms1`/`\ms2` — see that
+  script's history for detail).
+
 ## Priority (when more than one source has the same content)
 
 ```
 1. pkf
 2. helloao
 3. dbt
+4. openbible
 ```
+
+`openbible` placed last, deliberately conservative — it's the newest
+source here, with real but mixed licensing (unlike the other three, which
+are either fully open or already well-understood), so it defaults to
+last pick rather than displacing an existing preference. Revisit this
+ordering once more real-world use has confirmed there's no reason to
+prefer it lower.
 
 This is the **default** `catalog-index.json`/`catalog-overlap.json` point
 to when sources overlap — not a filter. Every source that has content for
@@ -74,9 +125,18 @@ otherwise; check the alternatives if you do.
 
 ## Audio
 
-DBT is the only source with **broad** published audio (thousands of
-versions, cataloged today in `catalog-audio.json`). helloAO has one real
-edition with audio (`BSB` — see above), not yet cataloged by this repo. A
-separate audio-sync pipeline (different repo) is expected to add more over
-time via its own alignment work — once it publishes, it'll be reflected
-here too.
+DBT is the largest source with published audio (thousands of versions,
+cataloged today in `catalog-audio.json`). openbible is a real second broad
+source — 357 audio-type projects, catalogued in `catalog-audio-index.json`
+(existence only — no fileset-routing detail the way `catalog-audio.json`
+gives for DBT). helloAO has one real edition with audio (`BSB` — see
+above), not yet cataloged by this repo. A separate audio-sync pipeline
+(different repo) is expected to add more over time via its own alignment
+work — once it publishes, it'll be reflected here too.
+
+Note openbible's audio republishing is explicitly **not** this repo's job
+— its per-book zips aren't directly usable by a client (one zip per book,
+not per chapter), so any real extraction/republishing of the actual MP3
+bytes is left to audio-sync. This repo's role is limited to signaling real,
+book-level-verified availability (`catalog-audio-index.json`) and pointing
+at the source, same "point, don't copy" principle as everywhere else.

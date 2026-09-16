@@ -30,10 +30,12 @@ tell you whether they're duplicates or distinct.
 
 ## The sources
 
-See **[`sources.md`](sources.md)** for what DBT, PKF, and helloAO each are,
-how to fetch actual content from them, and the default priority order
-(`pkf` → `helloao` → `dbt`) `catalog-index.json`/`catalog-overlap.json`
-use when a client just wants one good default without deciding for itself.
+See **[`sources.md`](sources.md)** for what DBT, PKF, helloAO, and
+openbible (Biblica's Open Bible catalog, added 2026-09-16) each are, how
+to fetch actual content from them, and the default priority order
+(`pkf` → `helloao` → `dbt` → `openbible`) `catalog-index.json`/
+`catalog-overlap.json` use when a client just wants one good default
+without deciding for itself.
 
 ## Runnable code examples
 
@@ -77,11 +79,14 @@ real localized book titles for a UI, not for discovery.
 
 - **Audio** — **[`catalog-audio-index.json`](catalog-audio-index.md)** is
   the source-agnostic existence check: "does source X have audio for this
-  `(iso, canon)`" across DBT and helloAO (PKF has a real audio endpoint
-  too, not yet cataloged here — see that doc). DBT has by far the broadest
-  real coverage; see `catalog-audio.json` above for its fileset routing.
-  helloAO's real audio is small and specific (currently one edition, `BSB`)
-  — check `catalog-audio-index.md` before assuming a helloAO translation
+  `(iso, canon)`" across DBT, helloAO, and openbible (Biblica — PKF has a
+  real audio endpoint too, not yet cataloged here — see that doc). DBT has
+  by far the broadest real coverage; see `catalog-audio.json` above for
+  its fileset routing. openbible is a real second broad source (357 audio
+  projects, book-level verified) but has no fileset-routing file yet —
+  query Biblica's own API directly for that (see `sources.md`). helloAO's
+  real audio is small and specific (currently one edition, `BSB`) —
+  check `catalog-audio-index.md` before assuming a helloAO translation
   has audio just because it has text. A dedicated audio-sync pipeline is
   being built in a separate repo; once it publishes, this doc and the
   catalog files will be extended to cover it.

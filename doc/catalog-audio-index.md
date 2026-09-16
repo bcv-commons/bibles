@@ -17,14 +17,16 @@ already parsing that file needs zero new logic here.
   "generated_at": "...",
   "sources": [
     {"d": "https://cdn.bibel.wiki/dbt/_catalog.json"},
-    {"h": "https://bible.helloao.org/api/available_translations.json"}
+    {"h": "https://bible.helloao.org/api/available_translations.json"},
+    {"o": "https://openbible-api-1.biblica.com/projects"}
   ],
   "entries": [
     ["aai", "nt", "d"],
     ["eng", "nt", "d", 12],
     ["eng", "nt", "h"],
     ["eng", "ot", "d", 8],
-    ["eng", "ot", "h"]
+    ["eng", "ot", "h"],
+    ["yal", "nt", "o"]
   ]
 }
 ```
@@ -61,6 +63,13 @@ it sounds like:
   in this pipeline fetches or catalogs it yet. `p` rows will start
   appearing here once that ingestion work happens — their absence today is
   a known gap, not "PKF has no audio."
+- **`o` (openbible/Biblica) rows** — real, book-level verified (not just a
+  claimed `type: "audio"`; see [`sources.md`](sources.md)). No fileset-
+  routing file exists for these yet (the audio equivalent of
+  `catalog-text.json`) — fetch `/projects/{id}/versions` then
+  `/versions/{id}/artifacts` directly against Biblica's own API for the
+  real per-book MP3/Timing artifact ids. This repo does not republish the
+  actual audio bytes — see `sources.md`'s Audio section for why.
 
 ## Why helloAO's population is small, and how it's verified
 

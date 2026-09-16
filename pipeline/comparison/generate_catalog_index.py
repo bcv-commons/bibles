@@ -69,6 +69,7 @@ NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH"
 DBT_CATALOG_URL = "https://cdn.bibel.wiki/dbt/_catalog.json"
 PKF_MANIFEST_URL = "https://cdn.bibel.wiki/pkf/manifest.json"
 HELLOAO_CATALOG_URL = "https://bible.helloao.org/api/available_translations.json"
+OPENBIBLE_PROJECTS_URL = "https://openbible-api-1.biblica.com/projects"
 
 
 def dbt_rows():
@@ -142,6 +143,37 @@ def helloao_rows():
     return counts
 
 
+def openbible_rows():
+    """Real NT/OT/Portions classification for Biblica text projects, from
+    fetch_openbible_book_coverage.py's real per-project book list (the zip
+    is whole-edition, so this is the only way to know real coverage — no
+    external-pointer concern the way DBT's `t:helloao:...` rows have,
+    Biblica's own zips always carry its own real USFM)."""
+    coverage_file = API_CACHE / "openbible" / "text-book-coverage.json"
+    if not coverage_file.exists():
+        return {}
+    coverage = json.loads(coverage_file.read_text())
+    counts = defaultdict(int)
+    for project_dir in (API_CACHE / "openbible" / "text").glob("*.json"):
+        project_id = project_dir.stem
+        books = set(coverage.get(project_id) or [])
+        if not books:
+            continue
+        detail = json.loads(project_dir.read_text())
+        iso = detail["project"].get("languageCode")
+        if not iso:
+            continue
+        if NT_BOOKS.issubset(books):
+            counts[(iso, "nt", "o")] += 1
+        elif books & NT_BOOKS:
+            counts[(iso, "ntp", "o")] += 1
+        if OT_BOOKS.issubset(books):
+            counts[(iso, "ot", "o")] += 1
+        elif books & OT_BOOKS:
+            counts[(iso, "otp", "o")] += 1
+    return counts
+
+
 def main():
     args = sys.argv[1:]
     out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "index.json"
@@ -167,7 +199,7 @@ def main():
     hao_path.write_text(json.dumps(hao_raw, indent=2), encoding="utf-8")
 
     all_counts = defaultdict(int)
-    for counts in (dbt_rows(), pkf_rows(), helloao_rows()):
+    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows()):
         for k, v in counts.items():
             all_counts[k] += v
 
@@ -181,7 +213,7 @@ def main():
     output = {
         "schema_version": 1,
         "generated_at": None,
-        "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL}],
+        "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL}, {"o": OPENBIBLE_PROJECTS_URL}],
         "entries": entries,
     }
 
