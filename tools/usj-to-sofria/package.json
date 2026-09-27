@@ -1,0 +1,11 @@
+{
+  "name": "bibles-usj-to-sofria",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Convert USJ (Unified Scripture JSON) into Sofria (real Proskomma-native JSON) using the real proskomma-core import+sofria() path. Shared core piece for the USJ(book)+Sofria(chapter) reduced publish scheme, reused across all sources that produce USJ (openbible, helloAO).",
+  "bin": { "usj-to-sofria": "./convert.mjs" },
+  "dependencies": {
+    "proskomma-core": "0.11.3"
+  }
+}

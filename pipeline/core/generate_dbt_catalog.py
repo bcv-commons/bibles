@@ -69,11 +69,40 @@ Shape (both files): entries["<iso>:<canon>"]["<distinct_id>"] = [variant, ...]
   fileset's own `size` code doesn't certify whole-testament coverage —
   same Portions/uncertain convention as catalog-index.json.
 
-NOT YET VALIDATED AT FULL SCALE / NOT YET PUBLISHED — see
-internal-docs/catalog-audio-ownership-architecture.md §5's own caution
-(quoting MONO's review): the compact-encoding scheme deserves the same
-multiple rounds of real verification MONO's own version got before it's
-trustworthy. This run is exactly that verification pass, not a publish.
+VALIDATED AND PUBLISHED — see internal-docs/catalog-audio-ownership-architecture.md
+§5 for the full validation record (2026-07-28, full scale, all 63 raw
+pages/3139 bible entries: 0 unknown size codes, 0 round-trip id failures,
+0 Story-fileset leakage, 0 non-unique ids in either catalog). Originally
+published under /dbt/_app/catalog-text.json + catalog-audio.json
+(2026-07-29); migrated to CATALOG_DIR (cdn.bibel.wiki/catalog/text.json +
+audio.json, this file's current TEXT_OUT/AUDIO_OUT) alongside
+catalog-index.json/catalog-overlap.json's own /catalog/ migration — live,
+confirmed byte-identical to the local build 2026-09-17 (a client asked
+whether this was published at all; this docstring itself was the only
+thing still saying "not yet" — the data had been live for weeks).
+Published as part of the regular `make publish-catalog` step, same
+cadence as catalog-index.json/catalog-overlap.json (that command uploads
+the whole export/catalog/ directory, this file included).
+
+Deliberate exclusion, confirmed 2026-09-27 (a client cross-check —
+audio-sync, ~41 iso:canon pairs they have real DBT-sourced text for but
+this catalog has no entry for at all): NOT a staleness or generation bug
+— re-fetching `internal-data/api-cache/bibles/` fresh from DBT's `/bibles`
+list endpoint did not surface these. Confirmed directly against DBT's own
+API instead: querying the specific fileset ids by hand (e.g.
+`BGRBBSN_ET`, `CLDABTN_ET`, `MYBABT`) returns "The Fileset exists, but no
+Permissions were found for your current key" — a real 403, not a 404.
+These filesets genuinely exist on DBT's side; our own API key just can't
+see or fetch them, at any level (bulk list, per-bible detail, or direct
+fetch) — this generator can only build from what our key can actually
+see, so they never appear here at all. MONO's separately-generated
+`_catalog.json` apparently has broader key permissions and lists these
+anyway — deliberately NOT cross-referenced into this file as a fallback
+existence signal: this catalog's whole point is that a client can fetch
+what's listed here using their OWN key, and listing a fileset we
+ourselves can't independently confirm or serve would be misleading, not
+a completeness improvement. Left out on purpose; the real fix (if any)
+is requesting broader API key permissions, not a workaround here.
 
 Usage:
     python3 generate_dbt_catalog.py [--text-out PATH] [--audio-out PATH]

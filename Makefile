@@ -4,6 +4,7 @@ CORE := pipeline/core
 .PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry \
+        publish-openbible publish-openbible-dry \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
@@ -29,6 +30,8 @@ help: ## Show available targets
 	@echo "  make cleanup-dbt-dry  Dry-run orphan cleanup"
 	@echo "  make publish-catalog     Upload export/catalog/ to cdn.bibel.wiki/catalog/"
 	@echo "  make publish-catalog-dry Dry-run (no writes to CDN)"
+	@echo "  make publish-openbible   Upload export/openbible/ to cdn.bibel.wiki/openbible/"
+	@echo "  make publish-openbible-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
 	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
 	@echo ""
@@ -74,12 +77,21 @@ vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
 
 vrs-map: ## Build cross-scheme verse maps from pinned TVTMS baselines
-	@for s in lxx vul org orgw rso catm; do \
+	@for s in lxx vul org orgw rso; do \
 	  $(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme $$s \
 	    --crosswalk data/vrs/crosswalk-$$s.toml \
 	    --mapping data/vrs/tvtms-$$s-to-eng.baseline.tsv \
 	    --tvtms-rev $(TVTMS_REV) $(ARGS) ; \
 	done
+	@# catm reuses org's baseline rows as-is (see crosswalk-catm.toml) — pass
+	@# --compare-vrs so real catm/org shape divergence gets recorded honestly
+	@# instead of silently falling through classify_exceptions()'s blind spot
+	@# for chapters the reused baseline never had a row for.
+	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme catm \
+	  --crosswalk data/vrs/crosswalk-catm.toml \
+	  --mapping data/vrs/tvtms-catm-to-eng.baseline.tsv \
+	  --compare-vrs org \
+	  --tvtms-rev $(TVTMS_REV) $(ARGS)
 
 TVTMS_REV ?= UNPINNED
 
@@ -124,6 +136,12 @@ publish-catalog: ## Upload export/catalog/ to cdn.bibel.wiki/catalog/
 
 publish-catalog-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-catalog.sh
+
+publish-openbible: ## Upload export/openbible/ to cdn.bibel.wiki/openbible/
+	bash $(CORE)/publish-openbible.sh
+
+publish-openbible-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-openbible.sh
 
 publish-obs: ## Upload export/obs/ to cdn.bibel.wiki/obs/
 	bash $(CORE)/publish-obs.sh

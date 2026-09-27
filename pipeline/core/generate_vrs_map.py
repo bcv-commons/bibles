@@ -104,6 +104,51 @@ def classify_exceptions(mapped: list[dict], lxx: dict, eng: dict) -> list[dict]:
     return exc
 
 
+def shape_divergence_gaps(mapped: list[dict], src_shape: dict, compare_shape: dict) -> tuple[list[dict], list[str]]:
+    """Find real chapter-length divergences between `src_shape` (the scheme
+    we're actually publishing, e.g. catm) and `compare_shape` (the scheme
+    whose TVTMS baseline was reused as-is, e.g. org) that classify_exceptions()
+    CANNOT see.
+
+    Real, confirmed gap (found 2026-09-26 via a client report — lexeme-aligner):
+    when a scheme's crosswalk deliberately REUSES another scheme's baseline
+    rows (see crosswalk-catm.toml's own header), classify_exceptions() only
+    catches divergence in chapters a baseline ROW already touches (e.g. a
+    renumbered verse landing outside the narrower scheme's own chapter
+    bounds — the one case already caught, 1CH 12:41). It's blind to a whole
+    other category: a chapter where the reused scheme and its OWN target
+    (eng) happen to AGREE, so the baseline has NO row for that chapter at
+    all, but the scheme actually being published diverges from BOTH of them
+    (e.g. real catm.vrs DEU 5:30 vs org/eng's shared DEU 5:33 — org's
+    baseline never had a reason to carry a DEU 5 row, so catm silently
+    inherits an unchecked identity mapping for verses 31-33 that don't
+    exist in real catm content). Returns (extra_gap_exceptions,
+    books_entirely_absent_from_compare_shape)."""
+    covered_chapters = set()
+    for r in mapped:
+        for ref in (r["s"], r["t"]):
+            book, c, _ = split_ref(ref)
+            covered_chapters.add((book, c))
+
+    gaps: list[dict] = []
+    extra_books: list[str] = []
+    for book, chapters in sorted(src_shape.items()):
+        if book not in compare_shape:
+            extra_books.append(book)
+            continue
+        for c, last_v in sorted(chapters.items()):
+            if (book, c) in covered_chapters:
+                continue  # already checked by classify_exceptions() via a real row
+            other_last_v = compare_shape[book].get(c)
+            if other_last_v is not None and other_last_v != last_v:
+                gaps.append({
+                    "s": join_ref(book, c, str(last_v)), "t": join_ref(book, c, str(other_last_v)),
+                    "side": "source", "reason": "shape-diverges-no-baseline-row",
+                    "kind": "unreconciled-chapter",
+                })
+    return gaps, extra_books
+
+
 def esg_rows(tsv: Path) -> list[dict]:
     """Read the reconciled lxx-ESG -> eng-ESG map (source_ref, standard_ref, action)."""
     rows: list[dict] = []
@@ -170,6 +215,10 @@ def main() -> None:
                     help="also write crosswalked source_ref<TAB>standard_ref for the validator")
     ap.add_argument("--vrs-dir", type=Path, default=VRS_DIR,
                     help="canonical .vrs shapes (for the ESG source-verse check)")
+    ap.add_argument("--compare-vrs", default=None,
+                    help="scheme whose TVTMS baseline this one's crosswalk reuses "
+                         "as-is (e.g. catm reusing org) — enables the shape-"
+                         "divergence gap audit classify_exceptions() can't do alone")
     args = ap.parse_args()
 
     cw = load_crosswalk(args.crosswalk)
@@ -211,6 +260,17 @@ def main() -> None:
 
     mapped.sort(key=lambda r: r["s"])
     exceptions = classify_exceptions(mapped, src_shape, tgt_shape)
+
+    documented_gaps = list(cw["documented_gaps"])
+    if args.compare_vrs:
+        compare_shape = load_vrs(args.vrs_dir / f"{args.compare_vrs}.vrs")
+        shape_gaps, extra_books = shape_divergence_gaps(mapped, src_shape, compare_shape)
+        exceptions.extend(shape_gaps)
+        if extra_books:
+            documented_gaps.append(
+                f"{args.source_scheme} has books absent from the reused "
+                f"{args.compare_vrs} baseline entirely (never mapped): {extra_books}")
+
     exc_books = sorted({split_ref(e["s"])[0] if e["side"] == "source"
                         else split_ref(e["t"])[0] for e in exceptions})
 
@@ -226,12 +286,18 @@ def main() -> None:
         "crosswalk": {k: v for k, v in cw["book"].items()},
         "pending_crosswalk": {"books": sorted(pending), "counts": pending,
                               "reason": cw["pending_reason"]},
-        "documented_gaps": cw["documented_gaps"],
+        "documented_gaps": documented_gaps,
         "exceptions": exceptions,
         "exceptions_note": "Rows kept in `map` but outside our own .vrs shapes — "
                            "TVTMS is authoritative; our shapes are narrower. "
                            f"Books needing shape reconciliation: {exc_books}. "
-                           "JER = the LXX chapter reordering (needs true LXX Jeremiah).",
+                           "JER = the LXX chapter reordering (needs true LXX Jeremiah). "
+                           + ('Includes `"kind":"unreconciled-chapter"` entries: chapters '
+                              f"where {args.source_scheme}'s real shape diverges from the "
+                              f"{args.compare_vrs} baseline it reuses, with NO row in the map "
+                              "at all for that chapter (identity mapping there is unverified, "
+                              "not confirmed correct)."
+                              if args.compare_vrs else ""),
         "map": mapped,
     }
     out.write_text(json.dumps(artifact, ensure_ascii=False, indent=1), encoding="utf-8")

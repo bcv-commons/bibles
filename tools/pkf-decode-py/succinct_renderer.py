@@ -49,6 +49,27 @@ def _camel_to_snake(s):
     return "".join(out)
 
 
+def _wrappers_pop(block):
+    """block["wrappers"].pop(0), but matching real JS array semantics on an
+    EMPTY array (silently returns undefined) rather than Python list.pop's
+    IndexError. Found real 2026-09-18: an attributed \\w (or milestone) as
+    the literal last item in a block leaves its closing container
+    unflushed at block end (already-documented real-library quirk, see
+    this module's docstring) — that flush only fires on the NEXT block's
+    first item, by which point `block["wrappers"]` is a BRAND NEW,
+    genuinely empty list (each block gets its own fresh one). The real
+    JS library tolerates this silently (confirmed directly against the
+    actual installed proskomma-core: decoding the same malformed-by-this-
+    quirk succinct bytes produces odd but non-crashing output — the
+    closing text just lands in the wrong block). This port's equivalent
+    `.pop(0)` crashed instead — a genuine transcription bug, not a real
+    library behavior to preserve (unlike the dropped-close quirk itself,
+    which IS preserved, verbatim, by design)."""
+    if block["wrappers"]:
+        return block["wrappers"].pop(0)
+    return None
+
+
 class SuccinctRenderer:
     def __init__(self, doc, docset_id, selectors, actions):
         self.doc = doc
@@ -202,7 +223,7 @@ class SuccinctRenderer:
                 self._render_event("startWrapper", env)
             else:
                 self._render_event("endWrapper", env)
-                seq0["block"]["wrappers"].pop(0)
+                _wrappers_pop(seq0["block"])
             del seq0["element"]
         elif head == "spanWithAtts":
             if item_sub == "start":
@@ -220,7 +241,7 @@ class SuccinctRenderer:
                 self._render_event("startWrapper", env)
             else:
                 self._render_event("endWrapper", env)
-                seq0["block"]["wrappers"].pop(0)
+                _wrappers_pop(seq0["block"])
             del seq0["element"]
         elif head == "milestone" and item_sub == "start":
             if scope_bits[1] == "ts":
@@ -251,7 +272,7 @@ class SuccinctRenderer:
                 self._render_event("startWrapper", env)
             else:
                 self._render_event("endWrapper", env)
-                seq0["block"]["wrappers"].pop(0)
+                _wrappers_pop(seq0["block"])
             del seq0["element"]
         elif c["type"] == "start_milestone":
             seq0["element"] = c

@@ -93,11 +93,38 @@ def _walk_inline(node, b):
             b.start_milestone(marker[:-2], _extra_attrs(node))
         elif marker.endswith("-e"):
             b.end_milestone(marker[:-2])
-        # A bare milestone with no -s/-e suffix (not seen in this
-        # package's real test corpus) is silently skipped rather than
-        # guessed at.
+        elif node.get("content"):
+            # A bare, non-standard marker (e.g. real content found using
+            # "\P" — not real USFM, but usfmtc still parses it, generically
+            # wrapping what follows as an "x-bare" milestone-like container
+            # with its own "content"). Found as a REAL bug (not just a
+            # missing feature): silently skipping the whole node here
+            # dropped the wrapped TEXT too, not just the unrecognized
+            # marker — a genuine content-loss round-trip failure (found
+            # 2026-09-16 via the full-corpus verification, zos/ACT 2:13).
+            # Fixed: still walk the wrapped content — we don't know what
+            # the bare marker itself means structurally, but its content
+            # is real and must not be dropped.
+            for child in node["content"]:
+                _walk_inline(child, b)
+        # A bare, content-less milestone (not seen in this package's real
+        # test corpus) is silently skipped — nothing to lose.
     elif kind == "note":
-        tag = marker  # "f" or "x" — NOTE_MARKERS' two real keys
+        # NOTE_MARKERS only has "f"/"x" — a real, rare third case exists:
+        # usfmtc's grammar generically accepts some other backslash-tags
+        # as "note" type too (e.g. found in real content, marker "fe" —
+        # traced to a genuine nested `scope start inline/fe` construct
+        # inside a footnote block in the ORIGINAL succinct data, which
+        # the real proskomma-style text renderer silently no-ops on since
+        # `succinct_renderer.py`'s `_render_item` has no branch for scope
+        # head "inline" at the content-item level — not a decode quirk,
+        # real (if obscure) source structure this package doesn't yet
+        # know how to re-encode). Raise cleanly here (matching the
+        # table/figure/optbreak pattern) instead of letting Builder's
+        # internal NOTE_MARKERS[tag] KeyError propagate uncaught.
+        if marker not in ("f", "x"):
+            raise ValueError(f"Unsupported note marker \\{marker} (only \\f/\\x are supported)")
+        tag = marker
         b.start_note(tag)
         caller = node.get("caller")
         if caller:

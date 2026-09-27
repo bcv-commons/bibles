@@ -134,11 +134,27 @@ def _hao_get(path: str):
 
 
 def hao_verse_count(tid: str, book: str, ch: int) -> int | None:
-    """numberOfVerses for a chapter — authoritative, no line-wrap noise."""
+    """The chapter's highest real verse NUMBER — what a .vrs shape records —
+    NOT the `numberOfVerses` metadata field. Real, confirmed bug (2026-09-27,
+    a client cross-check): they disagree whenever a translation genuinely
+    skips a verse number mid-chapter (isl_bib's real PSA 51 has 20 verse
+    entries but no v.17 at all, so its own last verse is numbered 21, not
+    20 — `numberOfVerses` correctly counts entries present, but for
+    versification purposes the chapter boundary is defined by the highest
+    NUMBER, and trusting the count field there misclassified isl_bib as eng
+    instead of the real org). Falls back to `numberOfVerses` only if the
+    real content array is unusable for some reason (defensive, not the
+    normal path)."""
     try:
-        return _hao_get(f"{tid}/{book}/{ch}.json").get("numberOfVerses")
+        data = _hao_get(f"{tid}/{book}/{ch}.json")
     except Exception:
         return None
+    content = data.get("chapter", {}).get("content", [])
+    numbers = [v["number"] for v in content
+               if isinstance(v, dict) and v.get("type") == "verse" and isinstance(v.get("number"), int)]
+    if numbers:
+        return max(numbers)
+    return data.get("numberOfVerses")
 
 
 def hao_probe(tid: str) -> dict:
@@ -146,7 +162,8 @@ def hao_probe(tid: str) -> dict:
     PSA 117 / PSA 51 numberOfVerses). Returns the same signal shape as DBT."""
     sig = {"iso": "", "bookCount": 0, "deuterocanon": False,
            "bookOrder": "unknown", "ps151": False, "mal": None, "jol": None,
-           "ps117": None, "ps51": None, "sa17": None, "ki4": None, "bv": {}, "bc": {}}
+           "ps117": None, "ps51": None, "sa17": None, "ki4": None, "mal4": None,
+           "hag1": None, "bv": {}, "bc": {}}
     try:
         books = _hao_get(f"{tid}/books.json").get("books", [])
     except Exception:
@@ -167,9 +184,33 @@ def hao_probe(tid: str) -> dict:
     sig["ps117"] = hao_verse_count(tid, "PSA", 117)
     if sig["ps117"] is not None and sig["ps117"] < 15:
         sig["ps51"] = hao_verse_count(tid, "PSA", 51)  # Masoretic: eng vs org
+        if sig["ps51"] is not None and sig["ps51"] > 20 and sig.get("mal") == 4:
+            # org-family + a real-content-listed 4th Malachi chapter — confirm
+            # it's actually real content (not just a catalog claim) before
+            # picking org vs orgw. Real, confirmed bug (2026-09-26, fra_lsg):
+            # helloAO texts never got this confirmation fetch at all, so
+            # classify() always returned "?" here — and the caller's "?"
+            # fallback defaulted straight to "eng", actively wrong for a text
+            # whose own Psalm data had already ruled eng out.
+            #
+            # Second real, confirmed bug (2026-09-27, a client cross-check —
+            # eng_ojb, rmc_the): a chapter can be a real 200 response with a
+            # genuine chapter shell but ZERO actual verses (checked directly:
+            # both these texts' real MAL/4 has `"numberOfVerses": 0` and an
+            # empty content array) — structurally identical to "not real
+            # content" for this purpose, but `confirmed is not None` treated
+            # 0 as truthy evidence, wrongly picking orgw over org.
+            confirmed = hao_verse_count(tid, "MAL", 4)
+            sig["mal4"] = bool(confirmed)
     elif sig["ps117"] is not None and sig["ps117"] >= 15:
         sig["sa17"] = hao_verse_count(tid, "1SA", 17)   # LXX: lxx vs vul
         sig["ki4"] = hao_verse_count(tid, "1KI", 4)
+        true_lxx = sig["sa17"] is not None and sig["sa17"] <= 40 and (
+            sig["ki4"] is None or sig["ki4"] <= 25)
+        if sig["sa17"] is not None and not true_lxx:
+            # Not true LXX — need Haggai ch.1 to split vul vs rso (see
+            # classify()'s own comment on this discriminator).
+            sig["hag1"] = hao_verse_count(tid, "HAG", 1)
     return sig
 
 
@@ -259,7 +300,29 @@ def classify_helloao(fetch: bool) -> dict:
             if p is None and "PSA" in e.get("bc", {}):
                 return True   # has Psalms but PS117 probe failed -> retry
             # cached before the 1SA17 discriminator existed
-            return p is not None and p >= 15 and e.get("sa17") is None
+            if p is not None and p >= 15 and e.get("sa17") is None:
+                return True
+            # ps51 invalidated (2026-09-27) after fixing hao_verse_count() to
+            # use the real max verse NUMBER instead of the `numberOfVerses`
+            # count field — see that function's own docstring; every cached
+            # ps51 at the eng/org boundary (19 or 20) needed re-checking.
+            if p is not None and p < 15 and e.get("ps51") is None:
+                return True
+            # Real, confirmed bug (2026-09-26, a client report): cached before
+            # the mal4/hag1 tiebreaker probes existed, so entries that need
+            # one are stuck on a stale scheme (fra_lsg wrongly "eng" instead
+            # of "orgw"; rus_syn wrongly "vul" instead of "rso") until
+            # re-probed with the fixed hao_probe().
+            p51 = e.get("ps51")
+            if p is not None and p < 15 and p51 is not None and p51 > 20 \
+                    and e.get("mal") == 4 and e.get("mal4") is None:
+                return True
+            sa17 = e.get("sa17")
+            if p is not None and p >= 15 and sa17 is not None and e.get("hag1") is None:
+                true_lxx = sa17 <= 40 and (e.get("ki4") is None or e.get("ki4") <= 25)
+                if not true_lxx:
+                    return True
+            return False
         full = [t for t in ot_ids if full_probe(t)]
         backfill = [t for t in ot_ids
                     if not full_probe(t) and (not cache[t].get("bv") or not cache[t].get("bc"))]
@@ -287,15 +350,27 @@ def classify_helloao(fetch: bool) -> dict:
             continue
         scheme = classify(entry)[0]
         if scheme == "?":
-            # No Psalm probe (no Psalms book, or PS117 still failing). Recover
-            # via non-Psalm signals; else default eng for a partial OT (the
-            # org/eng distinction is Psalm-based and moot without Psalms). Only
-            # a text with no book structure at all stays 'undetermined'.
+            # This "?" can mean two very different things, and they must NOT
+            # share a fallback: (a) no Psalm probe at all (no Psalms book, or
+            # PS117 still failing) — genuinely undetermined, eng is a
+            # reasonable default; (b) Psalm probe data EXISTS and already
+            # rules eng out, but a tiebreaker (org-vs-orgw's mal4, vul-vs-rso's
+            # hag1) hasn't been confirmed yet. Real, confirmed bug (2026-09-26,
+            # a client report — fra_lsg): case (b) was being silently folded
+            # into case (a)'s "default eng", producing a scheme classify()
+            # had already ruled out. Now: keep the org/vul family the Psalm
+            # signal already established, don't fall all the way to eng/vul-
+            # by-default when there's real evidence against them.
             dan = entry.get("bv", {}).get("DAN")
+            p117, p51 = entry.get("ps117"), entry.get("ps51")
             if entry.get("bookOrder") == "byzantine":
                 scheme = "rso"
             elif dan is not None and dan > _DAN_ADDITIONS:
                 scheme = "catm"
+            elif p117 is not None and p117 < 15 and p51 is not None and p51 > 20:
+                scheme = "org"      # eng already ruled out; org/orgw tiebreaker only
+            elif p117 is not None and p117 >= 15 and entry.get("sa17") is not None:
+                scheme = "vul"      # true-lxx already ruled out; vul/rso tiebreaker only
             elif entry.get("bc"):
                 scheme = "eng"
             else:
@@ -376,6 +451,7 @@ def classify(sig: dict) -> tuple[str, bool]:
     p51 = sig.get("ps51")
     sa17 = sig.get("sa17")
     ki4 = sig.get("ki4")
+    hag1 = sig.get("hag1")
     byz = sig["bookOrder"] == "byzantine"
     masoretic = p117 is not None and p117 < 15
     lxx_num = (p117 is not None and p117 >= 15) or sig["ps151"]
@@ -389,9 +465,24 @@ def classify(sig: dict) -> tuple[str, bool]:
         if byz:
             return "rso", False           # confirmed: Byzantine order + real LXX Psalm numbering
         if sa17 is None:
-            return "?", True              # need 1SA17 to split lxx vs vul
+            return "?", True              # need 1SA17 to split lxx vs vul/rso
         true_lxx = sa17 <= 40 and (ki4 is None or ki4 <= 25)
-        return ("lxx" if true_lxx else "vul"), False
+        if true_lxx:
+            return "lxx", False
+        # Not true LXX. Real, confirmed bug (found 2026-09-26 via a client
+        # report — rus_syn): NT book order alone used to gate "rso" entirely
+        # — a non-byzantine NT order fell through to "vul" unconditionally,
+        # even when the real OT content is genuinely rso (rus_syn's own
+        # Haggai is 1:15/2:23, matching rso, not vul's 1:14/2:24; its NT
+        # book order just happens to be "standard"). NT book order and OT
+        # verse-numbering scheme are independent axes — same principle
+        # already applied to org's own byz-independence fix above, just
+        # not extended to this branch. Haggai chapter 1's real verse count
+        # is a clean, confirmed discriminator: 14 is unique to vul; every
+        # other scheme (rso included) is 15.
+        if hag1 is None:
+            return "?", True              # need HAG 1 to split vul vs rso
+        return ("vul" if hag1 == 14 else "rso"), False
     if masoretic:
         if p51 is None:
             return "?", True              # heading unknown -> need PS51
@@ -421,6 +512,7 @@ def main():
     sa17 = load_probe("1SA", "017")
     ki4 = load_probe("1KI", "004")
     mal4 = load_probe("MAL", "004")  # confirms bible_details' free mal==4 claim against real content
+    hag1 = load_probe("HAG", "001")  # vul-vs-rso discriminator (14 verses -> vul, else rso)
 
     # First gather all filesets + free signals
     filesets = []
@@ -450,6 +542,7 @@ def main():
             "ps117": ps117.get(abbr), "ps51": ps51.get(abbr),
             "sa17": sa17.get(abbr), "ki4": ki4.get(abbr),
             "mal4": (True if abbr in mal4 else None),
+            "hag1": hag1.get(abbr),
         })
 
     # Optionally fetch probes for undetermined filesets that actually have DBT text
@@ -468,13 +561,23 @@ def main():
                     and f["ps51"] > 20 and f["mal"] == 4 and f["mal4"] is None):
                 # org-family, free metadata claims a 4th Malachi chapter —
                 # confirm it's real content, not just a catalog listing
-                # (BULCBV: bible_details claims 4, MAL/4 is a real 404).
+                # (BULCBV: bible_details claims 4, MAL/4 is a real 404). Also
+                # guard against a real-but-empty (0-verse) response — see the
+                # analogous helloAO fix's comment above for why "not None"
+                # alone isn't enough.
                 confirmed = fetch_verse_count(f["abbr"], f["iso"], "MAL", 4)
-                f["mal4"] = confirmed is not None
+                f["mal4"] = bool(confirmed)
             if f["ps117"] is not None and f["ps117"] >= 15 and f["sa17"] is None:
                 # LXX Psalms: structure probe (true Septuagint vs Vulgate/Western)
                 f["sa17"] = fetch_verse_count(f["abbr"], f["iso"], "1SA", 17)
                 f["ki4"] = fetch_verse_count(f["abbr"], f["iso"], "1KI", 4)
+            true_lxx = (f["sa17"] is not None and f["sa17"] <= 40
+                        and (f["ki4"] is None or f["ki4"] <= 25))
+            if (f["ps117"] is not None and f["ps117"] >= 15 and f["sa17"] is not None
+                    and not true_lxx and f["hag1"] is None):
+                # Not true LXX — confirm vul vs rso via Haggai ch.1 (14 -> vul,
+                # else rso; see classify()'s own comment on this discriminator).
+                f["hag1"] = fetch_verse_count(f["abbr"], f["iso"], "HAG", 1)
             if i % 50 == 0:
                 print(f"        {i}/{len(todo)}")
 

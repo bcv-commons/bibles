@@ -395,69 +395,110 @@ class IndependentCacheDataSorter:
             return abbr[:6]
         return abbr
 
-    def filter_dramatized_versions(self, filesets: list[str]) -> list[str]:
+    # Real priority order for audio fileset variants of the same edition,
+    # per audio-sync's own stated policy (2026-09-17, replacing an earlier
+    # "streaming excluded entirely" design): prefer downloadable over
+    # streaming, and within each format prefer non-dramatized over
+    # dramatized — but streaming IS an acceptable last resort when no
+    # downloadable variant exists at all, in either generation. Keyed by
+    # (generation digit at position -3, format suffix — the real DA/SA
+    # meaning confirmed against DBT's own `type` field, see
+    # select_best_audio_variant()'s docstring).
+    _AUDIO_VARIANT_TIER = {
+        ("1", "DA"): 0,  # standard, downloadable
+        ("2", "DA"): 1,  # dramatized, downloadable
+        ("1", "SA"): 2,  # standard, streaming
+        ("2", "SA"): 3,  # dramatized, streaming
+    }
+
+    def select_best_audio_variant(self, filesets: list[str], already_timed: list[str] | None = None) -> list[str]:
         """
-        Filter out dramatized versions when a non-dramatized version of the
-        SAME recording exists.
+        Among audio fileset ids for the SAME base edition/generation
+        family, keep only the one(s) at the best (lowest-ranked) tier
+        present — see _AUDIO_VARIANT_TIER. A base group is dropped
+        entirely if an ALREADY-TIMED sibling in that same base group
+        (`already_timed`) is already equal-or-better tier than the best
+        untimed candidate — nothing to propose there.
 
-        FIXED 2026-09-19 (real, confirmed bug — see internal-docs / the
-        conversation that found it): this function's name and docstring
-        always claimed to prefer non-dramatized audio, but its comparison
-        looked at position -3 ('1' vs '2'), which is DBT's recording
-        generation/edition digit (the "N1"/"N2" in e.g. FRNTLSN2DA) — NOT
-        the dramatized/standard marker. That marker is the real LAST TWO
-        characters of the fileset id: "DA" (dramatized) vs "SA" (standard).
-        Because the old grouping key included those last two characters
-        verbatim, a DA fileset and its real SA sibling (e.g. FRNTLSN2DA /
-        FRNTLSN2SA — same generation, same base recording) were always
-        placed in DIFFERENT groups and so were NEVER compared — the
-        intended suppression never fired. Confirmed at scale: of 800
-        already-aligned DA filesets in internal-data/align-index.json, 351
-        (44%) have a DBT-confirmed-timing-capable SA sibling that was never
-        aligned — this was silently exposing DA as an equally-valid sync
-        candidate in nearly half of all cases, not just an edge case.
-
-        This fix does NOT retroactively touch any already-aligned/published
-        DA timing data (internal-data/align-index.json,
-        internal-data/legacy-timing-data/, or anything already exported) —
-        those stay exactly as-is, deliberately (do not "fix" a fileset
-        choice that already shipped). It only changes which candidates get
-        PROPOSED going forward.
+        History (kept for the record — this function's contract changed
+        three times on 2026-09-16/17, every time from a real external
+        catch, not our own testing):
+        1. Originally assumed "DA"/"SA" (fileset id's last 2 chars) meant
+           dramatized/standard. WRONG — caught by audio-sync checking
+           DBT's own `type` field directly. "DA"/"SA" is a downloadable/
+           streaming FORMAT distinction; the real dramatized marker is
+           the digit at position -3 (1=standard, 2=dramatized).
+        2. Fixed to exclude streaming entirely from candidacy. Also not
+           quite right — audio-sync's actual policy (2026-09-17) treats
+           streaming as an acceptable LAST RESORT when no downloadable
+           variant exists at all, not something to exclude outright.
+        3. Fixed to include streaming as a last resort, but only checked
+           "is this the best tier AMONG UNTIMED ids" — never checked
+           whether an ALREADY-TIMED sibling in the SAME base group was
+           already as good or better. Real, confirmed bug (audio-sync
+           checked 69 real streaming candidates from that pass directly
+           against DBT: 65/69 were exactly this pattern — e.g.
+           kum/KUMIBTN2SA proposed as a "last resort" while
+           kum/KUMIBTN2DA, a real downloadable recording of the same
+           edition, was sitting right there already aligned).
 
         Example:
-            If both FRNTLSN2DA and FRNTLSN2SA exist, keep only FRNTLSN2SA.
-            FRNTLSN2DA alone (no SA sibling) is kept as a last resort.
+            {ACNBSMN1DA, ACNBSMN2DA} -> keep only ACNBSMN1DA (best tier: standard downloadable)
+            {ACNBSMN2DA} alone -> kept as-is (dramatized downloadable, no better option present)
+            {ACNBSMN1SA} alone (no downloadable variant at all, and no already-timed sibling either) -> kept as last resort
+            {ACNBSMN2SA} untimed, ACNBSMN2DA already_timed -> dropped (already-timed sibling is equal/better)
 
         Args:
-            filesets: List of fileset IDs
+            filesets: List of UNTIMED fileset IDs (may span multiple
+                distinct editions/abbrs — grouped internally by base id,
+                everything except the generation digit + format suffix,
+                so different editions are never compared against each
+                other)
+            already_timed: List of fileset IDs for the same language that
+                ALREADY have confirmed timing — used only to check
+                whether an untimed candidate would be a genuine
+                improvement, never returned themselves.
 
         Returns:
-            Filtered list with dramatized versions removed where a
-            same-generation standard (SA) version exists.
+            Filtered list containing only the best-tier untimed
+            variant(s) per base edition, excluding any base group whose
+            already-timed sibling is already as good or better.
         """
-        # Group by base pattern: everything except the real DA/SA marker
-        # (the last two characters) — this correctly keeps the generation
-        # digit (N1/N2/etc.) as PART of the comparison key, since a DA/SA
-        # pair only makes sense to compare within the same generation.
-        base_groups = defaultdict(list)
-
+        already_timed = already_timed or []
+        base_groups = defaultdict(lambda: {"untimed": [], "timed": []})
         for fs_id in filesets:
-            if len(fs_id) >= 2:
-                base_groups[fs_id[:-2]].append(fs_id)
+            base_groups[fs_id[:-3] if len(fs_id) >= 3 else fs_id]["untimed"].append(fs_id)
+        for fs_id in already_timed:
+            base_groups[fs_id[:-3] if len(fs_id) >= 3 else fs_id]["timed"].append(fs_id)
 
         filtered = []
-        for base, fs_list in base_groups.items():
-            standard_ids = [fs for fs in fs_list if fs.endswith("SA")]
-            dramatized_ids = [fs for fs in fs_list if fs.endswith("DA")]
+        for base, group in base_groups.items():
+            fs_list = group["untimed"]
+            ranked = []
+            unranked = []
+            for fs_id in fs_list:
+                tier = self._AUDIO_VARIANT_TIER.get((fs_id[-3], fs_id[-2:])) if len(fs_id) >= 3 else None
+                (ranked if tier is not None else unranked).append((tier, fs_id))
 
-            if standard_ids and dramatized_ids:
-                # Prefer standard (SA) — drop the dramatized sibling(s).
-                filtered.extend(standard_ids)
-                filtered.extend(fs for fs in fs_list if fs not in dramatized_ids and fs not in standard_ids)
-            else:
-                # No SA alternative for this base — keep everything
-                # (including a lone DA, as a last resort).
-                filtered.extend(fs_list)
+            timed_tiers = [
+                self._AUDIO_VARIANT_TIER.get((fs[-3], fs[-2:])) for fs in group["timed"] if len(fs) >= 3
+            ]
+            best_timed = min((t for t in timed_tiers if t is not None), default=None)
+
+            if not ranked:
+                # Nothing recognized among untimed ids for this base —
+                # keep as-is (don't guess), unless something already-timed
+                # exists here at all (more likely a stray/malformed
+                # variant than a genuine gap in that case).
+                if not group["timed"]:
+                    filtered.extend(unranked)
+                continue
+
+            filtered.extend(unranked)  # unrecognized ids always pass through untouched
+            best_untimed = min(t for t, _ in ranked)
+            if best_timed is not None and best_timed <= best_untimed:
+                continue  # already-timed sibling is as good or better — nothing to propose
+            filtered.extend(fs for t, fs in ranked if t == best_untimed)
 
         return filtered
 
@@ -708,18 +749,31 @@ class IndependentCacheDataSorter:
             List of dictionaries with audio_fileset_id and text_fileset_id
         """
         lang_data = self.language_data[iso]
-        audio_filesets = lang_data.get("audio_filesets", [])
         text_filesets: list[str] = lang_data.get("text_filesets") or []
 
-        # Filter out audio that already has CONFIRMED timing
-        audio_without_timing = [
-            fs
-            for fs in (audio_filesets or [])
-            if not self.has_confirmed_timing(iso, fs)
+        # Real audio-only types (excludes text, matches _is_audio_type()) —
+        # streaming ("audio_stream"/"audio_drama_stream", DBT's real "SA"
+        # suffix) is INCLUDED here, deliberately: per audio-sync's own
+        # stated policy (2026-09-17), streaming is an acceptable last
+        # resort when no downloadable variant exists at all for an
+        # edition — select_best_audio_variant() below is what actually
+        # enforces "prefer downloadable, fall back to streaming only if
+        # nothing downloadable exists" (see its docstring for the full
+        # history of this policy, corrected twice from real external
+        # catches).
+        audio_filesets = [
+            d["fileset"]["id"] for d in (lang_data.get("audio_details") or [])
+            if d["fileset"].get("type") in ("audio", "audio_drama", "audio_stream", "audio_drama_stream")
         ]
 
-        # Filter dramatized versions
-        audio_filtered = self.filter_dramatized_versions(audio_without_timing)
+        # Split into already-CONFIRMED-timed vs. not
+        audio_without_timing = [fs for fs in audio_filesets if not self.has_confirmed_timing(iso, fs)]
+        audio_already_timed = [fs for fs in audio_filesets if self.has_confirmed_timing(iso, fs)]
+
+        # Keep only the best-priority variant per edition — dropping any
+        # base group whose already-timed sibling is already as good or
+        # better (see select_best_audio_variant()'s docstring, point 3).
+        audio_filtered = self.select_best_audio_variant(audio_without_timing, audio_already_timed)
 
         # Match to text
         syncable_pairs = []

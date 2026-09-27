@@ -20,6 +20,7 @@ for that.
     {"o": "https://openbible-api-1.biblica.com/projects"}
   ],
   "pending_openbible_coverage": 246,
+  "pending_ebible_coverage": 7,
   "entries": [
     ["aai", "nt", "d"],
     ["aai", "nt", "h"],
@@ -47,6 +48,19 @@ number and know real content exists beyond what's currently listed,
 without silently assuming completeness. Expected to shrink over time as
 yaapi.bible's own catalog coverage grows (`0` once fully closed); never
 expect it to explain a gap in any other source.
+
+`pending_ebible_coverage` (added 2026-09-27) — the analogous signal for a
+different gap: a real count of isos where DBT's own catalog points to real
+text at eBible.org (`t:ebible:<id>`) that isn't independently fetchable
+from DBT itself and isn't also a real helloAO translation (eBible content
+isn't always mirrored there). There's no dedicated "e" source row yet to
+represent these — this count exists so that absence reads as "known,
+counted, not yet built" rather than silently dropped. Found via a real
+client cross-check (2026-09-27): of 376 isos a client reported as entirely
+absent from `entries`, 369 were confirmed genuinely audio-only in DBT's
+own catalog (a real absence, not a bug — no code-mapping mismatch either,
+these are the correct iso codes), and only these 7 were this specific,
+fixable gap.
 
 ## Row format
 

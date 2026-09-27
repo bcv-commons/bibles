@@ -1,0 +1,10 @@
+{
+  "name": "bibles-helloao-to-sofria",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Two client sample solutions for converting helloAO's real per-chapter/complete.json into Sofria: via-usj.mjs (through USJ + real proskomma-core) and via-native.mjs (hand-built, no library dependency at all). Both reuse the same helloao_to_usj.mjs mapping module.",
+  "dependencies": {
+    "proskomma-core": "0.11.3"
+  }
+}

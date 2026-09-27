@@ -236,11 +236,40 @@ def main():
         total_projects = len(list((API_CACHE / "openbible" / "text").glob("*.json")))
         pending_openbible = total_projects - len(mapped)
 
+    # Real, confirmed gap (found 2026-09-27 via a client cross-check —
+    # audio-sync, 385 isos entirely absent from this index): a DBT catalog
+    # row's `t:ebible:<iso>` tag means real, independently-fetchable text
+    # exists at eBible.org — DBT just isn't hosting it itself. dbt_rows()
+    # correctly excludes these from the "d" source (not fetchable from
+    # DBT), but if that same iso also isn't a real helloAO translation
+    # (eBible content isn't always mirrored into helloAO), there is
+    # currently no source row (d/p/h/o) that can represent it at all — a
+    # silent, total absence, not a "listed but unreachable" state. No "e"
+    # source exists yet to fix this properly (a real eBible.org fetch
+    # integration, out of scope here) — so, matching the exact same
+    # pattern already established for `pending_openbible_coverage` above,
+    # this is made machine-detectable instead of silently dropped: a real
+    # count of isos in this exact state, confirmed empirically 369/376 of
+    # this client's specific list were genuinely audio-only in DBT's own
+    # catalog (a real absence, not a bug), with only these 7 as the real,
+    # currently-unaddressed gap.
+    isos_with_any_row = {iso for (iso, canon, source) in all_counts}
+    pending_ebible = set()
+    for row in json.loads((API_CACHE / "dbt-catalog.json").read_text())["versions"]:
+        iso = row[0]
+        if iso in isos_with_any_row:
+            continue
+        for field in row[3:]:
+            kind, _, value = field.partition(":")
+            if kind in ("t", "T") and value.startswith("ebible:"):
+                pending_ebible.add(iso)
+
     output = {
         "schema_version": 1,
         "generated_at": None,
         "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL}, {"o": OPENBIBLE_PROJECTS_URL}],
         "pending_openbible_coverage": pending_openbible,
+        "pending_ebible_coverage": len(pending_ebible),
         "entries": entries,
     }
 
