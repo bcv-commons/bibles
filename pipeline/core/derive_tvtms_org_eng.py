@@ -302,6 +302,65 @@ def write_multiverse(path: Path) -> None:
     print(f"[tvtms] multi-verse: {len(accepted)} relations -> {MULTI_OUT.relative_to(REPO_ROOT)}; flagged {len(flagged)}")
 
 
+ORGW_VRS = REPO_ROOT / "data" / "vrs" / "orgw.vrs"
+ENG_VRS = REPO_ROOT / "data" / "vrs" / "eng.vrs"
+ORGW_OUT = REPO_ROOT / "data" / "vrs" / "tvtms-orgw-to-eng.derived.tsv"
+# Org-chaptering artifacts: TVTMS places these Hebrew Joel verses in org chapter 3, but
+# orgw keeps Joel 3:1-5 as English 3:1-5, so the org->eng pairing is not valid for orgw.
+# Same five rows the strongs-aligner orgw baseline excluded (fixed 2026-09-05).
+ORGW_EXCLUDE_SOURCES = {f"JOL 3:{v}" for v in range(1, 6)}
+
+
+def _shape(path: Path) -> dict[str, dict[int, int]]:
+    out: dict[str, dict[int, int]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        book, *chapters = line.split()
+        out[book.upper()] = {int(c): int(v) for c, v in (t.split(":") for t in chapters)}
+    return out
+
+
+def _valid(ref: str, shape: dict[str, dict[int, int]]) -> bool:
+    m = re.match(r"^(\S+) (\d+):(\d+)$", ref)
+    if not m:
+        return False
+    b, c, v = m.group(1), int(m.group(2)), int(m.group(3))
+    return b in shape and c in shape[b] and 1 <= v <= shape[b][c]
+
+
+def _valid_target(ref: str, shape: dict[str, dict[int, int]]) -> bool:
+    if ref.endswith(":title"):
+        m = re.match(r"^(\S+) (\d+):title$", ref)
+        return bool(m) and m.group(1) in shape and int(m.group(2)) in shape[m.group(1)]
+    return _valid(ref, shape)
+
+
+def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
+    """orgw = org's Hebrew-column pairs restricted to refs valid in orgw.vrs and eng.vrs.
+
+    Verified against the strongs-aligner orgw baseline: 1,794 shared non-identity rows;
+    the remaining differences are the 62 Daniel rows (the intended fix), PSA 13:6, and
+    the excluded JOL rows above.
+    """
+    ow, eng = _shape(ORGW_VRS), _shape(ENG_VRS)
+    rows = {(a, b) for a, b in pairs
+            if _valid(a, ow) and _valid_target(b, eng) and a not in ORGW_EXCLUDE_SOURCES}
+    return sorted((a, b) for a, b in rows if a != b)
+
+
+def write_orgw() -> None:
+    pairs, _ = derive(fetch_pinned())
+    rows = derive_orgw({(norm(a), norm(b)) for a, b in pairs})
+    ORGW_OUT.write_text(
+        f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
+        f"pipeline/core/derive_tvtms_org_eng.py (orgw). TVTMS is CC BY 4.0, STEPBible.org.\n"
+        "source_ref\tstandard_ref\taction\n"
+        + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),
+        encoding="utf-8")
+    print(f"[tvtms] orgw: {len(rows)} non-identity rows -> {ORGW_OUT.relative_to(REPO_ROOT)}")
+
+
 def main() -> None:
     path = fetch_pinned()
     if "--check" in sys.argv:
@@ -329,6 +388,7 @@ def main() -> None:
         "deriver": "pipeline/core/derive_tvtms_org_eng.py",
     }, indent=2) + "\n", encoding="utf-8")
     write_multiverse(path)
+    write_orgw()
     print(f"[tvtms] derived {len(rows)} non-identity org->eng rows -> {OUT_TSV.relative_to(REPO_ROOT)}")
     print(f"[tvtms] skipped: {dict(skipped)}")
 

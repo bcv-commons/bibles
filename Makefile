@@ -84,12 +84,16 @@ vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
 
 vrs-map: ## Build cross-scheme verse maps (org + catm from the derived TVTMS map, others from baselines)
-	@for s in lxx vul orgw rso; do \
+	@for s in lxx vul rso; do \
 	  $(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme $$s \
 	    --crosswalk data/vrs/crosswalk-$$s.toml \
 	    --mapping data/vrs/tvtms-$$s-to-eng.baseline.tsv \
 	    --tvtms-rev $(TVTMS_REV) $(ARGS) ; \
 	done
+	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme orgw \
+	  --crosswalk data/vrs/crosswalk-orgw.toml \
+	  --mapping data/vrs/tvtms-orgw-to-eng.derived.tsv \
+	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
 	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme org \
 	  --crosswalk data/vrs/crosswalk-org.toml \
 	  --mapping data/vrs/tvtms-org-to-eng.derived.tsv \
