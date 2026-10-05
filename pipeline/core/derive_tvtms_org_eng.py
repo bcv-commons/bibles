@@ -62,6 +62,21 @@ def fetch_pinned() -> Path:
     return CACHE
 
 
+def _load_last_verse() -> dict[tuple[str, int], int]:
+    out: dict[tuple[str, int], int] = {}
+    for line in ORG_VRS.read_text(encoding="utf-8").splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        book, *chapters = line.split()
+        for tok in chapters:
+            ch, v = tok.split(":")
+            out[(book.upper(), int(ch))] = int(v)
+    return out
+
+
+LAST_VERSE = _load_last_verse()
+
+
 def org_books() -> set[str]:
     return {l.split()[0] for l in ORG_VRS.read_text(encoding="utf-8").splitlines()
             if l.strip() and not l.startswith("#")}
@@ -136,6 +151,157 @@ def action_for(src: str, std: str) -> str:
     return "Renumber title" if std.endswith(":title") else "Renumber verse"
 
 
+MULTI_OUT = REPO_ROOT / "export" / "_vrs" / "map" / "org-to-eng.multiverse.json"
+
+
+def verse_key(ref: str) -> tuple[str, int, int]:
+    book, cv = ref.split(" ", 1)
+    ch, v = cv.split(":")
+    return book, int(ch), int(v)
+
+
+def contiguous(a: str, b: str) -> bool:
+    ka, kb = verse_key(a), verse_key(b)
+    if ka[0] != kb[0]:
+        return False
+    if ka[1] == kb[1]:
+        return kb[2] == ka[2] + 1
+    return kb[1] == ka[1] + 1 and kb[2] == 1 and ka[2] == _last_verse(ka[0], ka[1])
+
+
+def _last_verse(book: str, ch: int) -> int:
+    return LAST_VERSE[(book, ch)]
+
+
+def range_ref(refs: list[str]) -> str:
+    first, last = refs[0], refs[-1]
+    if first == last:
+        return first
+    fb, fc, fv = verse_key(first)
+    lb, lc, lv = verse_key(last)
+    if fc == lc:
+        return f"{fb} {fc}:{fv}-{lv}"
+    return f"{fb} {fc}:{fv}-{lc}:{lv}"
+
+
+def multiverse_relations(path: Path, single: dict[str, str]) -> tuple[list[dict], list[dict]]:
+    """One-to-many and many-to-one relations, as org range -> eng range records.
+
+    Returns (accepted, flagged). Flagged rows are not contiguous ranges and need a
+    decision before they can be published.
+    """
+    books = org_books()
+    lines = path.read_text(encoding="utf-8-sig").split("\n")
+    rel_ref = re.compile(r"^([0-9A-Za-z]+)\.(\d+):(\d+)(?:-(\d+))?([a-z])?$")
+    absent = re.compile(r"^Absent \[=([0-9A-Za-z]+\.\d+:\d+)\]")
+
+    def is_header(line: str) -> bool:
+        names = [c.strip() for c in line.split("\t")]
+        return "Hebrew" in names and any(n.startswith("English KJV") for n in names)
+
+    def verses(ref: str) -> list[str] | None:
+        m = rel_ref.match(ref.strip())
+        if not m:
+            return None
+        b, ch, v1, v2, _ = m.groups()
+        if b.upper() not in books:
+            return None
+        lo, hi = int(v1), int(v2) if v2 else int(v1)
+        return [f"{b.upper()} {ch}:{v}" for v in range(lo, hi + 1)]
+
+    def heb_list(heb: str) -> list[str] | None:
+        parts = [x.strip() for x in heb.split(";")]
+        out = verses(parts[0])
+        if out is None:
+            return None
+        book, _ = rel_ref.match(parts[0]).group(1, 2)
+        for x in parts[1:]:
+            m = re.match(r"^(\d+):(\d+)(?:-(\d+))?$", x)
+            if not m:
+                return None
+            hi = int(m.group(3)) if m.group(3) else int(m.group(2))
+            out += [f"{book.upper()} {m.group(1)}:{v}" for v in range(int(m.group(2)), hi + 1)]
+        return out
+
+    cands: list[tuple[int, str, list[str], list[str], str, str]] = []
+    merges: list[tuple[int, str, str, str]] = []
+    i, n = 0, len(lines)
+    while i < n:
+        if not is_header(lines[i]):
+            i += 1
+            continue
+        names = [c.strip() for c in lines[i].split("\t")]
+        ie = next(k for k, c in enumerate(names) if c.startswith("English KJV"))
+        ih = names.index("Hebrew")
+        j = i + 1
+        while j < n and not lines[j].startswith("$") and not is_header(lines[j]):
+            row = lines[j].split("\t")
+            if len(row) > max(ie, ih):
+                act, eng, heb = row[0].strip(), row[ie].strip(), row[ih].strip()
+                if act and not act.startswith(("#", "TEST")) and eng and heb and "&" not in eng:
+                    m = absent.match(heb)
+                    if m and rel_ref.match(eng):
+                        merges.append((j + 1, act, eng, m.group(1)))
+                    elif not re.match(r"^(NoVerse|Absent|NotExist)", heb) and not re.match(r"^(NoVerse|Absent)", eng):
+                        e, h = verses(eng), heb_list(heb)
+                        if e and h and len(e) != len(h) and not (len(e) == 1 and e[0].endswith(":title")):
+                            cands.append((j + 1, act, e, h, eng, heb))
+            j += 1
+        i = j
+
+    accepted: list[dict] = []
+    flagged: list[dict] = []
+    for line, act, e, h, eng, heb in cands:
+        if len(e) == 1:
+            accepted.append({"s": range_ref(h), "t": e[0], "line": line, "action": act})
+        else:
+            flagged.append({"line": line, "reason": "one-to-many not expressed here", "eng": eng, "heb": heb})
+
+    for line, act, eng, anchor_raw in merges:
+        merged = verses(eng)
+        anchor_list = verses(anchor_raw)
+        anchor = anchor_list[0] if anchor_list else anchor_raw
+        if not merged:
+            flagged.append({"line": line, "reason": "merge row unparsed", "eng": eng, "heb": anchor})
+            continue
+        partner = single.get(anchor)
+        if partner is None:
+            flagged.append({"line": line, "reason": "no single-verse partner", "eng": eng, "heb": anchor})
+            continue
+        pair = sorted({partner, merged[0]}, key=verse_key)
+        if len(pair) == 2 and contiguous(pair[0], pair[1]):
+            accepted.append({"s": anchor, "t": range_ref(pair), "line": line, "action": act})
+        else:
+            flagged.append({"line": line, "reason": "merged verses not contiguous (not expressible as a range)",
+                            "eng": eng, "heb": anchor, "partner": partner})
+    return accepted, flagged
+
+
+def write_multiverse(path: Path) -> None:
+    pairs, _ = derive(path)
+    single: dict[str, str] = {}
+    counts: dict[str, int] = {}
+    for h, e in pairs:
+        counts[h] = counts.get(h, 0) + 1
+        single[h] = e
+    single = {h: e for h, e in single.items() if counts[h] == 1}
+    accepted, flagged = multiverse_relations(path, single)
+    MULTI_OUT.parent.mkdir(parents=True, exist_ok=True)
+    MULTI_OUT.write_text(json.dumps({
+        "source_scheme": "org",
+        "target_scheme": "eng",
+        "kind": "multi-verse relations (not in the single-verse map)",
+        "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
+        "attribution": "https://STEPBible.org",
+        "tvtms_rev": TVTMS_COMMIT,
+        "tvtms_sha256": TVTMS_SHA256,
+        "map": [{"s": r["s"], "t": r["t"]} for r in accepted],
+        "evidence": [{"s": r["s"], "t": r["t"], "tvtms_line": r["line"], "tvtms_action": r["action"]} for r in accepted],
+        "flagged_not_published": flagged,
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"[tvtms] multi-verse: {len(accepted)} relations -> {MULTI_OUT.relative_to(REPO_ROOT)}; flagged {len(flagged)}")
+
+
 def main() -> None:
     path = fetch_pinned()
     if "--check" in sys.argv:
@@ -162,6 +328,7 @@ def main() -> None:
         "skipped": dict(skipped),
         "deriver": "pipeline/core/derive_tvtms_org_eng.py",
     }, indent=2) + "\n", encoding="utf-8")
+    write_multiverse(path)
     print(f"[tvtms] derived {len(rows)} non-identity org->eng rows -> {OUT_TSV.relative_to(REPO_ROOT)}")
     print(f"[tvtms] skipped: {dict(skipped)}")
 

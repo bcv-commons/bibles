@@ -21,7 +21,7 @@ cd "$ROOT_DIR"
 
 MAP_DIR="export/_vrs/map"
 CDN_BASE="https://cdn.bibel.wiki/_vrs/map"
-MAPS=(org-to-eng.json catm-to-eng.json rso-to-eng.json)
+MAPS=(org-to-eng.json catm-to-eng.json rso-to-eng.json org-to-eng.multiverse.json)
 
 if [ -f .env ]; then
     # shellcheck disable=SC1091
