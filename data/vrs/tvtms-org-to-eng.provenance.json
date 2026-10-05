@@ -1,0 +1,16 @@
+{
+  "source": "STEPBible-Data TVTMS",
+  "licence": "CC BY 4.0",
+  "attribution": "https://STEPBible.org",
+  "commit": "902681f77a4a2975b809555ff3c35ffe3c48a1d5",
+  "input_path": "Versification/TVTMS - Translators Versification Traditions with Methodology for Standardisation for Eng+Heb+Lat+Grk+Others - STEPBible.org CC BY.txt",
+  "input_sha256": "63058e0f20201af4bdaa7d830da5be8f493455d947c5f147d84840b33db9ddf8",
+  "output": "tvtms-org-to-eng.derived.tsv",
+  "output_sha256": "6faa5e4a3fe1d45ee1670b824b0ab77a0e4c39efa7984af96721d82cf091367d",
+  "rows": 2032,
+  "skipped": {
+    "unparsed or identity-suffix (.0/.1)": 11,
+    "multi-verse subdivision (out of scope: baseline is single-verse)": 4
+  },
+  "deriver": "pipeline/core/derive_tvtms_org_eng.py"
+}

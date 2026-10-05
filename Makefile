@@ -5,6 +5,7 @@ CORE := pipeline/core
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry \
         publish-openbible publish-openbible-dry \
+        publish-audiobiblia publish-audiobiblia-dry \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
@@ -32,6 +33,8 @@ help: ## Show available targets
 	@echo "  make publish-catalog-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-openbible   Upload export/openbible/ to cdn.bibel.wiki/openbible/"
 	@echo "  make publish-openbible-dry Dry-run (no writes to CDN)"
+	@echo "  make publish-audiobiblia Upload export/audiobiblia/ to cdn.bibel.wiki/audiobiblia/"
+	@echo "  make publish-audiobiblia-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
 	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
 	@echo ""
@@ -76,24 +79,29 @@ dbt-metadata: ## Generate media.json + per-book timing + versification for CDN
 vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
 
-vrs-map: ## Build cross-scheme verse maps from pinned TVTMS baselines
-	@for s in lxx vul org orgw rso; do \
+vrs-map: ## Build cross-scheme verse maps (org + catm from the derived TVTMS map, others from baselines)
+	@for s in lxx vul orgw rso; do \
 	  $(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme $$s \
 	    --crosswalk data/vrs/crosswalk-$$s.toml \
 	    --mapping data/vrs/tvtms-$$s-to-eng.baseline.tsv \
 	    --tvtms-rev $(TVTMS_REV) $(ARGS) ; \
 	done
-	@# catm reuses org's baseline rows as-is (see crosswalk-catm.toml) — pass
+	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme org \
+	  --crosswalk data/vrs/crosswalk-org.toml \
+	  --mapping data/vrs/tvtms-org-to-eng.derived.tsv \
+	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
+	@# catm's data rows are identical to org's (verified), so it reads the same derived map.
 	@# --compare-vrs so real catm/org shape divergence gets recorded honestly
 	@# instead of silently falling through classify_exceptions()'s blind spot
-	@# for chapters the reused baseline never had a row for.
+	@# for chapters the reused map never had a row for.
 	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme catm \
 	  --crosswalk data/vrs/crosswalk-catm.toml \
-	  --mapping data/vrs/tvtms-catm-to-eng.baseline.tsv \
+	  --mapping data/vrs/tvtms-org-to-eng.derived.tsv \
 	  --compare-vrs org \
-	  --tvtms-rev $(TVTMS_REV) $(ARGS)
+	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
 
 TVTMS_REV ?= UNPINNED
+TVTMS_ORG_REV := 902681f77a4a2975b809555ff3c35ffe3c48a1d5
 
 versification: ## Fingerprint DBT versification schemes
 	$(PYTHON) $(CORE)/fingerprint_versification.py $(ARGS)
@@ -142,6 +150,12 @@ publish-openbible: ## Upload export/openbible/ to cdn.bibel.wiki/openbible/
 
 publish-openbible-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-openbible.sh
+
+publish-audiobiblia: ## Upload export/audiobiblia/ to cdn.bibel.wiki/audiobiblia/
+	bash $(CORE)/publish-audiobiblia.sh
+
+publish-audiobiblia-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-audiobiblia.sh
 
 publish-obs: ## Upload export/obs/ to cdn.bibel.wiki/obs/
 	bash $(CORE)/publish-obs.sh

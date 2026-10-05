@@ -1,3 +1,6 @@
+# CORRECTION 2026-10-05: PSA 9:21-9:38 re-targeted (was shifted by one from 9:21). Synodal 9:21 = eng 9:20,
+# Synodal 9:22-9:39 = eng 10:1-10:18 (checked against Psalm 9+10 verse count 21+18=39 and rso.vrs PSA 9:39).
+# Evidence and reporting partner: lexeme-aligner. Owned by bibles from this date.
 # PINNED build input for generate_vrs_map.py — TVTMS-derived rso->eng baseline.
 # Provenance: STEPBible TVTMS (CC BY 4.0) -> derived+validated by the strongs-aligner
 # project (emit_baselines.py: Greek base + Slavonic overrides folded, protestant-OT
@@ -1713,24 +1716,24 @@ PSA 9:17	PSA 9:16	Renumber verse
 PSA 9:18	PSA 9:17	Renumber verse
 PSA 9:19	PSA 9:18	Renumber verse
 PSA 9:20	PSA 9:19	Renumber verse
-PSA 9:21	PSA 10:1	Renumber verse
-PSA 9:22	PSA 10:2	Renumber verse
-PSA 9:23	PSA 10:3	Renumber verse
-PSA 9:24	PSA 10:4	Renumber verse
-PSA 9:25	PSA 10:5	Renumber verse
-PSA 9:26	PSA 10:6	Renumber verse
-PSA 9:27	PSA 10:7	Renumber verse
-PSA 9:28	PSA 10:8	Renumber verse
-PSA 9:29	PSA 10:9	Renumber verse
-PSA 9:30	PSA 10:10	Renumber verse
-PSA 9:31	PSA 10:11	Renumber verse
-PSA 9:32	PSA 10:12	Renumber verse
-PSA 9:33	PSA 10:13	Renumber verse
-PSA 9:34	PSA 10:14	Renumber verse
-PSA 9:35	PSA 10:15	Renumber verse
-PSA 9:36	PSA 10:16	Renumber verse
-PSA 9:37	PSA 10:17	Renumber verse
-PSA 9:38	PSA 10:18	Renumber verse
+PSA 9:21	PSA 9:20	Renumber verse
+PSA 9:22	PSA 10:1	Renumber verse
+PSA 9:23	PSA 10:2	Renumber verse
+PSA 9:24	PSA 10:3	Renumber verse
+PSA 9:25	PSA 10:4	Renumber verse
+PSA 9:26	PSA 10:5	Renumber verse
+PSA 9:27	PSA 10:6	Renumber verse
+PSA 9:28	PSA 10:7	Renumber verse
+PSA 9:29	PSA 10:8	Renumber verse
+PSA 9:30	PSA 10:9	Renumber verse
+PSA 9:31	PSA 10:10	Renumber verse
+PSA 9:32	PSA 10:11	Renumber verse
+PSA 9:33	PSA 10:12	Renumber verse
+PSA 9:34	PSA 10:13	Renumber verse
+PSA 9:35	PSA 10:14	Renumber verse
+PSA 9:36	PSA 10:15	Renumber verse
+PSA 9:37	PSA 10:16	Renumber verse
+PSA 9:38	PSA 10:17	Renumber verse
 PSA 9:39	PSA 10:18	Renumber verse
 PSA 10:1	PSA 11:1	Renumber verse
 PSA 10:2	PSA 11:2	Renumber verse
