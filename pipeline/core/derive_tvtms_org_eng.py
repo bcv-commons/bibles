@@ -336,6 +336,13 @@ def _valid_target(ref: str, shape: dict[str, dict[int, int]]) -> bool:
     return _valid(ref, shape)
 
 
+def _orgw_chaptering_artifact(ref: str) -> bool:
+    """Hebrew-chaptering rows that orgw's English-style chapters do not use (partner, text-free
+    structural check against orgw.vrs): Numbers 17:1-13 and 1 Kings 5:1-18."""
+    return ref.startswith("NUM 17:") and int(ref.split(":")[1]) <= 13 \
+        or ref.startswith("1KI 5:") and int(ref.split(":")[1]) <= 18
+
+
 def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
     """orgw = org's Hebrew-column pairs restricted to refs valid in orgw.vrs and eng.vrs.
 
@@ -344,8 +351,11 @@ def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
     the excluded JOL rows above.
     """
     ow, eng = _shape(ORGW_VRS), _shape(ENG_VRS)
+    identity_books = {b for b in ow if b in eng and ow[b] == eng[b]}
     rows = {(a, b) for a, b in pairs
-            if _valid(a, ow) and _valid_target(b, eng) and a not in ORGW_EXCLUDE_SOURCES}
+            if _valid(a, ow) and _valid_target(b, eng) and a not in ORGW_EXCLUDE_SOURCES
+            and a.split()[0] not in identity_books and a.split()[0] != "DAN"
+            and not _orgw_chaptering_artifact(a)}
     return sorted((a, b) for a, b in rows if a != b)
 
 
@@ -359,6 +369,135 @@ def write_orgw() -> None:
         + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),
         encoding="utf-8")
     print(f"[tvtms] orgw: {len(rows)} non-identity rows -> {ORGW_OUT.relative_to(REPO_ROOT)}")
+
+
+RSO_VRS = REPO_ROOT / "data" / "vrs" / "rso.vrs"
+RSO_OUT = REPO_ROOT / "data" / "vrs" / "tvtms-rso-to-eng.derived.tsv"
+# Hebrew-only books (TVTMS Greek/Latin columns carry Greek additions for these).
+RSO_EXCLUDE_BOOKS: set[str] = set()
+
+
+def column_pairs(path: Path, colname: str) -> set[tuple[str, str]]:
+    """Pairs from TVTMS's English KJV column against one exact-named tradition column."""
+    lines = path.read_text(encoding="utf-8-sig").split("\n")
+    books = org_books()
+    pairs: set[tuple[str, str]] = set()
+    i, n = 0, len(lines)
+    while i < n:
+        names = [c.strip() for c in lines[i].split("\t")]
+        if "English KJV" in names and colname in names:
+            ie, ic = names.index("English KJV"), names.index(colname)
+            j = i + 1
+            while j < n and not lines[j].startswith("$") and "English KJV" not in [c.strip() for c in lines[j].split("\t")]:
+                row = lines[j].split("\t")
+                if len(row) > max(ie, ic):
+                    act, eng, src = row[0].strip(), row[ie].strip(), row[ic].strip()
+                    if act and not act.startswith(("#", "TEST")) and eng and src and "&" not in eng \
+                            and not re.match(r"^(NoVerse|Absent|NotExist)", src) \
+                            and not re.match(r"^(NoVerse|Absent)", eng):
+                        e, h = expand(eng, books), expand(src, books)
+                        if e and h and len(e) == len(h):
+                            pairs.update(zip(h, e))
+                        elif e and h and len(e) == 1 and e[0].endswith(":title"):
+                            pairs.update((x, e[0]) for x in h)
+                j += 1
+            i = j
+            continue
+        i += 1
+    return pairs
+
+
+def section_pairs(path: Path, label_ok) -> set[tuple[str, str]]:
+    """Pairs from TVTMS's labelled sections, where a row reads [label, tradition ref, English ref].
+
+    label_ok(label) selects tradition sections by their exact '+'-separated parts. The
+    tradition reference is the source (Synodal numbering) and the English reference the
+    target. Merged/kept rows are skipped; counts must match for a single pair.
+    """
+    books = org_books()
+    out: set[tuple[str, str]] = set()
+    for ln in path.read_text(encoding="utf-8-sig").split("\n"):
+        c = ln.split("\t")
+        if len(c) < 4:
+            continue
+        lab = c[0].strip()
+        if not lab or lab.startswith(("$", "#", "TEST", "BIBLES", "English")) or not label_ok(lab):
+            continue
+        if c[3].strip().startswith(("Keep", "MergedPrev", "MergedFoll")):
+            continue
+        src, eng = expand(c[1].strip(), books), expand(c[2].strip(), books)
+        if src and eng and len(src) == len(eng):
+            out.update(zip(src, eng))
+    return out
+
+
+def _same_length_chapter(ref: str, same_length: set[tuple[str, int]]) -> bool:
+    book, cv = ref.split(" ", 1)
+    return (book, int(cv.split(":")[0])) in same_length
+
+
+def _has_part(label: str, part: str) -> bool:
+    return part in label.split("+")
+
+
+def derive_rso(path: Path) -> tuple[list[tuple[str, str]], dict]:
+    """rso = TVTMS's labelled Greek sections as base, with these overrides:
+    - Bulgarian column rows for Job 39-41 only;
+    - Slavonic section rows for Joshua and Leviticus only (source = Slavonic reference);
+    - a documented text override, LEV 14:56 -> 14:57 (Synodal text, see provenance);
+    - identity-shaped chapters (Synodal and English chapter the same length) get no rows;
+    - Daniel and Esther excluded; Joel 3:1-5 excluded;
+    - every source valid in rso.vrs, every target valid in eng.vrs.
+    """
+    rso, eng = _shape(RSO_VRS), _shape(ENG_VRS)
+    # Psalms 10-147 are numbered one lower in Synodal (Septuagint psalter), so the
+    # same-length test compares the wrong chapters there; it is applied to other books only.
+    same_length = {(b, c) for b in rso if b in eng and b != "PSA" for c in rso[b]
+                   if c in eng[b] and rso[b][c] == eng[b][c]}
+    base = section_pairs(path, lambda lab: _has_part(lab, "Greek"))
+    job_bulgarian = {(a, b) for a, b in column_pairs(path, "Bulgarian")
+                     if a.startswith("JOB ") and int(a.split()[1].split(":")[0]) in (39, 40, 41)}
+    slav = {(a, b) for a, b in section_pairs(path, lambda lab: _has_part(lab, "Slavonic"))
+            if a.split()[0] in ("JOS", "LEV")}
+    text_overrides = {("LEV 14:56", "LEV 14:57"),  # Synodal 14:56 = English 14:57 (text-checked)
+                      ("PSA 12:6", "PSA 13:5"),     # Synodal 12:6 = English 13:5-6; first verse here, range in multi file
+                      ("ROM 14:24", "ROM 16:25"),   # moved doxology, text-checked by partner
+                      ("ROM 14:25", "ROM 16:26"),
+                      ("ROM 14:26", "ROM 16:27"),
+                      ("PSA 114:9", "PSA 116:9"),  # partner, Russian text
+                      *[(f"PRO 13:{n}", f"PRO 13:{n-1}") for n in range(15, 27)],  # Septuagint addition at 13:14
+                      *[(f"SNG 1:{n}", f"SNG 1:{n+1}") for n in range(1, 17)],     # English 1:1 unnumbered in Synodal
+                      *[(f"ISA 3:{n}", f"ISA 3:{n+1}") for n in range(20, 26)]}   # 3:19 is a multi-verse relation
+    hebrew_pairs, _ = derive(path)
+    daniel_hebrew = {(norm(a), norm(b)) for a, b in hebrew_pairs
+                     if norm(a).startswith(("DAN 3:", "DAN 4:")) and norm(a) != norm(b)}
+    overridden = {a for a, _ in job_bulgarian | slav | text_overrides}
+    merged = ({(a, b) for a, b in base if a not in overridden and not a.startswith("DAN ")} | job_bulgarian | slav
+              | text_overrides | daniel_hebrew)
+    rows = {(a, b) for a, b in merged
+            if not _same_length_chapter(a, same_length)
+            and a.split()[0] not in RSO_EXCLUDE_BOOKS and a not in ORGW_EXCLUDE_SOURCES
+            and _valid(a, rso) and _valid_target(b, eng)}
+    targets = collections.Counter(b for a, b in rows if a != b and not b.endswith(":title"))
+    report = {"base_pairs": len(base), "job_bulgarian": len(job_bulgarian), "slavonic": len(slav),
+              "text_overrides": len(text_overrides), "rows": len(rows),
+              "identity": sum(1 for a, b in rows if a == b),
+              "collisions": sum(1 for v in targets.values() if v > 1)}
+    return sorted((a, b) for a, b in rows if a != b), report
+
+
+def write_rso(path: Path) -> None:
+    rows, report = derive_rso(path)
+    if report["collisions"]:
+        raise SystemExit(f"[rso] {report['collisions']} English verses hit by 2+ Synodal verses; refusing to write")
+    RSO_OUT.write_text(
+        f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
+        f"pipeline/core/derive_tvtms_org_eng.py (rso: Greek base + Bulgarian overrides). "
+        f"TVTMS is CC BY 4.0, STEPBible.org.\n"
+        "source_ref\tstandard_ref\taction\n"
+        + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),
+        encoding="utf-8")
+    print(f"[tvtms] rso: {len(rows)} non-identity rows, report {report} -> {RSO_OUT.relative_to(REPO_ROOT)}")
 
 
 def main() -> None:
@@ -389,6 +528,7 @@ def main() -> None:
     }, indent=2) + "\n", encoding="utf-8")
     write_multiverse(path)
     write_orgw()
+    write_rso(path)
     print(f"[tvtms] derived {len(rows)} non-identity org->eng rows -> {OUT_TSV.relative_to(REPO_ROOT)}")
     print(f"[tvtms] skipped: {dict(skipped)}")
 
