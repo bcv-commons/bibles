@@ -17,7 +17,7 @@ for that.
     {"d": "https://cdn.bibel.wiki/dbt/_catalog.json"},
     {"p": "https://cdn.bibel.wiki/pkf/manifest.json"},
     {"h": "https://bible.helloao.org/api/available_translations.json"},
-    {"o": "https://openbible-api-1.biblica.com/projects"}
+    {"o": "self-republished by bibles, wherever license permits and the original source isn't directly/bulk-usable — see each edition's own _meta.json"}
   ],
   "pending_openbible_coverage": 246,
   "pending_ebible_coverage": 7,
@@ -73,14 +73,30 @@ fixable gap.
   `ot` — never a combined "full bible" flag. Testament coverage is always
   assessed independently.
 - **`source`** — single letter: `d` = DBT, `p` = PKF, `h` = helloAO, `o` =
-  openbible (Biblica's Open Bible catalog, added 2026-09-16 — see
-  [`sources.md`](sources.md)). **`o` rows only count Biblica text projects
-  with a real, resolved yaapi.bible abbreviation** (decided 2026-09-19 —
-  publishing a raw Biblica hex project id was judged a bad long-term
-  precedent, since a client depending on it makes migrating away later
-  costly; see `openbible-editions.json`'s doc). A project with no
-  abbreviation yet is temporarily excluded here entirely, not shown under
-  a hex id — see `pending_openbible_coverage` below for how many. A `d`
+  self-republished (redefined 2026-10-02 — see [`sources.md`](sources.md)).
+  **`o`** means content `bibles` itself fetched, verified, and
+  republishes, wherever the license permits AND the original source's own
+  format isn't directly/bulk-usable — currently openbible/Biblica
+  (added 2026-09-16; its catalog API is metadata-only, real text needs
+  several more API hops) and audiobiblia.org (its own site is
+  HTML-page/PDF-only, no bulk text endpoint at all). Real per-edition
+  provenance (which original site, real license/copyright text) lives in
+  each edition's own `_meta.json`, not in `sources`' one `"o"` entry — a
+  single URL stopped being meaningful once more than one real origin
+  shared the letter. **`o` openbible rows only count Biblica text
+  projects with a real, resolved yaapi.bible abbreviation** (decided
+  2026-09-19 — publishing a raw Biblica hex project id was judged a bad
+  long-term precedent, since a client depending on it makes migrating
+  away later costly; see `openbible-editions.json`'s doc). A project with
+  no abbreviation yet is temporarily excluded here entirely, not shown
+  under a hex id — see `pending_openbible_coverage` below for how many.
+  **Open question, deferred (2026-10-02):** a broader eBible.org sweep
+  (`generate_ebible_chapters.py`, up to ~1,295 redistributable+downloadable
+  editions — far more than openbible/audiobiblia) has been built but its
+  output is NOT yet wired into this index. Undecided whether it shares
+  `o` (eBible.org's own format is already clean/bulk-usable, unlike `o`'s
+  current "had to rescue it" definition — a real mismatch) or gets its
+  own letter. A `d`
   row means DBT's catalog has
   **independently fetchable text of its own** for this `(iso, canon)` —
   not just a catalog entry. Some DBT rows are external-source *pointers*

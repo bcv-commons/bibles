@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, EXPORT, CATALOG_DIR  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from generate_openbible_chapters import has_non_nd_license  # noqa: E402
+from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
 
 TEXT_CACHE = API_CACHE / "openbible" / "text"
 ZIP_CACHE = API_CACHE / "openbible" / "text-zips"
@@ -80,6 +81,7 @@ def main():
             try:
                 doc = usfmtc.readFile(tmp_path)
                 usj = doc.outUsj()
+                fix_adjacent_w_spacing(usj)
             except Exception as e:
                 print(f"  WARNING: {abbr}/{book} USJ extraction failed: {e}")
                 failed_books += 1

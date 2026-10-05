@@ -56,7 +56,7 @@ from pathlib import Path
 from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, DOWNLOADS, CATALOG_DIR, HELLOAO_BOOK_COMPLETENESS_FILE  # noqa: E402
+from paths import API_CACHE, DOWNLOADS, CATALOG_DIR, EXPORT, HELLOAO_BOOK_COMPLETENESS_FILE  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 
@@ -150,6 +150,20 @@ def openbible_rows():
     external-pointer concern the way DBT's `t:helloao:...` rows have,
     Biblica's own zips always carry its own real USFM).
 
+    Real, deliberate redefinition (2026-10-02): the `"o"` source letter
+    now means "fetched, verified, and republished by `bibles` itself,
+    wherever the license permits AND the original source's own format
+    isn't directly/bulk-usable" — not "openbible/Biblica specifically."
+    Biblica was always like this (its own catalog API — see
+    `openbible_rows()` above — is metadata-only, real text needs several
+    more API hops we do on a client's behalf), and audiobiblia.org's own
+    HTML pages/PDF are the same kind of not-directly-usable. `sources`'
+    `"o"` entry is now a description, not Biblica's API URL specifically
+    — real per-edition provenance lives in each edition's own `_meta.json`
+    (`provider`, `source`, `licenses`), not in this one shared letter.
+    See `audiobiblia_rows()` below for the other real contributor to
+    this same letter.
+
     Restricted to projects with a real yaapi.bible abbreviation
     (openbible-editions.json) — decided 2026-09-19: publishing a raw
     Biblica hex project id as a client-facing identifier was judged a
@@ -187,6 +201,42 @@ def openbible_rows():
     return counts
 
 
+def audiobiblia_rows():
+    """Real NT/OT/Portions classification for the audiobiblia.org
+    editions this repo republishes (`generate_audiobiblia_chapters.py`)
+    — same `"o"` source letter as openbible, per the 2026-10-02
+    redefinition above: both are content fetched, verified, and
+    republished by `bibles` itself wherever the license permits and the
+    original isn't directly usable (audiobiblia.org's own HTML
+    pages/PDF, same category as Biblica's multi-hop metadata API). Real
+    per-edition book list already recorded in each edition's own
+    `_meta.json` (written by that generator, not re-derived here)."""
+    counts = defaultdict(int)
+    audiobiblia_dir = EXPORT / "audiobiblia"
+    if not audiobiblia_dir.exists():
+        return counts
+    for iso_dir in audiobiblia_dir.iterdir():
+        if not iso_dir.is_dir():
+            continue
+        iso = iso_dir.name
+        for edition_dir in iso_dir.iterdir():
+            meta_file = edition_dir / "_meta.json"
+            if not meta_file.exists():
+                continue
+            books = set(json.loads(meta_file.read_text()).get("books", []))
+            if not books:
+                continue
+            if NT_BOOKS.issubset(books):
+                counts[(iso, "nt", "o")] += 1
+            elif books & NT_BOOKS:
+                counts[(iso, "ntp", "o")] += 1
+            if OT_BOOKS.issubset(books):
+                counts[(iso, "ot", "o")] += 1
+            elif books & OT_BOOKS:
+                counts[(iso, "otp", "o")] += 1
+    return counts
+
+
 def main():
     args = sys.argv[1:]
     out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "index.json"
@@ -212,7 +262,7 @@ def main():
     hao_path.write_text(json.dumps(hao_raw, indent=2), encoding="utf-8")
 
     all_counts = defaultdict(int)
-    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows()):
+    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows()):
         for k, v in counts.items():
             all_counts[k] += v
 
@@ -267,7 +317,11 @@ def main():
     output = {
         "schema_version": 1,
         "generated_at": None,
-        "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL}, {"o": OPENBIBLE_PROJECTS_URL}],
+        "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL},
+                    {"o": "self-republished by bibles, wherever license permits and the "
+                          "original source isn't directly/bulk-usable (currently: openbible/"
+                          "Biblica, audiobiblia.org — see each edition's own _meta.json for "
+                          "real provenance, not a single URL)"}],
         "pending_openbible_coverage": pending_openbible,
         "pending_ebible_coverage": len(pending_ebible),
         "entries": entries,

@@ -83,7 +83,26 @@ def _walk(node, chapters: dict, state: dict):
         # surrounding text already had its own whitespace.
         state["buf"].append(" ")
 
+    prev_was_w = False
     for child in node.get("content", []) or []:
+        # Real, confirmed `usfmtc` bug (found 2026-09-30, audiobiblia.org's
+        # BES edition — heavy real use of `\w word|strong="..."\w*`
+        # attributed-word markers): when two `\w...\w*` runs sit adjacent
+        # with only whitespace between them in the source USFM, `outUsj()`
+        # silently drops that whitespace — verified directly against the
+        # raw USJ tree (a synthetic 2-word `\w` test), not just inferred
+        # from the symptom. Every other sibling-text case (plain string
+        # between markers, a marker followed by plain text) preserves its
+        # space correctly; only two immediately-adjacent "char"/"w" nodes
+        # with nothing between them lose it — real content was gluing
+        # into single run-on words ("delosfariseosllamadoNicodemo").
+        # Always-safe fix, same principle as the para-boundary fix above:
+        # insert one space, final `_flush()` normalization collapses it
+        # back down if unneeded.
+        is_w = isinstance(child, dict) and child.get("type") == "char" and child.get("marker") == "w"
+        if is_w and prev_was_w:
+            state["buf"].append(" ")
+        prev_was_w = is_w
         _walk(child, chapters, state)
 
 
@@ -93,6 +112,36 @@ def _flush(chapters: dict, state: dict):
         text = " ".join(text.split())
         if text:
             chapters.setdefault(state["chapter"], {})[state["verse"]] = text
+
+
+def fix_adjacent_w_spacing(node):
+    """Recursively insert the missing joining space between two
+    immediately-adjacent USJ `"char"`/`marker=="w"` nodes — the same real
+    `usfmtc` bug `_walk()` above works around for verse-text extraction
+    (see that function's comment), but applied here directly to the USJ
+    TREE itself (mutates `node["content"]` lists in place), since anything
+    that publishes the USJ/Sofria artifacts directly (not through
+    `extract_verses_from_file()`) needs the fix at the source, not just in
+    this module's own verse-walker. Safe to call on any USJ node or the
+    whole document root; no-ops on anything without a `"content"` list."""
+    if isinstance(node, dict):
+        content = node.get("content")
+        if isinstance(content, list):
+            fixed = []
+            prev_was_w = False
+            for child in content:
+                is_w = isinstance(child, dict) and child.get("type") == "char" and child.get("marker") == "w"
+                if is_w and prev_was_w:
+                    fixed.append(" ")
+                fixed.append(child)
+                prev_was_w = is_w
+            node["content"] = fixed
+        for value in node.values():
+            if isinstance(value, (dict, list)):
+                fix_adjacent_w_spacing(value)
+    elif isinstance(node, list):
+        for item in node:
+            fix_adjacent_w_spacing(item)
 
 
 def extract_verses_from_file(usfm_path: str) -> dict:

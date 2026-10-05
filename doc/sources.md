@@ -16,6 +16,27 @@ published audio (thousands of versions). Real-time API, no bulk download.
   your own DBT API access to pull content directly, or read the metadata
   this repo already publishes (timing, media availability) under
   `/dbt/<iso>/`.
+- **A text fileset's own response can be one of two real, different
+  shapes — check `type` before assuming plain text.** Most editions
+  return `{"type": "verses", "data": [...]}` (per-verse inline text,
+  the common case). Some — real fileset ids carry a telltale `-json`
+  suffix, e.g. `ADXNVSO_ET-json` (Tibetan) — return
+  `{"type": "path", "data": <signed CDN URL>}` instead: the downloaded
+  document at that URL is a raw, UNCOMPRESSED Proskomma **Sofria** JSON
+  document (`schema.constraints[].name == "sofria"`), **not** plain
+  text, **not** USFM, and **not** a `.pkf` succinct docSet either —
+  same real engine family as PKF's `.pkf` (see below), genuinely
+  different wire format. Confirmed via a real client report
+  (audio-sync, 2026-10-02): treating this JSON as line-per-verse plain
+  text — the trap its own telltale `-json`-suffixed id invites — feeds
+  a ~29,000-character blob into a single "verse," which crashed a
+  downstream forced-alignment call. Use
+  **[`tools/dbt-sofria-decode-py/`](../tools/dbt-sofria-decode-py/)**
+  (in this repo) to extract real plain verse text from it — same spirit
+  as `tools/pkf-decode/`, deliberately minimal (verse text only, skips
+  grafts entirely). For anything beyond plain text (tables, milestones,
+  real rendering), the authoritative reference is
+  [`proskomma-json-tools`'s `SofriaRenderFromJson.js`](https://github.com/Proskomma/proskomma-json-tools/blob/main/src/render/renderers/SofriaRenderFromJson.js).
 
 ## PKF (published by `se-regional-pwa`, at `cdn.bibel.wiki/pkf/`)
 

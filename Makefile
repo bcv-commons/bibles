@@ -6,6 +6,7 @@ CORE := pipeline/core
         publish-catalog publish-catalog-dry \
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
+        publish-vrs-maps publish-vrs-maps-dry vrs-check \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
@@ -37,6 +38,9 @@ help: ## Show available targets
 	@echo "  make publish-audiobiblia-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
 	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
+	@echo "  make publish-vrs-maps     Upload _vrs/map/{org,catm,rso}-to-eng.json and verify live sha256"
+	@echo "  make publish-vrs-maps-dry Dry-run the verse-map upload (no writes)"
+	@echo "  make vrs-check        Verify pinned TVTMS input, re-derive org->eng, rebuild maps"
 	@echo ""
 	@echo "  Data fetch"
 	@echo "  ──────────"
@@ -156,6 +160,20 @@ publish-audiobiblia: ## Upload export/audiobiblia/ to cdn.bibel.wiki/audiobiblia
 
 publish-audiobiblia-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-audiobiblia.sh
+
+publish-vrs-maps: ## Upload export/_vrs/map/{org,catm,rso}-to-eng.json and verify live sha256
+	bash $(CORE)/publish-vrs-maps.sh
+
+publish-vrs-maps-dry: ## Dry-run the verse-map upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-vrs-maps.sh
+
+vrs-check: ## Verify pinned TVTMS input, re-derive org->eng, rebuild maps, print org row count and sha256
+	$(PYTHON) $(CORE)/derive_tvtms_org_eng.py --check
+	$(PYTHON) $(CORE)/derive_tvtms_org_eng.py
+	$(MAKE) vrs-map
+	@echo "── org-to-eng.json row count and sha256:"
+	@python3 -c "import json;print(len(json.load(open('export/_vrs/map/org-to-eng.json'))['map']),'rows')"
+	@shasum -a 256 export/_vrs/map/org-to-eng.json | cut -c1-64
 
 publish-obs: ## Upload export/obs/ to cdn.bibel.wiki/obs/
 	bash $(CORE)/publish-obs.sh
