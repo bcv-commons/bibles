@@ -32,6 +32,7 @@ published audio (thousands of versions). Real-time API, no bulk download.
   a ~29,000-character blob into a single "verse," which crashed a
   downstream forced-alignment call. Use
   **[`tools/dbt-sofria-decode-py/`](../tools/dbt-sofria-decode-py/)**
+  - Availability (checked 2026-10-06, John 3 across all 1,305 `-json` filesets): 1,015 return Sofria; 286 lack the book (404); 4 are blocked by key permissions. Plain text shares the same key permissions for these filesets, apart from one Sofria-only download refusal.
   (in this repo) to extract real plain verse text from it — same spirit
   as `tools/pkf-decode/`, deliberately minimal (verse text only, skips
   grafts entirely). For anything beyond plain text (tables, milestones,

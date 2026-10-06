@@ -42,3 +42,19 @@ verified directly against live DBT content). Fixed — `rso` is now only
 returned when Byzantine order is *also* corroborated by real LXX-numbered
 Psalm evidence. If you cached a scheme value from before this date for a
 Byzantine-order edition, re-fetch it.
+
+## helloAO editions: `undetermined` vs `eng` (2026-10-06)
+
+A helloAO edition is labelled from its Psalm-numbering probes (PS117, PS51)
+and tiebreakers (1SA 17, 1KI 4, HAG 1, MAL 4). Where helloAO doesn't have
+those chapters, the probe can't decide, and the label is one of two cases:
+
+- **No Psalm evidence at all** (the 98 editions with no PS117 data): the
+  index labels these `eng`. This is a default, not a finding. Treat `eng`
+  as "not checked" for these editions.
+- **Psalm evidence exists but a tiebreaker is missing** (`ukr_npu`, the only
+  such edition): the label is `undetermined`. The index used to write `eng`
+  here, which contradicted the Psalm evidence. Fixed 2026-10-06.
+
+If the index says `undetermined`, a client should use the verse numbers the
+text gives and state that no scheme was determined. Don't assume a scheme.

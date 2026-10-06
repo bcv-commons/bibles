@@ -371,8 +371,8 @@ def classify_helloao(fetch: bool) -> dict:
                 scheme = "org"      # eng already ruled out; org/orgw tiebreaker only
             elif p117 is not None and p117 >= 15 and entry.get("sa17") is not None:
                 scheme = "vul"      # true-lxx already ruled out; vul/rso tiebreaker only
-            elif entry.get("bc"):
-                scheme = "eng"
+            elif entry.get("bc") and p117 is None:
+                scheme = "eng"   # case (a) only: no Psalm evidence at all
             else:
                 undetermined.append(tid)
                 index[f"helloao:{tid}"] = "undetermined"

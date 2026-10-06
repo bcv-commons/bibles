@@ -33,6 +33,20 @@ class BiblesPk extends Proskomma {
   }
 }
 
+// proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
+// into node text. Remove it from the output; the wrapper itself is kept (red letter
+// is preserved as a usfm:wj wrapper).
+const STRAY_MARKER = /\| marker="[^"]*"/g;
+function stripWjLeak(json) {
+  const walk = (x) => {
+    if (typeof x === 'string') return x.replace(STRAY_MARKER, '');
+    if (Array.isArray(x)) return x.map(walk);
+    if (x && typeof x === 'object') return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]));
+    return x;
+  };
+  return JSON.stringify(walk(JSON.parse(json)));
+}
+
 function collectChapterNumbers(usj) {
   const numbers = [];
   for (const node of usj.content || []) {
@@ -87,7 +101,7 @@ function main() {
       if (!wholeBookJson) wholeBookJson = JSON.parse(doc.sofria());
       sofriaJson = sofriaForChapterViaWholeBook(wholeBookJson, chNum);
     }
-    writeFileSync(`${outDir}/${chNum}.json`, sofriaJson);
+    writeFileSync(`${outDir}/${chNum}.json`, stripWjLeak(sofriaJson));
     written++;
   }
 

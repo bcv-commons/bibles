@@ -56,15 +56,13 @@ is *also* omitted from `map`, since the row format only declares full
 `source_ref -> target_ref` changes, and "same verse number, different
 chapter" still counts as "no diff to declare" under this convention.
 
-Concrete, real example (confirmed 2026-09-04, prompted by a client
-report): `rso PSA 114` is the first half of the Masoretic/`eng` Psalm 116
-split (a well-known LXX/Masoretic irregular point). `map` has explicit
-rows for `rso PSA 114:1`-`114:8 -> eng PSA 116:1`-`116:8`, then jumps
-straight to `rso PSA 115:1 -> eng PSA 116:10`. **`rso PSA 114:9 -> eng PSA
-116:9` has no row at all** — verse number 9 is identical on both sides,
-so by the "diffs only" rule there's nothing to declare, even though the
-book/chapter context (which `eng` chapter this verse belongs to) isn't
-independently stated anywhere else.
+Concrete example (found 2026-09-04, prompted by a client report): `rso PSA
+114` is the first half of the Masoretic/`eng` Psalm 116 split. Before
+2026-10-05, `map` had no row for `rso PSA 114:9 -> eng PSA 116:9`, because
+verse number 9 matches on both sides. The rebuilt `rso` map (2026-10-05)
+now declares that row explicitly, so a client that reads `map` gets it
+without filling any gap. The gap rule below still applies to any other
+identity-number verse that changes chapter.
 
 **How to resolve it as a consumer**: walk `map` in verse order; at any
 gap between two consecutive rows, the missing verse(s) belong to the
@@ -77,3 +75,12 @@ across a merge/split range accumulates no information about exactly
 where the boundary falls verse-by-verse) — `map`'s row sequence already
 tells you precisely, you just have to fill the gaps by adjacency rather
 than expect an explicit row for every single verse.
+
+## Deuterocanon rows in `rso` (added 2026-10-06)
+
+The `rso` map includes rows for 1 Esdras, Sirach, Tobit, Judith, Wisdom and
+Baruch, plus the Letter of Jeremiah. They come from TVTMS's Greek sections
+and are kept because five editions use those books. Nobody has checked them
+against deuterocanon text yet, so treat them as unverified. Susanna and Bel
+(Daniel 13–14) have no rows. See `doc/scheme-manifest.md` for the full list
+of what was and wasn't verified.
