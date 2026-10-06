@@ -7,14 +7,15 @@ published is listed under **Planned** and is not available.
 
 | Source | Format | Granularity | URL pattern |
 |---|---|---|---|
-| openbible (Biblica) | verse-json, USJ | chapter, book | `cdn.bibel.wiki/openbible/...` |
-| audiobiblia (BLL) | verse-json, USJ | chapter, book | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.json` |
+| openbible (Biblica) | verse-json | chapter | `cdn.bibel.wiki/openbible/...` |
+| audiobiblia (BLL) | verse-json | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.json` |
+| openbible, audiobiblia | USJ | book | **not yet published** (the USJ trees exist locally) |
 | DBT `-json` filesets | Sofria | chapter | from the DBT API, `type=text_json`: the row's `path` field links to the Sofria document. Coverage varies; see below |
 
 **Verse-json** is one file per chapter: `{"book", "chapter", "verses": [{"verse", "text"}]}`.
 It needs no conversion.
 
-**USJ** is one file per book, in the USJ 3.0 format. Use it when you want book-level content.
+**USJ** is one file per book, in the USJ 3.0 format. Use it when you want book-level content. It is not yet published for openbible or audiobiblia; until it is, use the verse-json files.
 
 **Sofria** is Proskomma's native format, one document per chapter from DBT. It keeps the
 verse markers that decoders read.
@@ -31,7 +32,7 @@ So a 404 means the book is absent from that fileset, and a 403 means the key can
 
 ## Converting a book to Sofria locally
 
-If you hold a book in USJ and want per-chapter Sofria, convert it yourself. This is a
+If you hold a book in USJ and want per-chapter Sofria, convert it yourself. (USJ is not yet on the CDN, so this applies to USJ you already have.) This is a
 stopgap until sources publish Sofria directly.
 
 ```
