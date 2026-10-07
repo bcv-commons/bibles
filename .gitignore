@@ -52,3 +52,4 @@ export/
 
 # Everything under data/ (data/vrs/, data/version-exclude.toml) is real,
 # hand-curated source data and stays tracked.
+data/lexeme-aligner-handoff/

@@ -21,7 +21,8 @@ cd "$ROOT_DIR"
 
 MAP_DIR="export/_vrs/map"
 CDN_BASE="https://cdn.bibel.wiki/_vrs/map"
-MAPS=(org-to-eng.json orgw-to-eng.json catm-to-eng.json rso-to-eng.json org-to-eng.multiverse.json rso-to-eng.multiverse.json)
+MAPS=(org-to-eng.json orgw-to-eng.json catm-to-eng.json rso-to-eng.json org-to-eng.multiverse.json rso-to-eng.multiverse.json
+      orgw-to-eng.multiverse.json catm-to-eng.multiverse.json)
 
 if [ -f .env ]; then
     # shellcheck disable=SC1091
@@ -43,6 +44,13 @@ export RCLONE_CONFIG_R2_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
 export RCLONE_CONFIG_R2_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
 export RCLONE_CONFIG_R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
 export RCLONE_CONFIG_R2_NO_CHECK_BUCKET=true
+
+# rso-to-eng.multiverse.json has real hand-curated content (built with
+# lexeme-aligner's input) with no deriver of its own, so unlike the other
+# multiverse files here it's tracked under data/vrs/, not export/ (which
+# make clean wipes with nothing to regenerate it from). Stage it before
+# the existence check below.
+cp data/vrs/rso-to-eng.multiverse.json "$MAP_DIR/rso-to-eng.multiverse.json"
 
 for m in "${MAPS[@]}"; do
     [ -f "$MAP_DIR/$m" ] || { echo "[ERROR] $MAP_DIR/$m missing. Run: make vrs-map"; exit 1; }

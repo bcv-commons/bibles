@@ -36,11 +36,11 @@ this is deliberate: batch_compare_dbt_dbt.py's original bug was processing
 both canons under one hardcoded book/chapter default, silently comparing
 OT-tagged filesets with NT text. Never repeat that mistake here.
 
-OT groups automatically retry with a longer fallback probe (PSA 51) when
-the primary probe (PSA 117) leaves any id unfetched — see OT_FALLBACK
-below for why (some translations genuinely have zero verses in PSA 117
-specifically) and why the retry always covers the whole group, never a
-single id.
+A group automatically retries with fallback probe books, per canon, when
+the primary probe leaves any id unfetched — see FALLBACK_PROBES below for
+why (some translations genuinely lack the primary probe book, or have a
+weak-signal chapter in it) and why the retry always covers the whole
+group, never a single id.
 
 Usage:
     python3 compare_all.py [--book B] [--chapter N] [--limit N] [--iso ISO,ISO,...]
@@ -87,7 +87,27 @@ OUT_PATH = COMPARISON_RESULTS_DIR / "all-comparisons.json"
 # per-id: comparing one id's PSA117 text against another id's PSA51 text
 # would be meaningless, so a group either uses PSA117 for everyone or PSA51
 # for everyone, never a mix.
-OT_FALLBACK = ("PSA", 51)
+#
+# NT fallback added 2026-10-07, same shape bug, different cause: lexeme-
+# aligner's "orphan editions" cleanup flagged eko_wbt/lit_bbi/tke_wbt and
+# PKF's ztp_ztp as unreachable (r:false). Checked directly against their
+# real sources (helloAO's own API, PKF's own manifest coverage): all are
+# genuinely live, just small NT-portion editions with no Revelation at all
+# (eko_wbt: GEN/EXO/JON/MAT/MRK/LUK/JHN/ACT/1TI; lit_bbi: LUK/ACT; tke_wbt:
+# LUK only; ztp_ztp's NT coverage is MRK/1TI/2TI/PHM/JAS/1PE/2PE/1JN/2JN/3JN,
+# no Gospels at all). Unlike OT's single-translation PSA117 gap, there's no
+# one NT book every small portion has, so this tries several, in the order
+# a literacy-first translation project most commonly adds books, stopping
+# as soon as a probe leaves nothing unfetched. Same whole-group-retry rule
+# as OT: never mix probe books within one (iso,canon) comparison.
+FALLBACK_PROBES = {
+    # RUT/JON added 2026-10-07 alongside the NT fix: kprpkf/ztppkf's real
+    # OT coverage (confirmed via PKF's own manifest) is Ruth and Jonah
+    # only — the smallest, most commonly-translated-first OT portions,
+    # same reasoning as the NT list below.
+    "ot": [("PSA", 51), ("RUT", 1), ("JON", 1)],
+    "nt": [("MRK", 1), ("LUK", 1), ("JHN", 1), ("MAT", 1), ("ACT", 1), ("JAS", 1)],
+}
 
 
 def dbt_candidates(catalog: dict, iso: str, canon: str) -> dict:
@@ -339,12 +359,16 @@ def main():
                 continue
             try:
                 entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, book, chapter, env, bucket, tmpdir)
-                if canon == "ot" and entry.get("ids_failed") and (book, chapter) != OT_FALLBACK:
-                    fb_book, fb_chapter = OT_FALLBACK
-                    fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, fb_book, fb_chapter, env, bucket, tmpdir)
-                    if len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
-                        fb_entry["probe"] = f"{fb_book}{fb_chapter}"
-                        entry = fb_entry
+                if entry.get("ids_failed"):
+                    for fb_book, fb_chapter in FALLBACK_PROBES.get(canon, []):
+                        if (fb_book, fb_chapter) == (book, chapter):
+                            continue
+                        fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, fb_book, fb_chapter, env, bucket, tmpdir)
+                        if len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
+                            fb_entry["probe"] = f"{fb_book}{fb_chapter}"
+                            entry = fb_entry
+                        if not entry.get("ids_failed"):
+                            break
             except Exception as e:
                 entry = {"status": "error", "error": str(e)[:200]}
             entry.update({"iso": iso, "canon": canon})

@@ -38,6 +38,93 @@ DEBUG = "--debug" in sys.argv
 CACHE = DOWNLOADS / "tvtms" / f"{TVTMS_COMMIT}.txt"
 ORG_VRS = REPO_ROOT / "data" / "vrs" / "org.vrs"
 OUT_TSV = REPO_ROOT / "data" / "vrs" / "tvtms-org-to-eng.derived.tsv"
+
+# NT exception, added 2026-10-07: every scheme here is deliberately OT-only
+# (lexeme-aligner's own description: "our NT remap is the identity for every
+# scheme"). These four are the one narrow, fully TVTMS-cited exception,
+# requested by lexeme-aligner for its Nestle 1904 spine, for the schemes
+# whose shape already agrees with the spine at these exact chapters (org,
+# orgw, catm, rso — vul is excluded; its NT stays out of scope, same as
+# before). Each entry is read straight off TVTMS's own structured section
+# for that chapter (line numbers below), not inferred.
+#
+# 2CO 13: TVTMS "$2Co.13:12-13" section (lines 4078-4082), Greek+NRSV column
+# (the critical-text column the Nestle 1904 spine follows here) — its v12
+# absorbs KJV/eng's v12+13 (lines 4080-4081), and its v13 = eng's v14,
+# renumbered one-to-one (line 4082).
+NT_FIX_2CO13_RENUMBER = ("2CO 13:13", "2CO 13:14")  # TVTMS line 4082
+NT_FIX_2CO13_MULTIVERSE = {"s": "2CO 13:12", "t": "2CO 13:12-13",
+                           "tvtms_line": "4080-4081", "tvtms_action": "SubdividedVerse"}
+
+# ACT 19: TVTMS "$Act.19:40-41" section (lines 4044-4047), Greek column —
+# its v40 absorbs KJV/eng's v40+41 entirely (eng's v41 is "Absent [=19:40]"
+# in the Greek column).
+NT_FIX_ACT19_MULTIVERSE = {"s": "ACT 19:40", "t": "ACT 19:40-41",
+                           "tvtms_line": "4046-4047", "tvtms_action": "MergedPrevVerse"}
+
+# REV 12/13 (rso only — org/orgw/catm already agree with eng here, so no row
+# needed for them): TVTMS "$Rev.12:17-13.1a" section (lines 4102-4106),
+# Greek column — its v13:1 absorbs KJV/eng's v12:18 AND v13:1 together.
+NT_FIX_REV12_MULTIVERSE = {"s": "REV 13:1", "t": "REV 12:18-13:1",
+                           "tvtms_line": "4105-4106", "tvtms_action": "OneToOne"}
+
+
+def _merge_multiverse(path: Path, new_entries: list[dict], source_scheme: str) -> None:
+    """Merges NT-fix entries into a <scheme>-to-eng.multiverse.json, creating
+    it fresh if absent (same shape write_multiverse() already writes),
+    without disturbing any existing map/evidence rows already there (rso's
+    file in particular carries rows with no deriver of their own — see
+    doc/vrs-maps.md and the 2026-10-07 session notes)."""
+    if path.is_file():
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    else:
+        doc = {
+            "source_scheme": source_scheme, "target_scheme": "eng",
+            "kind": "multi-verse relations (not in the single-verse map)",
+            "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
+            "attribution": "https://STEPBible.org",
+            "tvtms_rev": TVTMS_COMMIT, "tvtms_sha256": TVTMS_SHA256,
+            "map": [], "evidence": [], "flagged_not_published": [],
+        }
+    existing = {(e["s"], e["t"]) for e in doc["map"]}
+    for e in new_entries:
+        if (e["s"], e["t"]) in existing:
+            continue
+        doc["map"].append({"s": e["s"], "t": e["t"]})
+        doc["evidence"].append({"s": e["s"], "t": e["t"], "tvtms_line": e["tvtms_line"], "tvtms_action": e["tvtms_action"]})
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def write_nt_fixes() -> None:
+    """The one deliberate NT exception — see NT_FIX_* above."""
+    for out_path, scheme in ((OUT_TSV, "org"), (ORGW_OUT, "orgw"), (RSO_OUT, "rso")):
+        if not out_path.is_file():
+            continue
+        text = out_path.read_text(encoding="utf-8")
+        a, b = NT_FIX_2CO13_RENUMBER
+        if f"{a}\t{b}\t" not in text:
+            out_path.write_text(text + f"{a}\t{b}\tRenumber verse\n", encoding="utf-8")
+
+    _merge_multiverse(MULTI_OUT, [NT_FIX_ACT19_MULTIVERSE, NT_FIX_2CO13_MULTIVERSE], "org")
+    _merge_multiverse(REPO_ROOT / "export" / "_vrs" / "map" / "orgw-to-eng.multiverse.json",
+                       [NT_FIX_ACT19_MULTIVERSE, NT_FIX_2CO13_MULTIVERSE], "orgw")
+    # rso's multiverse file has real hand-curated content (built with
+    # lexeme-aligner's input) with no deriver of its own, unlike org/orgw/
+    # catm's here — so, unlike those, its real source lives under the
+    # tracked data/vrs/ (not export/, which make clean wipes with nothing
+    # to regenerate it). publish-vrs-maps.sh stages it into export/ before
+    # publish. Fixed 2026-10-07 after the same export/-holds-real-source
+    # mistake this repo already made once with export/timing-data/.
+    _merge_multiverse(REPO_ROOT / "data" / "vrs" / "rso-to-eng.multiverse.json",
+                       [NT_FIX_ACT19_MULTIVERSE, NT_FIX_2CO13_MULTIVERSE, NT_FIX_REV12_MULTIVERSE], "rso")
+    _merge_multiverse(REPO_ROOT / "export" / "_vrs" / "map" / "catm-to-eng.multiverse.json",
+                       [NT_FIX_ACT19_MULTIVERSE, NT_FIX_2CO13_MULTIVERSE], "catm")
+    # catm's single-verse map is built from org's derived.tsv directly (see
+    # `make vrs-map`'s catm rule, --mapping tvtms-org-to-eng.derived.tsv) —
+    # the 2CO 13:13 renumber row above, written to OUT_TSV, already reaches
+    # catm's published map with no separate catm-side row needed.
+
+    print("[tvtms] NT fixes: 2CO 13 + ACT 19 applied to org/orgw/rso/catm; REV 12/13 applied to rso only")
 PROVENANCE = REPO_ROOT / "data" / "vrs" / "tvtms-org-to-eng.provenance.json"
 
 REF = re.compile(r"^([0-9A-Za-z]+)\.(\d+):(\d+)(?:-(\d+))?([a-z])?$")
@@ -529,6 +616,7 @@ def main() -> None:
     write_multiverse(path)
     write_orgw()
     write_rso(path)
+    write_nt_fixes()
     print(f"[tvtms] derived {len(rows)} non-identity org->eng rows -> {OUT_TSV.relative_to(REPO_ROOT)}")
     print(f"[tvtms] skipped: {dict(skipped)}")
 

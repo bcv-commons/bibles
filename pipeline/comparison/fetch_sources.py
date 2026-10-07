@@ -22,8 +22,18 @@ this cache-first order; batch_compare_dbt_dbt.py was the one inconsistent
 leg (always live-fetched, even for already-sampled ids) — a real,
 previously-undiagnosed inefficiency this consolidation also fixes.
 
-helloAO: always a live HTTP GET (bible.helloao.org, unauthenticated, no
-documented rate limit — still paced with a short sleep per call).
+helloAO: a live HTTP GET (bible.helloao.org, unauthenticated, no documented
+rate limit — still paced with a short sleep per call), persistently cached
+to disk (api-cache/helloao/chapter-cache/, gitignored) keyed by
+translation/book/chapter. Added 2026-10-07: the lexeme-aligner "orphan
+editions" investigation found supposedly-broken ids (eko_wbt/lit_bbi/
+tke_wbt) flipping between success and failure across consecutive runs —
+real transient network failures, not a genuine content gap, but every
+retry re-fetched EVERY id over the network, including ones that had
+already succeeded, multiplying the exposure to that flakiness for no
+reason. Caching a success permanently removes it from future risk — only
+a still-failing id is ever retried. No license concern: helloAO content is
+open and already used freely elsewhere in this pipeline.
 
 PKF: rclone fetch + tools/pkf-decode/decode.mjs, the same mechanism every
 prior PKF-touching script used. No PKF text is ever retained to disk beyond
@@ -31,7 +41,12 @@ the lifetime of one language's processing — callers are responsible for
 deleting the tmpdir contents immediately after use, preserving the
 license-driven verdict-only discipline established from the start of the
 PKF/DBT pilot (PKF is NC-ND licensed; only comparison verdicts are ever
-published, never the text itself).
+published, never the text itself). This text is deliberately NOT cached
+the way helloAO's is — caching it on disk, even gitignored, would
+reintroduce the retained-PKF-text question already settled against. The
+fix for its own transient-failure flakiness (same investigation as above)
+is a short in-process retry around the rclone+decode step instead, not a
+cache.
 
 openbible (Biblica's Open Bible catalog, added 2026-09-15): direct HTTPS
 GET of the whole-edition USFM zip from openbible-api-1.biblica.com's
@@ -46,6 +61,7 @@ extracted chapter stays ephemeral (tmpdir, deleted after use), same as
 before.
 """
 import io
+import json
 import subprocess
 import sys
 import time
@@ -65,6 +81,8 @@ from paths import API_CACHE, TEXT_DIR  # noqa: E402
 SAMPLE_DIR = TEXT_DIR / "BB"
 HELLOAO_API = "https://bible.helloao.org/api"
 OPENBIBLE_TEXT_CACHE = API_CACHE / "openbible" / "text"
+HELLOAO_CHAPTER_CACHE = API_CACHE / "helloao" / "chapter-cache"
+PKF_FETCH_RETRIES = 3
 
 
 def dbt_text(iso: str, canon: str, distinct_id: str, fileset_id: str, book: str, chapter: int) -> str | None:
@@ -98,6 +116,17 @@ def extract_helloao_chapter(chapter_json: dict) -> str:
 
 
 def helloao_text(translation_id: str, book: str, chapter: int) -> str | None:
+    cache_path = HELLOAO_CHAPTER_CACHE / f"{translation_id}.json"
+    key = f"{book}_{chapter}"
+    cache = {}
+    if cache_path.is_file():
+        try:
+            cache = json.loads(cache_path.read_text(encoding="utf-8"))
+        except (ValueError, OSError):
+            cache = {}
+    if key in cache:
+        return cache[key]
+
     try:
         r = requests.get(f"{HELLOAO_API}/{translation_id}/{book}/{chapter}.json", timeout=15)
     except requests.RequestException:
@@ -109,25 +138,48 @@ def helloao_text(translation_id: str, book: str, chapter: int) -> str | None:
         payload = r.json()
     except ValueError:
         return None
-    return extract_helloao_chapter(payload.get("chapter", {})) or None
+    text = extract_helloao_chapter(payload.get("chapter", {})) or None
+
+    # Only a real success is cached. A miss here (network error, non-200,
+    # bad JSON, or genuinely empty content) is always retried live next
+    # time rather than remembered as "absent" — cheap to re-check, and
+    # conflating "failed this attempt" with "confirmed not there" is
+    # exactly the bug this cache exists to avoid (see module docstring).
+    if text is not None:
+        cache[key] = text
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        cache_path.write_text(json.dumps(cache, ensure_ascii=False), encoding="utf-8")
+    return text
 
 
 def pkf_text(iso: str, pkf_file: str, book: str, chapter: int, env: dict, bucket: str, tmpdir: Path) -> str | None:
+    """Retries the whole rclone-copy + decode round trip up to
+    PKF_FETCH_RETRIES times before giving up — added 2026-10-07 after the
+    lexeme-aligner investigation caught this failing transiently (same
+    network flakiness as helloao_text, confirmed by hand-retrying the
+    identical call outside the pipeline and getting a different result).
+    No text is cached across calls here, by design — see module docstring
+    for why PKF text stays ephemeral."""
     safe_tag = pkf_file.replace("/", "_")
     pkf_path = tmpdir / f"{iso}_{safe_tag}.pkf"
-    result = subprocess.run(
-        ["rclone", "copyto", f"R2:{bucket}/pkf/{iso}/{pkf_file}", str(pkf_path)],
-        capture_output=True, text=True, env=env,
-    )
-    if result.returncode != 0 or not pkf_path.exists():
-        return None
     out_dir = tmpdir / f"{iso}_{safe_tag}_out"
-    subprocess.run(
-        ["node", "tools/pkf-decode/decode.mjs", str(pkf_path), "--out", str(out_dir), "--book", book],
-        capture_output=True, text=True,
-    )
-    matches = list(out_dir.glob(f"*-{book}.usfm")) if out_dir.is_dir() else []
-    return extract_pkf_chapter(matches[0], chapter) if matches else None
+    for attempt in range(PKF_FETCH_RETRIES):
+        if attempt:
+            time.sleep(1.0)
+        result = subprocess.run(
+            ["rclone", "copyto", f"R2:{bucket}/pkf/{iso}/{pkf_file}", str(pkf_path)],
+            capture_output=True, text=True, env=env,
+        )
+        if result.returncode != 0 or not pkf_path.exists():
+            continue
+        subprocess.run(
+            ["node", "tools/pkf-decode/decode.mjs", str(pkf_path), "--out", str(out_dir), "--book", book],
+            capture_output=True, text=True,
+        )
+        matches = list(out_dir.glob(f"*-{book}.usfm")) if out_dir.is_dir() else []
+        if matches:
+            return extract_pkf_chapter(matches[0], chapter)
+    return None
 
 
 def openbible_current_usfm_artifact(project_id: str) -> str | None:

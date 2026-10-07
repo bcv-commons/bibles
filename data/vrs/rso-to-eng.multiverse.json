@@ -1,0 +1,101 @@
+{
+  "source_scheme": "rso",
+  "target_scheme": "eng",
+  "kind": "multi-verse relations (not in the single-verse rso map)",
+  "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0), tradition rows checked against the Russian Synodal text",
+  "attribution": "https://STEPBible.org",
+  "tvtms_rev": "902681f77a4a2975b809555ff3c35ffe3c48a1d5",
+  "tvtms_sha256": "63058e0f20201af4bdaa7d830da5be8f493455d947c5f147d84840b33db9ddf8",
+  "map": [
+    {
+      "s": "PSA 12:6",
+      "t": "PSA 13:5-6"
+    },
+    {
+      "s": "LEV 14:55",
+      "t": "LEV 14:55-56"
+    },
+    {
+      "s": "1SA 20:42-43",
+      "t": "1SA 20:42"
+    },
+    {
+      "s": "ISA 3:19",
+      "t": "ISA 3:19-20"
+    },
+    {
+      "s": "ACT 19:40",
+      "t": "ACT 19:40-41"
+    },
+    {
+      "s": "2CO 13:12",
+      "t": "2CO 13:12-13"
+    },
+    {
+      "s": "REV 13:1",
+      "t": "REV 12:18-13:1"
+    }
+  ],
+  "evidence": [
+    {
+      "s": "PSA 12:6",
+      "t": "PSA 13:5-6",
+      "tvtms_line": 10696,
+      "tvtms_label": "Greek",
+      "tvtms_action": "Concatenation",
+      "text_check": "Synodal 12:6 holds English 13:5 and 13:6 (partner, Russian text)"
+    },
+    {
+      "s": "LEV 14:55",
+      "t": "LEV 14:55-56",
+      "tvtms_line": 5413,
+      "tvtms_label": "Slavonic",
+      "tvtms_action": "Concatenation",
+      "text_check": "Synodal 14:55 holds English 14:55 and 14:56 (partner and our reading, Russian text)"
+    },
+    {
+      "s": "1SA 20:42-43",
+      "t": "1SA 20:42",
+      "tvtms_line": null,
+      "tvtms_label": "edition-specific split (no TVTMS row)",
+      "text_check": "Synodal 20:42 and 20:43 both hold English 20:42 (partner, Russian text); Synodal 21:1 = English 21:1"
+    },
+    {
+      "s": "ISA 3:19",
+      "t": "ISA 3:19-20",
+      "tvtms_line": null,
+      "tvtms_label": "text check (partner)",
+      "text_check": "Synodal 3:19 covers English 3:19 and 3:20 (partner, Russian text)"
+    },
+    {
+      "s": "ACT 19:40",
+      "t": "ACT 19:40-41",
+      "tvtms_line": "4046-4047",
+      "tvtms_action": "MergedPrevVerse"
+    },
+    {
+      "s": "2CO 13:12",
+      "t": "2CO 13:12-13",
+      "tvtms_line": "4080-4081",
+      "tvtms_action": "SubdividedVerse"
+    },
+    {
+      "s": "REV 13:1",
+      "t": "REV 12:18-13:1",
+      "tvtms_line": "4105-4106",
+      "tvtms_action": "OneToOne"
+    }
+  ],
+  "flagged_not_published": [
+    {
+      "s": "PRO 4:28-29",
+      "t": "PRO 4:27",
+      "status": "rejected by partner: Septuagint additions, leave unmapped"
+    },
+    {
+      "s": "JOS 24:34-36",
+      "t": "JOS 24:33",
+      "status": "rejected by partner: Septuagint additions, leave unmapped"
+    }
+  ]
+}
