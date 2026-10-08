@@ -52,18 +52,32 @@ node convert.mjs export/audiobiblia-usj/spa/BLL/JHN.json out/JHN
 
 Chapter 3 keeps its 17 red-letter wrappers, gives 36 verses, and all 36 match the published verse-json text exactly.
 
-## Reading verses from Sofria
+## Rendering Sofria, and reading its text
 
-```python
-import json
-from decode import extract_verses_from_sofria   # tools/dbt-sofria-decode-py/decode.py
+The reference implementation is `tools/sofria-render/` (JavaScript, Node or browser). It
+works the same for PKF, DBT `text_json` and our own Sofria:
 
-chapters = extract_verses_from_sofria(json.load(open("out/JHN/3.json")))
-# {3: {"1": "...", "2": "...", ...}}
+```js
+import { renderChapter } from './tools/sofria-render/src/render.js';
+import { extractEntries, verseMap } from './tools/sofria-render/src/verses.js';
+
+const { html, notes, warnings } = renderChapter(doc);  // HTML in SAB's DOM and class names
+const entries = extractEntries(doc);                     // typed: verse, heading, intro, note
+const verses = verseMap(entries);                        // { "1": "...", "2": "...", ... }
 ```
 
-The decoder reads `verses_label` marks wherever they sit in the document. Verses are
-joined across paragraph breaks with a single space.
+`renderChapter` uses the class names SIL's Scripture App Builder uses, so SAB's own
+stylesheets apply. For PKF languages, those stylesheets are on the CDN. Nothing in the
+input is dropped: hidden things stay in the output with `hidden`, unknown elements are
+rendered with their text and listed in `warnings`. See `tools/sofria-render/README.md`.
+
+`extractEntries` keeps headings separate from verse text. A `\d` title between two
+paragraphs is a heading, not part of the verse. A `\d \v 1 (Of David)` title is verse 1,
+marked as a title. Text in a `\b` paragraph is verse text. Verses are joined across
+paragraph breaks with a single space.
+
+The older Python decoder (`tools/dbt-sofria-decode-py/decode.py`) adds `\d` heading text to
+the verse that is open at that point. Use `extractEntries` for correct verse text.
 
 ## Checking the result
 

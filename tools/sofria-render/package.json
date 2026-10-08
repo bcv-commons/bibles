@@ -1,0 +1,20 @@
+{
+  "name": "bibles-sofria-render",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reference Sofria renderer: Sofria chapter JSON to HTML with Scripture App Builder's DOM and class names, plus typed plain-text extraction. Sources: PKF (cdn.bibel.wiki/pkf), DBT text_json, our own Sofria.",
+  "exports": {
+    ".": "./src/index.js",
+    "./render": "./src/render.js",
+    "./verses": "./src/verses.js",
+    "./sources/pkf": "./src/sources/pkf.js"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "fflate": "0.8.3",
+    "proskomma-core": "0.11.3"
+  }
+}

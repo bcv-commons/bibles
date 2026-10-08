@@ -13,6 +13,45 @@ import { join, relative, dirname } from 'node:path';
 import { sofriaForChapterViaWholeBook } from './whole_book_fallback.mjs';
 import { stripTables } from './strip_tables.mjs';
 
+// proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
+// into node text. Remove it; wrappers are kept (see convert.mjs).
+// A USFM \fig inside verse text becomes a Sofria graft, and proskomma then nests the
+// verses that follow it inside that graft (the decoder skips grafts, so they vanish).
+// Splitting the paragraph at each figure keeps the figure as its own graft block and
+// leaves the following verses in verse text.
+function splitFigures(content) {
+  const out = [];
+  for (const node of content) {
+    if (node && node.type === 'para' && (node.content || []).some(c => c && c.type === 'figure')) {
+      let cur = { ...node, content: [] };
+      for (const c of node.content) {
+        if (c && c.type === 'figure') {
+          if (cur.content.length) out.push(cur);
+          out.push(c);
+          cur = { ...node, content: [] };
+        } else {
+          cur.content.push(c);
+        }
+      }
+      if (cur.content.length) out.push(cur);
+    } else {
+      out.push(node);
+    }
+  }
+  return out;
+}
+
+const STRAY_MARKER = /\| marker="[^"]*"/g;
+function stripWjLeak(json) {
+  const walk = (x) => {
+    if (typeof x === 'string') return x.replace(STRAY_MARKER, '');
+    if (Array.isArray(x)) return x.map(walk);
+    if (x && typeof x === 'object') return Object.fromEntries(Object.entries(x).map(([k, v]) => [k, walk(v)]));
+    return x;
+  };
+  return JSON.stringify(walk(JSON.parse(json)));
+}
+
 class BiblesPk extends Proskomma {
   constructor() {
     super();
@@ -91,6 +130,8 @@ function main() {
     try {
       usjText = readFileSync(usjPath, 'utf-8');
       usj = JSON.parse(usjText);
+      usj = { ...usj, content: splitFigures(usj.content || []) };
+      usjText = JSON.stringify(usj);
     } catch (e) {
       console.log('READ-FAIL', usjPath, e.message);
       booksFailed++;
@@ -129,7 +170,7 @@ function main() {
 
     mkdirSync(outDir, { recursive: true });
     for (const [chNum, sofriaJson] of result.chapterJson) {
-      writeFileSync(join(outDir, `${chNum}.json`), sofriaJson);
+      writeFileSync(join(outDir, `${chNum}.json`), stripWjLeak(sofriaJson));
       chaptersWritten++;
     }
     if (result.usedFallback) console.log('WHOLE-BOOK-FALLBACK', rel, bookCode);

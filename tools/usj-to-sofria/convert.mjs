@@ -36,6 +36,32 @@ class BiblesPk extends Proskomma {
 // proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
 // into node text. Remove it from the output; the wrapper itself is kept (red letter
 // is preserved as a usfm:wj wrapper).
+// A USFM \fig inside verse text becomes a Sofria graft, and proskomma then nests the
+// verses that follow it inside that graft (the decoder skips grafts, so they vanish).
+// Splitting the paragraph at each figure keeps the figure as its own graft block and
+// leaves the following verses in verse text.
+function splitFigures(content) {
+  const out = [];
+  for (const node of content) {
+    if (node && node.type === 'para' && (node.content || []).some(c => c && c.type === 'figure')) {
+      let cur = { ...node, content: [] };
+      for (const c of node.content) {
+        if (c && c.type === 'figure') {
+          if (cur.content.length) out.push(cur);
+          out.push(c);
+          cur = { ...node, content: [] };
+        } else {
+          cur.content.push(c);
+        }
+      }
+      if (cur.content.length) out.push(cur);
+    } else {
+      out.push(node);
+    }
+  }
+  return out;
+}
+
 const STRAY_MARKER = /\| marker="[^"]*"/g;
 function stripWjLeak(json) {
   const walk = (x) => {
@@ -67,6 +93,8 @@ function main() {
 
   let usjText = readFileSync(usjPath, 'utf-8');
   let usj = JSON.parse(usjText);
+  usj = { ...usj, content: splitFigures(usj.content || []) };
+  usjText = JSON.stringify(usj);
   const bookNode = (usj.content || []).find(n => n && n.type === 'book');
   const bookCode = bookNode ? bookNode.code : 'XXX';
 

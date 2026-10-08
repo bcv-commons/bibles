@@ -1,0 +1,55 @@
+/*
+ * Complements SAB's shared scripture stylesheet (cdn.bibel.wiki/pkf/_styles/sab-scripture.css),
+ * which styles the Bible-text markup render.js emits. Load it after the shared sheet
+ * (and after a language's delta.css, for PKF languages).
+ *
+ * 1. The colours. SAB's stylesheets define their colour variables inside a theme block
+ *    (data-color-theme=Normal|Sepia|Dark on #container). This example always uses Normal,
+ *    with a white background. For sources with no delta.css (DBT, helloAO, our own Sofria)
+ *    the Normal values below apply; they use :where(), so a language's delta.css wins.
+ *    Values: SAB's defaults, as in the PKF deltas. To offer SAB's Sepia and Dark themes,
+ *    set data-color-theme on #container and drop the white-background override.
+ * 2. Rules for what render.js adds beyond SAB's own markup (collected notes, the
+ *    introduction wrapper, kept-but-hidden items) and for the few classes SAB styles in
+ *    its app framework rather than in scripture CSS (list utilities, glossary link,
+ *    tooltip).
+ */
+
+/* 1. default Normal theme, white background, base text */
+:where(#container,.reader-root)[data-color-theme=Normal]{--BackgroundColor:#F0F0F0;--BlockBackgroundColor1:#FFDCE0;--BlockBackgroundColor2:#FFFFCC;--BlockBackgroundColor3:#B8FBF9;--BlockBackgroundColor4:#D6FFEA;--FooterBackgroundColor:#E0E0E0;--FooterPane2BackgroundColor:#D0D0D0;--FootnoteBackgroundColor:#E0E0E0;--HighlighterPenBlue:#B8FBF9;--HighlighterPenGreen:#D6FFEA;--HighlighterPenOrange:#FFE6BC;--HighlighterPenPink:#FFD6FF;--HighlighterPenTextColor:#000000;--HighlighterPenYellow:#FFFFCC;--LinkColor:#6C0000;--ResourceBackgroundColor:#FFDCE0;--ResourceButtonBackgroundColor:#C62828;--ResourceButtonHoverColor:#D32F2F;--ResourceButtonTextColor:#FFFFFF;--TextColor:#000000;--TextHighlightColor:#FFFF99;--TitlesColor:#6C0000;--VerseByVerseColor1:#000080;--VerseByVerseColor2:#8B008B;--VerseNumberColor:#D32F2F;--VideoBackgroundColor:#E0E0E0}
+
+:is(#container,.reader-root)[data-color-theme] { --BackgroundColor: #FFFFFF; } /* SAB's Normal is light grey */
+:where(#container,.reader-root) {
+    font-family: Charis SIL, Gentium Plus, Georgia, serif;
+    font-size: 20px;
+    color: var(--TextColor);
+    background: var(--BackgroundColor);
+}
+
+/* 2. collected notes (render.js default: notes: 'collected') */
+a.footnote-caller { text-decoration: none; }
+div.footnotes { border-top: 1px solid var(--FooterBackgroundColor); margin-top: 1.5em; padding-top: .5em; font-size: .85em; }
+div.footnotes div.note { margin: .2em 0; }
+div.footnotes span.caller { font-weight: bold; color: var(--LinkColor); }
+div.footnotes span.fr, div.footnotes span.xo { font-weight: bold; }
+
+/* introduction wrapper, remarks, kept-but-hidden items */
+div.introduction { border-bottom: 1px solid var(--FooterBackgroundColor); padding-bottom: .5em; margin-bottom: 1em; }
+span.image-missing { display: block; min-height: 2em; background: var(--FootnoteBackgroundColor); border-radius: 4px; }
+
+/* alternate chapter number, \w without glossary links, red letters switched off */
+span.ca { font-size: .7em; color: var(--VerseNumberColor); }
+span.w, span.wj-off { color: inherit; }
+
+/* links SAB styles in its app CSS */
+a.glossary { color: inherit; text-decoration: underline dotted; cursor: pointer; }
+span.xt, a.ref-link, a.header-ref, a.audioclip { color: var(--LinkColor); cursor: pointer; }
+.cursor-pointer { cursor: pointer; }
+.dy-tooltip { position: relative; }
+
+/* list milestones (SAB uses Tailwind utilities for these) */
+.list-item { display: list-item; }
+.list-decimal { list-style-type: decimal; }
+.list-circle { list-style-type: circle; }
+.list-square { list-style-type: square; }
+.list-inside { list-style-position: inside; }

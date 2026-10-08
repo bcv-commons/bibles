@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sofria render example</title>
+<script type="importmap">
+{
+  "imports": {
+    "fflate": "https://cdn.jsdelivr.net/npm/fflate@0.8.3/+esm",
+    "proskomma-core": "https://cdn.jsdelivr.net/npm/proskomma-core@0.11.3/+esm"
+  }
+}
+</script>
+<!-- SAB's shared scripture stylesheet (all sources), then a PKF language's delta.css, then example.css -->
+<link id="sab-shared" rel="stylesheet" href="https://cdn.bibel.wiki/pkf/_styles/sab-scripture.css">
+<link id="sab-delta" rel="stylesheet" disabled>
+<link rel="stylesheet" href="example.css">
+<style>
+  /* page chrome only; scripture styling comes from SAB's stylesheets or example.css */
+  body { margin: 0; font-family: system-ui, sans-serif; background: #fff; }
+  header { position: sticky; top: 0; background: #fff; border-bottom: 1px solid #ddd; padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; z-index: 2; font-size: 14px; }
+  header label { display: inline-flex; gap: 4px; align-items: center; }
+  header input[type=text] { width: 5em; }
+  main { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
+  #status { font-size: 13px; color: #666; padding: 6px 0; }
+  #warnings { font-size: 13px; color: #8a5a00; }
+  details { font-size: 14px; }
+  .popup { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); max-width: 90vw; width: 640px; background: #fff; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15); padding: 12px 16px; z-index: 3; }
+  .popup button { float: right; }
+</style>
+</head>
+<body>
+<header>
+  <label>PKF language <input id="iso" type="text" value="aai"></label>
+  <button id="load">Load</button>
+  <select id="collection" hidden></select>
+  <select id="book" disabled></select>
+  <select id="chapter" disabled></select>
+  <span>or Sofria JSON:</span>
+  <input id="file" type="file" accept=".json,application/json">
+  <details>
+    <summary>Options</summary>
+    <label>Notes <select id="opt-notes"><option value="collected">collected</option><option value="inline">inline (SAB)</option></select></label>
+    <label>Chapter number <select id="opt-chapter"><option value="">from settings</option><option value="drop-cap">drop-cap</option><option value="top">top</option><option value="none">none</option></select></label>
+    <label>Introduction <select id="opt-intro"><option value="inline">inline</option><option value="separate">separate</option></select></label>
+    <label>Verses <select id="opt-layout"><option value="">from settings</option><option value="paragraphs">paragraphs</option><option value="one-per-line">one per line</option></select></label>
+  </details>
+</header>
+<main>
+  <div id="status">Loading…</div>
+  <div id="warnings"></div>
+  <div id="container" data-color-theme="Normal"><div id="introduction"></div><div id="content"></div></div>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
