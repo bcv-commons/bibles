@@ -121,11 +121,21 @@ def _usfm_chapter_verses(text: str, chapter: int) -> dict[int, str]:
     return out
 
 
+def _chapter_from(entry: dict, chapter: int) -> dict[int, str]:
+    """Verses of one chapter from a cached book, parsed on first use. (Fixed
+    2026-10-08: the cache used to hold only the first chapter asked for, so every
+    later chapter of the same book came back empty: PKF and openbible editions
+    were checked on 5 of the 15 diagnostic verses at most.)"""
+    if chapter not in entry["chapters"]:
+        entry["chapters"][chapter] = _usfm_chapter_verses(entry["text"], chapter) if entry["text"] else {}
+    return entry["chapters"][chapter]
+
+
 def pkf_verse(iso: str, pkf_file: str, book: str, chapter: int, verse: int,
               env: dict, bucket: str, tmpdir: Path, cache: dict) -> str | None:
     key = ("pkf", iso, pkf_file, book)
     if key not in cache:
-        by_chapter: dict[int, dict[int, str]] = {}
+        book_text = None
         safe_tag = pkf_file.replace("/", "_")
         pkf_path = tmpdir / f"{iso}_{safe_tag}.pkf"
         result = subprocess.run(
@@ -140,19 +150,19 @@ def pkf_verse(iso: str, pkf_file: str, book: str, chapter: int, verse: int,
             )
             matches = list(out_dir.glob(f"*-{book}.usfm")) if out_dir.is_dir() else []
             if matches:
-                text = matches[0].read_text(encoding="utf-8")
-                by_chapter[chapter] = _usfm_chapter_verses(text, chapter)
+                book_text = matches[0].read_text(encoding="utf-8")
             for p in tmpdir.iterdir():
                 if p.name.startswith(f"{iso}_"):
                     shutil.rmtree(p) if p.is_dir() else p.unlink()
-        cache[key] = by_chapter
-    return cache[key].get(chapter, {}).get(verse)
+        # the book's text stays in memory for this language's run only (never written out)
+        cache[key] = {"text": book_text, "chapters": {}}
+    return _chapter_from(cache[key], chapter).get(verse)
 
 
 def openbible_verse(project_id: str, book: str, chapter: int, verse: int, tmpdir: Path, cache: dict) -> str | None:
     key = ("openbible", project_id, book)
     if key not in cache:
-        by_chapter: dict[int, dict[int, str]] = {}
+        book_text = None
         artifact_id = openbible_current_usfm_artifact(project_id)
         if artifact_id:
             data = get_zip_bytes(project_id, artifact_id)
@@ -163,12 +173,11 @@ def openbible_verse(project_id: str, book: str, chapter: int, verse: int, tmpdir
                     with zipfile.ZipFile(io.BytesIO(data)) as z:
                         matches = [n for n in z.namelist() if n.endswith(f"/{book}.usfm") or n.endswith(f"{book}.usfm")]
                         if matches:
-                            text = z.read(matches[0]).decode("utf-8", errors="replace")
-                            by_chapter[chapter] = _usfm_chapter_verses(text, chapter)
+                            book_text = z.read(matches[0]).decode("utf-8", errors="replace")
                 except zipfile.BadZipFile:
                     pass
-        cache[key] = by_chapter
-    return cache[key].get(chapter, {}).get(verse)
+        cache[key] = {"text": book_text, "chapters": {}}
+    return _chapter_from(cache[key], chapter).get(verse)
 
 
 def classify(get_verse) -> dict:
@@ -213,23 +222,32 @@ def classify(get_verse) -> dict:
 
 def classify_language(iso: str, catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
                       openbible_by_iso: dict, openbible_abbr: dict,
-                      env: dict, bucket: str, tmpdir: Path) -> dict:
+                      env: dict, bucket: str, tmpdir: Path, have: set = frozenset()) -> dict:
+    """Editions whose tag is in `have` already have a verdict and are skipped."""
     cache: dict = {}
     results: dict[str, dict] = {}
 
     for distinct_id, fileset_id in dbt_candidates(catalog, iso, "nt").items():
+        if f"dbt:{distinct_id}" in have:
+            continue
         results[f"dbt:{distinct_id}"] = classify(
             lambda b, c, v, fs=fileset_id: dbt_verse(fs, b, c, v, cache))
 
     for hid in helloao_by_iso.get(iso, []):
+        if f"helloao:{hid}" in have:
+            continue
         results[f"helloao:{hid}"] = classify(
             lambda b, c, v, h=hid: helloao_verse(h, b, c, v, cache))
 
     for pkf_file in pkf_candidates(pkf_manifest, iso, "nt"):
+        if f"pkf:{iso.upper()}PKF" in have:
+            continue
         results[f"pkf:{iso.upper()}PKF"] = classify(
             lambda b, c, v, pf=pkf_file: pkf_verse(iso, pf, b, c, v, env, bucket, tmpdir, cache))
 
     for project_id, abbr in openbible_candidates(openbible_by_iso, openbible_abbr, iso):
+        if f"openbible:{abbr}" in have:
+            continue
         results[f"openbible:{abbr}"] = classify(
             lambda b, c, v, p=project_id: openbible_verse(p, b, c, v, tmpdir, cache))
 
@@ -296,8 +314,9 @@ def main() -> None:
     tmpdir = Path(tempfile.mkdtemp(prefix="textual_basis_"))
     try:
         for i, iso in enumerate(todo, 1):
+            have = {k[len(iso) + 1:] for k in editions if k.startswith(f"{iso}:")}
             per_edition = classify_language(iso, catalog, helloao_by_iso, pkf_manifest,
-                                            openbible_by_iso, openbible_abbr, env, bucket, tmpdir)
+                                            openbible_by_iso, openbible_abbr, env, bucket, tmpdir, have)
             for tag, r in per_edition.items():
                 editions[f"{iso}:{tag}"] = r
                 print(f"  [{i}/{len(todo)}] {iso}:{tag}: {r['verdict']} "
