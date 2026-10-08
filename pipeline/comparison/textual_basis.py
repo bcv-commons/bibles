@@ -133,9 +133,12 @@ def _chapter_from(entry: dict, chapter: int) -> dict[int, str]:
 
 def pkf_verse(iso: str, pkf_file: str, book: str, chapter: int, verse: int,
               env: dict, bucket: str, tmpdir: Path, cache: dict) -> str | None:
-    key = ("pkf", iso, pkf_file, book)
-    if key not in cache:
-        book_text = None
+    # One download and one decode per collection, all books at once (decoding per
+    # book loaded the whole PKF again for each of the 5 test books). The decoded
+    # text stays in memory for this language's run only and is never written out.
+    coll_key = ("pkf-collection", iso, pkf_file)
+    if coll_key not in cache:
+        books: dict[str, str] = {}
         safe_tag = pkf_file.replace("/", "_")
         pkf_path = tmpdir / f"{iso}_{safe_tag}.pkf"
         result = subprocess.run(
@@ -145,17 +148,19 @@ def pkf_verse(iso: str, pkf_file: str, book: str, chapter: int, verse: int,
         if result.returncode == 0 and pkf_path.exists():
             out_dir = tmpdir / f"{iso}_{safe_tag}_out"
             subprocess.run(
-                ["node", "tools/pkf-decode/decode.mjs", str(pkf_path), "--out", str(out_dir), "--book", book],
+                ["node", "tools/pkf-decode/decode.mjs", str(pkf_path), "--out", str(out_dir)],
                 capture_output=True, text=True,
             )
-            matches = list(out_dir.glob(f"*-{book}.usfm")) if out_dir.is_dir() else []
-            if matches:
-                book_text = matches[0].read_text(encoding="utf-8")
-            for p in tmpdir.iterdir():
-                if p.name.startswith(f"{iso}_"):
-                    shutil.rmtree(p) if p.is_dir() else p.unlink()
-        # the book's text stays in memory for this language's run only (never written out)
-        cache[key] = {"text": book_text, "chapters": {}}
+            for f in (out_dir.glob("*.usfm") if out_dir.is_dir() else []):
+                code = f.stem.split("-")[-1]
+                books[code] = f.read_text(encoding="utf-8")
+        for p in tmpdir.iterdir():
+            if p.name.startswith(f"{iso}_"):
+                shutil.rmtree(p) if p.is_dir() else p.unlink()
+        cache[coll_key] = books
+    key = ("pkf", iso, pkf_file, book)
+    if key not in cache:
+        cache[key] = {"text": cache[coll_key].get(book), "chapters": {}}
     return _chapter_from(cache[key], chapter).get(verse)
 
 
