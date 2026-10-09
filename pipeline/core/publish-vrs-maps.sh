@@ -21,7 +21,7 @@ cd "$ROOT_DIR"
 
 MAP_DIR="export/_vrs/map"
 CDN_BASE="https://cdn.bibel.wiki/_vrs/map"
-MAPS=(org-to-eng.json orgw-to-eng.json catm-to-eng.json rso-to-eng.json org-to-eng.multiverse.json rso-to-eng.multiverse.json
+MAPS=(org-to-eng.json orgw-to-eng.json catm-to-eng.json rso-to-eng.json vul-to-eng.json lxx-to-eng.json org-to-eng.multiverse.json rso-to-eng.multiverse.json
       orgw-to-eng.multiverse.json catm-to-eng.multiverse.json)
 
 if [ -f .env ]; then

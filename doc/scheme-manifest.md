@@ -1,4 +1,4 @@
-# Scheme manifest (2026-10-08)
+# Scheme manifest (2026-10-09)
 
 One entry per published scheme. A client uses this to check that an edition
 matches a scheme's shape, and that the map for that scheme is the one we
@@ -7,7 +7,7 @@ revision and what the checks found. Per-edition assignments live in
 `cdn.bibel.wiki/dbt/_vrs/index.json`; its `maps` list names every map file
 below.
 
-Checksums are sha256 of the live CDN files, as of 2026-10-08.
+Checksums are sha256 of the live CDN files, as of 2026-10-09.
 
 ## New Testament
 
@@ -61,19 +61,19 @@ Old Testament only.
 ## vul (Vulgate)
 
 - Shape: `_vrs/vul.vrs` `0b8f8ea8d07e5f3bf990434b070aa50e3870fde224c4d440daa142af6c40706b`
-- Map: `_vrs/map/vul-to-eng.json` `80820a8a625e01844fcff4bbb4c2a6e200b840b22a4faa55ecd873aec767f275` (2,845 rows, 0 shape exceptions)
-- Source: TVTMS-derived baseline delivered by the strongs-aligner project (`data/vrs/tvtms-vul-to-eng.baseline.tsv`), 100% consistent with `vul.vrs` at delivery.
-- TVTMS: **not recorded.** The map file says `tvtms_rev: "UNPINNED"`; the revision the baseline came from was never recorded. A pinned rebuild from `902681f…` (Old Testament only) exists but is not yet published.
+- Map: `_vrs/map/vul-to-eng.json` `44025661ff5a6afbddac8559bc46ece29ddc661691a05f14ce0b94baa2e46dd7` (4,098 rows, 0 shape exceptions)
+- TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's Latin sections: Old Testament and deuterocanon, every source valid in `vul.vrs`, every target valid in `eng.vrs`, one-to-one (no source or target used twice).
+- Replaces the unpinned strongs-aligner baseline: all 2,845 of its rows are kept with the same target. Added: 1,253 rows, nearly all deuterocanon (SIR, DAN additions, TOB, JDT, WIS, BAR, 2MA).
 - Editions: helloAO `lat_clv`, `eng_dra`.
 - Old Testament only; no New Testament rows.
 
 ## lxx (Septuagint)
 
 - Shape: `_vrs/lxx.vrs` `abfcbfa86f888598f06cb3797cb9fe0b3854ded674e372e03d39ca9d6e6761e2`
-- Map: `_vrs/map/lxx-to-eng.json` `33e1700b94846dc1e48a25436dd501b91b7b5f1b690ebaa9dcf09befe304c86d` (5,109 rows, including 28 Greek Esther rows; 68 rows outside our shapes, kept and listed in the map file)
-- Source: raw TVTMS-derived baseline delivered by the strongs-aligner project (`data/vrs/tvtms-lxx-to-eng.baseline.tsv`), plus the hand-curated Greek Esther supplement (`data/vrs/esg-lxx-to-eng.tsv`).
-- TVTMS: **not recorded** (`tvtms_rev: "UNPINNED"`), same as `vul`.
+- Map: `_vrs/map/lxx-to-eng.json` `04b561ba4d99037fa9332a6d5348e4a66f4a71107abe63addff1067a34f7abb9` (4,748 rows, including 28 Greek Esther rows; 28 rows outside our shapes, kept and listed in the map file)
+- TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's `Greek` sections, with its second Greek edition (`Greek2`) for MAL 3, JER 34 and 4MA 7, 8, 12, the chapters where it fits `lxx.vrs` better. Book codes are mapped by `data/vrs/crosswalk-lxx.toml` (DAN → DAG, NEH → EZR chapter + 10, 2CH 37 → MAN). Greek Esther comes from the hand-curated supplement `data/vrs/esg-lxx-to-eng.tsv`.
+- One-to-one: no source maps to two verses and no English verse is the target of two. The unpinned map it replaces had 141 and 191 of these (the collisions bcv-query found).
+- Compared with that map: 4,748 of its 5,109 rows are kept with the same target and none are added. Dropped: 202 collision rows, and 159 rows that are now identity, mostly renumberings from the second Greek edition in chapters where the first fits `lxx.vrs` better (DEU, JOB, HAG, SIR, TOB, WIS, HOS, 1ES, ZEC, EXO), plus 15 Prayer of Manasseh rows that mapped verses to themselves.
 - Known gap: Esther 5:1-14 (Addition D, interleaved; varies by edition) has no rows.
-- Not reconciled the way rso/org/orgw were. Expect collisions: bcv-query's check found 287.
 - Editions: helloAO `grc_bre`, `eng_boy`.
 - `lxx.vrs` has no New Testament.

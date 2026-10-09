@@ -587,6 +587,184 @@ def write_rso(path: Path) -> None:
     print(f"[tvtms] rso: {len(rows)} non-identity rows, report {report} -> {RSO_OUT.relative_to(REPO_ROOT)}")
 
 
+VUL_VRS = REPO_ROOT / "data" / "vrs" / "vul.vrs"
+VUL_OUT = REPO_ROOT / "data" / "vrs" / "tvtms-vul-to-eng.derived.tsv"
+NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL",
+            "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN",
+            "3JN", "JUD", "REV"}
+
+
+def _title_pair(a: str, b: str, src: dict, eng: dict) -> bool:
+    """A psalm-title-to-psalm-title row whose psalms exist on both sides (e.g. Vulgate
+    PSA 118:title -> English PSA 119:title); _valid() takes verse references only."""
+    ma, mb = re.match(r"^PSA (\d+):title$", a), re.match(r"^PSA (\d+):title$", b)
+    return bool(ma and mb and int(ma.group(1)) in src.get("PSA", {}) and int(mb.group(1)) in eng.get("PSA", {}))
+
+
+def derive_vul(path: Path) -> tuple[list[tuple[str, str]], dict]:
+    """vul = TVTMS's labelled Latin sections, Old Testament and deuterocanon only (the
+    New Testament stays out of scope, decided 2026-10-05), every source valid in vul.vrs
+    and every target valid in eng.vrs.
+
+    Unlike rso, chapters of the same length on both sides are NOT skipped: the Vulgate
+    reorders verses inside such chapters (EXO 39, 43 verses on both sides, has 17 real
+    renumberings; also ISA 45 and SIR 6/14/18). The first, unpinned derivation applied
+    the rso rule and lost those rows; checked 2026-10-09 against the strongs-aligner
+    baseline it replaces: every baseline row is kept, with the same target.
+    """
+    vul, eng = _shape(VUL_VRS), _shape(ENG_VRS)
+    pairs = section_pairs(path, lambda lab: _has_part(lab, "Latin"))
+    rows = {(a, b) for a, b in pairs
+            if a != b and a.split()[0] not in NT_BOOKS
+            and ((_valid(a, vul) and _valid_target(b, eng)) or _title_pair(a, b, vul, eng))}
+    sources = collections.Counter(a for a, _ in rows)
+    targets = collections.Counter(b for _, b in rows if not b.endswith(":title"))
+    report = {"latin_pairs": len(pairs), "rows": len(rows),
+              "sources_mapped_twice": sum(1 for v in sources.values() if v > 1),
+              "collisions": sum(1 for v in targets.values() if v > 1)}
+    return sorted(rows), report
+
+
+def write_vul(path: Path) -> None:
+    rows, report = derive_vul(path)
+    if report["collisions"] or report["sources_mapped_twice"]:
+        raise SystemExit(f"[vul] not one-to-one: {report}; refusing to write")
+    VUL_OUT.write_text(
+        f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
+        f"pipeline/core/derive_tvtms_org_eng.py (vul: Latin sections; Old Testament and "
+        f"deuterocanon only, New Testament excluded by decision 2026-10-05). "
+        f"TVTMS is CC BY 4.0, STEPBible.org.\n"
+        "source_ref\tstandard_ref\taction\n"
+        + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),
+        encoding="utf-8")
+    print(f"[tvtms] vul: {len(rows)} non-identity rows, report {report} -> {VUL_OUT.relative_to(REPO_ROOT)}")
+
+
+LXX_VRS = REPO_ROOT / "data" / "vrs" / "lxx.vrs"
+LXX_OUT = REPO_ROOT / "data" / "vrs" / "tvtms-lxx-to-eng.derived.tsv"
+# Chapters where TVTMS's second Greek edition (`Greek2` sections) fits lxx.vrs better
+# than the main one (`Greek`). Chosen 2026-10-09 by applying each edition as a full
+# map to every verse of lxx.vrs and counting collisions and invalid targets, book by
+# book and chapter by chapter (internal-docs/versification-index-followups-2026-10-08.md).
+LXX_GREEK2_CHAPTERS = {("MAL", 3), ("JER", 34), ("4MA", 7), ("4MA", 8), ("4MA", 12)}
+_LXX_REF = re.compile(r"^(\S+) (\d+):(\d+)$")
+
+
+def _in_lxx(ref: str) -> tuple[str, int, int] | None:
+    """A TVTMS Greek source reference in lxx.vrs coordinates, using the same book rules
+    as data/vrs/crosswalk-lxx.toml (applied by generate_vrs_map.py; the derived rows keep
+    TVTMS's own codes): DAN -> DAG, NEH -> EZR chapter + 10, 2CH 37 -> MAN 1."""
+    m = _LXX_REF.match(ref)
+    if not m:
+        return None
+    book, c, v = m.group(1), int(m.group(2)), int(m.group(3))
+    if book == "DAN":
+        return "DAG", c, v
+    if book == "NEH":
+        return "EZR", c + 10, v
+    if book == "2CH" and c == 37:
+        return "MAN", 1, v
+    return book, c, v
+
+
+def _offset(a: str, b: str) -> tuple[int, int] | None:
+    ma, mb = _LXX_REF.match(a), _LXX_REF.match(b)
+    if not (ma and mb) or ma.group(1) != mb.group(1):
+        return None
+    return int(mb.group(2)) - int(ma.group(2)), int(mb.group(3)) - int(ma.group(3))
+
+
+def derive_lxx(path: Path) -> tuple[list[tuple[str, str]], dict]:
+    """lxx = TVTMS's `Greek` sections, with `Greek2` for LXX_GREEK2_CHAPTERS, Old
+    Testament and deuterocanon. Rows keep TVTMS's book codes; crosswalk-lxx.toml maps
+    them to lxx.vrs codes and drops non-Greek books, as it did for the baseline.
+
+    Targets must be valid in eng.vrs. Sources must be in a chapter lxx.vrs has; a verse
+    past the end of that chapter is kept (TVTMS is the authority; generate_vrs_map lists
+    such rows as shape exceptions). Where TVTMS gives one verse two targets (from
+    different sections), the one with the same offset as its nearest unambiguous
+    neighbours wins (a verse without a row counts as identity), then the chapter's most
+    common offset: EXO 40:28 -> 40:34 (40:27 -> 40:33, 40:29 -> 40:35), NEH 4:6 -> 4:12.
+    Greek Esther stays in the hand-curated supplement (esg-lxx-to-eng.tsv).
+    """
+    lxx, eng = _shape(LXX_VRS), _shape(ENG_VRS)
+    chapter = lambda ref: (ref.split()[0], int(ref.split()[1].split(":")[0]))  # noqa: E731
+
+    def usable(a: str, b: str) -> bool:
+        # verse -> verse, or verse -> psalm title (the Septuagint numbers a psalm's title
+        # as its verse 1: PSA 3:1 -> PSA 3:title), or title -> title
+        pos = _in_lxx(a)
+        if not pos:
+            return _title_pair(a, b, lxx, eng)
+        return pos[0] not in NT_BOOKS and pos[1] in lxx.get(pos[0], {}) and _valid_target(b, eng)
+
+    greek = section_pairs(path, lambda lab: _has_part(lab, "Greek"))
+    greek2 = section_pairs(path, lambda lab: _has_part(lab, "Greek2"))
+    pairs = ({(a, b) for a, b in greek if chapter(a) not in LXX_GREEK2_CHAPTERS}
+             | {(a, b) for a, b in greek2 if chapter(a) in LXX_GREEK2_CHAPTERS})
+    pairs = {(a, b) for a, b in pairs if usable(a, b)}
+    targets_of = collections.defaultdict(set)
+    for a, b in pairs:
+        targets_of[a].add(b)
+    def offset_at(book: str, c: int, v: int) -> tuple[int, int] | None:
+        """Offset of an unambiguous verse: its single row, or identity if it has none."""
+        ts = targets_of.get(f"{book} {c}:{v}")
+        if ts is None:
+            return (0, 0)
+        return _offset(f"{book} {c}:{v}", next(iter(ts))) if len(ts) == 1 else None
+
+    resolved = {}
+    for a, ts in targets_of.items():
+        if len(ts) == 1:
+            resolved[a] = next(iter(ts))
+            continue
+        # the nearest unambiguous verse on each side of it, within the chapter, decides;
+        # the chapter's prevailing offset breaks a tie
+        book, cv = a.split(" ", 1)
+        c, v = (int(x) for x in cv.split(":"))
+        pos = _in_lxx(a)
+        length = lxx.get(pos[0], {}).get(pos[1], 0) if pos else 0
+        near = []
+        for step in (-1, 1):
+            w = v + step
+            while 1 <= w <= max(length, v):
+                o = offset_at(book, c, w)
+                if o is not None:
+                    near.append(o)
+                    break
+                w += step
+        chapter_votes = collections.Counter(
+            _offset(x, next(iter(xs))) for x, xs in targets_of.items()
+            if chapter(x) == chapter(a) and len(xs) == 1)
+        resolved[a] = max(sorted(ts), key=lambda t: (near.count(_offset(a, t)),
+                                                    chapter_votes.get(_offset(a, t), 0)))
+    rows = {(a, b) for a, b in resolved.items() if a != b}
+    sources = collections.Counter(a for a, _ in rows)
+    targets = collections.Counter(b for _, b in rows if not b.endswith(":title"))
+    report = {"greek_pairs": len(greek), "greek2_pairs": len(greek2), "rows": len(rows),
+              "resolved_two_targets": sum(1 for ts in targets_of.values() if len(ts) > 1),
+              "outside_lxx_shape": sum(1 for a, _ in rows if (p := _in_lxx(a)) and not
+                                       (1 <= p[2] <= lxx.get(p[0], {}).get(p[1], 0))),
+              "sources_mapped_twice": sum(1 for v in sources.values() if v > 1),
+              "collisions": sum(1 for v in targets.values() if v > 1)}
+    return sorted(rows), report
+
+
+def write_lxx(path: Path) -> None:
+    rows, report = derive_lxx(path)
+    if report["collisions"] or report["sources_mapped_twice"]:
+        raise SystemExit(f"[lxx] not one-to-one: {report}; refusing to write")
+    LXX_OUT.write_text(
+        f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
+        f"pipeline/core/derive_tvtms_org_eng.py (lxx: Greek sections, Greek2 for "
+        f"{', '.join(f'{b} {c}' for b, c in sorted(LXX_GREEK2_CHAPTERS))}; Old Testament and "
+        f"deuterocanon; TVTMS book codes, mapped by crosswalk-lxx.toml). TVTMS is CC BY 4.0, STEPBible.org.\n"
+        "source_ref\tstandard_ref\taction\n"
+        + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),
+        encoding="utf-8")
+    print(f"[tvtms] lxx: {len(rows)} non-identity rows, report {report} -> {LXX_OUT.relative_to(REPO_ROOT)}")
+
+
 def main() -> None:
     path = fetch_pinned()
     if "--check" in sys.argv:
@@ -616,6 +794,8 @@ def main() -> None:
     write_multiverse(path)
     write_orgw()
     write_rso(path)
+    write_vul(path)
+    write_lxx(path)
     write_nt_fixes()
     print(f"[tvtms] derived {len(rows)} non-identity org->eng rows -> {OUT_TSV.relative_to(REPO_ROOT)}")
     print(f"[tvtms] skipped: {dict(skipped)}")

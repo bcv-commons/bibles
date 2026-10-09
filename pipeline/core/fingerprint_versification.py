@@ -95,8 +95,18 @@ def fetch_verse_count(abbr: str, iso: str, book: str, chapter: int) -> int | Non
     dest = DL_OT / iso / abbr / book / f"{book}_{chapter:03d}_{fsid}.txt"
     if dest.exists():
         return len([ln for ln in dest.read_text(encoding="utf-8").split("\n") if ln.strip()])
+    absent = dest.with_suffix(".absent")
+    if absent.exists():
+        return None
     res = dl.get_text_content(fsid, book, chapter)
-    if not res or res.get("type") != "verses":
+    if not res:
+        # A chapter DBT says isn't there (404, or 200 with no data) is recorded, so a
+        # later run without --fetch still knows. A network error or 403 is not.
+        reason = dl._classify_api_failure()
+        if reason in ("http_404_not_found", "empty_data"):
+            _mark_absent(absent, reason)
+        return None
+    if res.get("type") != "verses":
         return None
     # Merge fragments sharing a verse_start; flatten internal newlines to spaces.
     by_verse = {}
@@ -107,11 +117,26 @@ def fetch_verse_count(abbr: str, iso: str, book: str, chapter: int) -> int | Non
             continue
         by_verse[vs] = (by_verse.get(vs, "") + " " + txt).strip()
     if not by_verse:
+        _mark_absent(absent, "no_verse_text")
         return None
     verses = [by_verse[k] for k in sorted(by_verse)]
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text("\n".join(verses) + "\n", encoding="utf-8")
     return len(verses)
+
+
+def _mark_absent(path: Path, reason: str) -> None:
+    """Negative probe result: DBT confirmed this chapter has no content. Without it a
+    later run can't tell "confirmed absent" from "never fetched". (Fixed 2026-10-09:
+    org labels resting on a confirmed-absent MAL 4 were lost on every rebuild without
+    --fetch, e.g. BULCBV, since only positive results were cached.)"""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(reason + "\n", encoding="utf-8")
+
+
+def load_absent(book: str, ch3: str) -> set:
+    """Fileset ids whose book/chapter probe was confirmed absent (see _mark_absent)."""
+    return {p.relative_to(DL_OT).parts[1] for p in DL_OT.rglob(f"{book}_{ch3}_*.absent")}
 
 
 def load_probe(book: str, ch3: str) -> dict:
@@ -284,6 +309,19 @@ def helloao_ot_ids() -> list[str]:
                   if t.get("numberOfBooks", 0) > 27)
 
 
+# Index keys whose label rests on a default or on partial evidence -> reason. Published
+# as index.json's `assumed` map, so clients can tell a label from a guess.
+ASSUMED: dict = {}
+ASSUMED_REASONS = {
+    "no_psalm_evidence": "no Psalm probe data; defaulted to eng",
+    "nt_only": "New Testament only; defaulted to eng (Old Testament numbering unknown)",
+    "ebible_direct": "eBible text not mirrored in helloAO; defaulted to eng",
+    "tiebreaker_unconfirmed": "family known from the Psalms, deciding chapter not "
+                              "confirmed (org vs orgw: MAL 4; vul vs rso: HAG 1)",
+    "book_order_only": "rso from Byzantine book order alone, no Psalm evidence",
+}
+
+
 def classify_helloao(fetch: bool) -> dict:
     """Classify helloAO/eBible texts, caching probe results in HAO_CACHE.
     NT-only translations default to 'eng'. Returns {helloao:<id> -> scheme}."""
@@ -363,16 +401,22 @@ def classify_helloao(fetch: bool) -> dict:
             # by-default when there's real evidence against them.
             dan = entry.get("bv", {}).get("DAN")
             p117, p51 = entry.get("ps117"), entry.get("ps51")
+            key = f"helloao:{tid}"
             if entry.get("bookOrder") == "byzantine":
                 scheme = "rso"
+                if p117 is None:
+                    ASSUMED[key] = "book_order_only"
             elif dan is not None and dan > _DAN_ADDITIONS:
                 scheme = "catm"
             elif p117 is not None and p117 < 15 and p51 is not None and p51 > 20:
                 scheme = "org"      # eng already ruled out; org/orgw tiebreaker only
+                ASSUMED[key] = "tiebreaker_unconfirmed"
             elif p117 is not None and p117 >= 15 and entry.get("sa17") is not None:
                 scheme = "vul"      # true-lxx already ruled out; vul/rso tiebreaker only
+                ASSUMED[key] = "tiebreaker_unconfirmed"
             elif entry.get("bc") and p117 is None:
                 scheme = "eng"   # case (a) only: no Psalm evidence at all
+                ASSUMED[key] = "no_psalm_evidence"
             else:
                 undetermined.append(tid)
                 index[f"helloao:{tid}"] = "undetermined"
@@ -410,6 +454,7 @@ def classify_helloao(fetch: bool) -> dict:
         for t in cat.get("translations", []):
             if t.get("numberOfBooks", 0) <= 27:  # NT-only
                 index[f"helloao:{t['id']}"] = "eng"
+                ASSUMED[f"helloao:{t['id']}"] = "nt_only"
     return index
 
 
@@ -512,6 +557,7 @@ def main():
     sa17 = load_probe("1SA", "017")
     ki4 = load_probe("1KI", "004")
     mal4 = load_probe("MAL", "004")  # confirms bible_details' free mal==4 claim against real content
+    mal4_absent = load_absent("MAL", "004")  # ...or confirms the claim is wrong
     hag1 = load_probe("HAG", "001")  # vul-vs-rso discriminator (14 verses -> vul, else rso)
 
     # First gather all filesets + free signals
@@ -541,7 +587,7 @@ def main():
             "mal": ch("MAL"), "jol": ch("JOL"),
             "ps117": ps117.get(abbr), "ps51": ps51.get(abbr),
             "sa17": sa17.get(abbr), "ki4": ki4.get(abbr),
-            "mal4": (True if abbr in mal4 else None),
+            "mal4": (True if abbr in mal4 else False if abbr in mal4_absent else None),
             "hag1": hag1.get(abbr),
         })
 
@@ -612,6 +658,7 @@ def main():
             v = d.get(field, "")
             if v.startswith("ebible:"):
                 ebible_index[f"ebible:{v.split(':', 1)[1]}"] = "eng"
+                ASSUMED[f"ebible:{v.split(':', 1)[1]}"] = "ebible_direct"
     index.update(ebible_index)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -645,6 +692,10 @@ def main():
             "undetermined": "examined, insufficient data to classify",
         },
         "l": index,
+        # Keys of `l` whose label is a default or rests on partial evidence -> reason
+        # (see `assumed_reasons`). Every other label is backed by probe evidence.
+        "assumed": {k: ASSUMED[k] for k in sorted(ASSUMED) if k in index},
+        "assumed_reasons": ASSUMED_REASONS,
     }
     (pub_dir / "index.json").write_text(
         json.dumps(pub, separators=(",", ":"), sort_keys=True), encoding="utf-8")

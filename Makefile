@@ -39,7 +39,7 @@ help: ## Show available targets
 	@echo "  make publish-audiobiblia-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
 	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
-	@echo "  make publish-vrs-maps     Upload _vrs/map/{org,catm,rso}-to-eng.json and verify live sha256"
+	@echo "  make publish-vrs-maps     Upload _vrs/map/{org,orgw,catm,rso,vul,lxx}-to-eng.json + multiverse files, verify live sha256"
 	@echo "  make publish-vrs-maps-dry Dry-run the verse-map upload (no writes)"
 	@echo "  make vrs-check        Verify pinned TVTMS input, re-derive org->eng, rebuild maps"
 	@echo ""
@@ -60,7 +60,6 @@ help: ## Show available targets
 	@echo ""
 	@echo "  Pass extra args via ARGS, e.g.:"
 	@echo "    make versification ARGS=\"--fetch\""
-	@echo "    make vrs-map TVTMS_REV=abc1234"
 	@echo ""
 	@echo "  Pipeline code lives under pipeline/ (see pipeline/README.md)."
 	@echo "  Using this data in your own app? Start at doc/README.md instead."
@@ -84,13 +83,15 @@ dbt-metadata: ## Generate media.json + per-book timing + versification for CDN
 vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
 
-vrs-map: ## Build cross-scheme verse maps (org + catm from the derived TVTMS map, others from baselines)
-	@for s in lxx vul; do \
-	  $(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme $$s \
-	    --crosswalk data/vrs/crosswalk-$$s.toml \
-	    --mapping data/vrs/tvtms-$$s-to-eng.baseline.tsv \
-	    --tvtms-rev $(TVTMS_REV) $(ARGS) ; \
-	done
+vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS)
+	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme lxx \
+	  --crosswalk data/vrs/crosswalk-lxx.toml \
+	  --mapping data/vrs/tvtms-lxx-to-eng.derived.tsv \
+	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
+	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme vul \
+	  --crosswalk data/vrs/crosswalk-vul.toml \
+	  --mapping data/vrs/tvtms-vul-to-eng.derived.tsv \
+	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
 	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme rso \
 	  --crosswalk data/vrs/crosswalk-rso.toml \
 	  --mapping data/vrs/tvtms-rso-to-eng.derived.tsv \
@@ -113,7 +114,6 @@ vrs-map: ## Build cross-scheme verse maps (org + catm from the derived TVTMS map
 	  --compare-vrs org \
 	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
 
-TVTMS_REV ?= UNPINNED
 TVTMS_ORG_REV := 902681f77a4a2975b809555ff3c35ffe3c48a1d5
 
 versification: ## Fingerprint DBT versification schemes
@@ -201,7 +201,7 @@ publish-sofria-dry: ## Dry-run of publish-sofria (no writes)
 	DRY_RUN=1 SOURCE_DIR=$(SOFRIA_STAGE)/openbible bash $(CORE)/publish-openbible.sh
 	DRY_RUN=1 SOURCE_DIR=$(SOFRIA_STAGE)/audiobiblia bash $(CORE)/publish-audiobiblia.sh
 
-publish-vrs-maps: ## Upload export/_vrs/map/{org,catm,rso}-to-eng.json and verify live sha256
+publish-vrs-maps: ## Upload export/_vrs/map/{org,orgw,catm,rso,vul,lxx}-to-eng.json + multiverse files, verify live sha256
 	bash $(CORE)/publish-vrs-maps.sh
 
 publish-vrs-maps-dry: ## Dry-run the verse-map upload (no writes)

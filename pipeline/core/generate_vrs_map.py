@@ -201,7 +201,7 @@ def apply_crosswalk(book: str, c: int, v: str, cw: dict) -> tuple[str, str, int,
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mapping", type=Path,
-                    default=VRS_DIR / "tvtms-lxx-to-eng.baseline.tsv",
+                    default=VRS_DIR / "tvtms-lxx-to-eng.derived.tsv",
                     help="TSV: source_ref<TAB>standard_ref[<TAB>action] (default: "
                          "the pinned vendored TVTMS-derived baseline)")
     ap.add_argument("--crosswalk", type=Path, default=VRS_DIR / "crosswalk-lxx.toml")

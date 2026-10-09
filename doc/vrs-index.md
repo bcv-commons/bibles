@@ -16,13 +16,31 @@ docstring for the exact method.
   "schemes": [...],
   "sentinels": {...},
   "map_base": "...",
-  "maps": {...}
+  "maps": [...],
+  "assumed": {"helloao:GHT": "nt_only", "helloao:aaz_ubb": "no_psalm_evidence"},
+  "assumed_reasons": {"nt_only": "...", "no_psalm_evidence": "...", ...}
 }
 ```
 
 `l` maps `iso/abbr` (DBT) or `helloao:<id>`/`ebible:<id>` to a scheme name.
 Cross-reference against [`_vrs/map/<scheme>-to-eng.json`](vrs-maps.md) for
 the actual verse-level crosswalk once you know an edition's scheme.
+
+`assumed` (added 2026-10-09) lists the keys of `l` whose label is a default or rests
+on partial evidence, each with a reason explained in `assumed_reasons`:
+
+| Reason | Meaning |
+|---|---|
+| `nt_only` | New Testament only; labelled `eng`, Old Testament numbering unknown |
+| `no_psalm_evidence` | no Psalm probe data; labelled `eng` by default |
+| `ebible_direct` | eBible text not mirrored in helloAO; labelled `eng` by default |
+| `tiebreaker_unconfirmed` | family known from the Psalms, deciding chapter (MAL 4, HAG 1) not confirmed |
+| `book_order_only` | `rso` from Byzantine book order alone |
+
+Every label not in `assumed` is backed by probe evidence. Treat an assumed label as
+"not checked": prefer the text's own verse numbers, and say so. On 2026-10-09 there
+were 994 assumed entries (889 `nt_only`, 98 `no_psalm_evidence`, 7 `ebible_direct`),
+all labelled `eng`.
 
 ## Coverage is partial, and that's stated honestly, not hidden
 
@@ -51,10 +69,20 @@ those chapters, the probe can't decide, and the label is one of two cases:
 
 - **No Psalm evidence at all** (the 98 editions with no PS117 data): the
   index labels these `eng`. This is a default, not a finding. Treat `eng`
-  as "not checked" for these editions.
+  as "not checked" for these editions; they're listed in `assumed` as
+  `no_psalm_evidence`.
 - **Psalm evidence exists but a tiebreaker is missing** (`ukr_npu`, the only
   such edition): the label is `undetermined`. The index used to write `eng`
   here, which contradicted the Psalm evidence. Fixed 2026-10-06.
 
 If the index says `undetermined`, a client should use the verse numbers the
 text gives and state that no scheme was determined. Don't assume a scheme.
+
+## Rebuilds are reproducible without `--fetch` (fixed 2026-10-09)
+
+A probe that DBT answers with "no such chapter" (404, or no verse text) is now cached
+as a `.absent` marker next to the probe files, not just left uncached. Before this, a
+rebuild without `--fetch` lost 7 correct `org` labels (`bul/BULCBV` and six others):
+their catalog lists a 4th Malachi chapter, DBT confirmed it doesn't exist (so `org`,
+not `orgw`), but only positive results were cached. A network error or a 403 is never
+recorded as absent.
