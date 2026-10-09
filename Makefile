@@ -7,7 +7,7 @@ CORE := pipeline/core
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
-        publish-vrs-maps publish-vrs-maps-dry vrs-check \
+        publish-vrs-maps publish-vrs-maps-dry publish-vrs-index publish-vrs-index-dry vrs-check \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
@@ -83,7 +83,8 @@ dbt-metadata: ## Generate media.json + per-book timing + versification for CDN
 vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
 
-vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS)
+vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS) + nt-variants.json
+	$(PYTHON) $(CORE)/generate_nt_variants.py
 	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme lxx \
 	  --crosswalk data/vrs/crosswalk-lxx.toml \
 	  --mapping data/vrs/tvtms-lxx-to-eng.derived.tsv \
@@ -203,6 +204,12 @@ retire-verse-json: ## Delete verse-json chapters from the CDN (needs CONFIRM=del
 publish-sofria-dry: ## Dry-run of publish-sofria (no writes)
 	DRY_RUN=1 SOURCE_DIR=$(SOFRIA_STAGE)/openbible bash $(CORE)/publish-openbible.sh
 	DRY_RUN=1 SOURCE_DIR=$(SOFRIA_STAGE)/audiobiblia bash $(CORE)/publish-audiobiblia.sh
+
+publish-vrs-index: ## Upload only dbt/_vrs/index.json + irregular.json, verify live sha256
+	$(PYTHON) $(CORE)/publish_vrs_index.py
+
+publish-vrs-index-dry: ## Dry-run of publish-vrs-index
+	$(PYTHON) $(CORE)/publish_vrs_index.py --dry-run
 
 publish-vrs-maps: ## Upload export/_vrs/map/{org,orgw,catm,rso,vul,lxx}-to-eng.json + multiverse files, verify live sha256
 	bash $(CORE)/publish-vrs-maps.sh

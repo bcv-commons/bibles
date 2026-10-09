@@ -22,7 +22,8 @@ docstring for the exact method.
 }
 ```
 
-`l` maps `iso/abbr` (DBT) or `helloao:<id>`/`ebible:<id>` to a scheme name.
+`l` maps `iso/abbr` (DBT), `helloao:<id>`/`ebible:<id>` or `pkf:<collection id>`
+(e.g. `pkf:aai_C01`, the `.pkf` file name without its hash) to a scheme name.
 Cross-reference against [`_vrs/map/<scheme>-to-eng.json`](vrs-maps.md) for
 the actual verse-level crosswalk once you know an edition's scheme.
 
@@ -36,11 +37,64 @@ on partial evidence, each with a reason explained in `assumed_reasons`:
 | `ebible_direct` | eBible text not mirrored in helloAO; labelled `eng` by default |
 | `tiebreaker_unconfirmed` | family known from the Psalms, deciding chapter (MAL 4, HAG 1) not confirmed |
 | `book_order_only` | `rso` from Byzantine book order alone |
+| `near_match` | PKF custom `.vrs` within 5 chapters of the scheme; the differing chapters are in `irregular.json` |
 
 Every label not in `assumed` is backed by probe evidence. Treat an assumed label as
 "not checked": prefer the text's own verse numbers, and say so. On 2026-10-09 there
 were 994 assumed entries (889 `nt_only`, 98 `no_psalm_evidence`, 7 `ebible_direct`),
 all labelled `eng`.
+
+## New Testament: `nt` and `nt-variants.json` (added 2026-10-09)
+
+`l` describes the Old Testament and, unless the key has an `nt` entry, the New Testament
+too. New Testament numbering varies on its own, so an edition can have an `nt` entry:
+
+```json
+"nt": { "pkf:abx_C01": { "variants": ["3JN1-14", "REV12-17"], "profile": "kjv" },
+        "pkf:xyz_C01": { "variants": ["2CO13-13"], "unexplained": ["1CO 5"] } },
+"nt_variants": "nt-variants.json"
+```
+
+- `variants`: the New Testament numbering variants the edition follows, named
+  `<BOOK><chapter>-<last verse>`. They're the renumbering tests TVTMS defines (e.g.
+  Revelation 12 ending at 17 instead of 18), each mapped to `eng.vrs` in
+  `map_base` + `nt_variants` (`_vrs/map/nt-variants.json`).
+- `profile`: a name for a common set of variants, listed in that file's `profiles`. The
+  same thing as the variants, for grouping:
+
+  | Profile | Variants | Editions (2026-10-09) |
+  |---|---|---|
+  | `niv` | `REV12-17` (12:18 starts 13:1) | 346 |
+  | `nrsv` | `2CO13-13` | 293 |
+  | `kjv` | `3JN1-14`, `REV12-17` | 128 |
+  | `esv` | `REV12-17esv` (12:18's text ends 12:17) | 39 |
+  | `greek` | `2CO13-13`, `ACT19-40` (NA/UBS) | 28 |
+
+  The other 298 entries have a variant list without a profile, most often with
+  `JHN7-52` (John 7:53 absent or merged into 8:1), which is a missing passage rather
+  than a numbering tradition.
+- `unexplained`: chapters whose length matches no scheme and no variant, usually text
+  missing from that edition. Information only: number them as `eng` does.
+
+Client rule: for a key with an `nt` entry, take New Testament rows from its variants
+(identity elsewhere) and ignore the New Testament rows of the `l` scheme's map. For a key
+without one, use the `l` map for both testaments, as before.
+
+How it's found: for PKF collections, from their `.vrs` files (every chapter); for DBT and
+helloAO editions, by probing the last verse of the 15 chapters TVTMS tests
+(`pipeline/core/nt_probes.py`). Revelation 12 with 17 verses is told apart (KJV/NIV vs
+ESV) by the lengths of 12:17 and 13:1. As of 2026-10-09, 1,132 editions have an `nt`
+entry: 743 helloAO, 253 PKF, 136 DBT. Chapters outside the 15 tested ones aren't probed
+for DBT and helloAO, so their `unexplained` lists are from those chapters only.
+
+## PKF collections (added 2026-10-09)
+
+A PKF collection is labelled from its manifest's declared `vrs`: a scheme name (`eng`,
+`org`, `rso`) as is, or a custom Paratext `.vrs` file (`pkf/_vrs/<hash>.vrs`) matched
+against our schemes, testament by testament. These files record what the translation
+contains, so a partly translated chapter is shorter; that alone doesn't count against a
+scheme (it's listed as unexplained in `irregular.json`). A file without an Old
+Testament is labelled from its New Testament and listed in `assumed` as `nt_only`.
 
 ## Coverage is partial, and that's stated honestly, not hidden
 

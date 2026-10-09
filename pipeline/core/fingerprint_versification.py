@@ -34,7 +34,8 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, EXPORT, TEXT_DIR  # noqa: E402
+from paths import API_CACHE, EXPORT, REPO_ROOT, TEXT_DIR  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 DETAILS_DIR = API_CACHE / "bibles" / "bible_details"
 DL_OT = TEXT_DIR / "BB" / "ot"
@@ -319,6 +320,8 @@ ASSUMED_REASONS = {
     "tiebreaker_unconfirmed": "family known from the Psalms, deciding chapter not "
                               "confirmed (org vs orgw: MAL 4; vul vs rso: HAG 1)",
     "book_order_only": "rso from Byzantine book order alone, no Psalm evidence",
+    "near_match": "PKF custom .vrs within a few chapters of this scheme; the differing "
+                  "chapters are in irregular.json",
 }
 
 
@@ -661,6 +664,37 @@ def main():
                 ASSUMED[f"ebible:{v.split(':', 1)[1]}"] = "ebible_direct"
     index.update(ebible_index)
 
+    # PKF collections (pkf:<collection id>): declared scheme or custom .vrs file, plus
+    # their New Testament variants (pkf_versification.py, nt-variants.json).
+    import pkf_versification as pv
+    import derive_tvtms_org_eng as tv
+    nt_index, pkf_diag = {}, {}
+    pkf_manifest = API_CACHE / "pkf-manifest.json"
+    nt_variants_file = EXPORT / "_vrs" / "map" / "nt-variants.json"
+    if pkf_manifest.is_file() and nt_variants_file.is_file():
+        schemes = {s: tv._shape(REPO_ROOT / "data" / "vrs" / f"{s}.vrs") for s in pv.SCHEMES}
+        pkf_labels, pkf_assumed, nt_index, pkf_diag = pv.classify_pkf(
+            json.loads(pkf_manifest.read_text())["languages"], schemes,
+            json.loads(nt_variants_file.read_text()), API_CACHE / "pkf-vrs")
+        # DBT and helloAO New Testaments, from the probe cache (nt_probes.py --fetch)
+        import nt_probes
+        from nt_versification import NtClassifier
+        probed = nt_probes.nt_entries(dict(index), NtClassifier(schemes, json.loads(nt_variants_file.read_text())))
+        nt_index.update(probed)
+        print(f"[v11n] DBT/helloAO: {len(probed)} with New Testament variants (from nt_probes.py's cache)")
+        index.update(pkf_labels)
+        ASSUMED.update(pkf_assumed)
+        print(f"[v11n] PKF: {len(pkf_labels)} collections {dict(Counter(pkf_labels.values()))}; "
+              f"{len(nt_index)} editions in all with New Testament variants")
+    else:
+        print("[v11n] PKF skipped: needs api-cache/pkf-manifest.json and _vrs/map/nt-variants.json (make vrs-map)")
+    if pkf_diag:
+        irr = EXPORT / "dbt" / "_vrs" / "irregular.json"
+        merged = json.loads(irr.read_text()) if irr.is_file() else {}
+        merged.update(pkf_diag)
+        irr.parent.mkdir(parents=True, exist_ok=True)
+        irr.write_text(json.dumps(merged, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     (OUT_DIR / "scan.json").write_text(
         json.dumps(records, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -696,6 +730,11 @@ def main():
         # (see `assumed_reasons`). Every other label is backed by probe evidence.
         "assumed": {k: ASSUMED[k] for k in sorted(ASSUMED) if k in index},
         "assumed_reasons": ASSUMED_REASONS,
+        # New Testament numbering that differs from what the key's `l` scheme's map assumes:
+        # {key: {variants, profile?, unexplained?}}. Take NT rows from those variants in
+        # map_base + nt_variants (identity elsewhere), not from the `l` map.
+        "nt_variants": "nt-variants.json",
+        "nt": dict(sorted(nt_index.items())),
     }
     (pub_dir / "index.json").write_text(
         json.dumps(pub, separators=(",", ":"), sort_keys=True), encoding="utf-8")
