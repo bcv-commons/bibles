@@ -643,6 +643,30 @@ def main():
         if needs:
             need_download.append(f["abbr"])
 
+    # DBT New-Testament-only editions with a text fileset: no Psalms to classify the Old
+    # Testament by, so `eng` as a default (assumed: nt_only), like helloAO's NT-only
+    # editions; their New Testament numbering comes from nt_probes.py. Audio-only
+    # editions have no text to probe and are left out.
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "comparison"))
+    from compare_all import dbt_candidates
+    catalog = json.loads((API_CACHE / "dbt-catalog.json").read_text())
+    nt_only_dbt = 0
+    for p in sorted(DETAILS_DIR.glob("*.json")):
+        try:
+            d = json.load(open(p))["data"]
+        except Exception:
+            continue
+        books = {b["book_id"] for b in d.get("books", [])}
+        iso, abbr = d.get("iso", ""), p.stem
+        key = f"{iso}/{abbr}"
+        if "PSA" in books or not books & _NTSET or key in index:
+            continue
+        if dbt_candidates(catalog, iso, "nt").get(abbr):
+            index[key] = "eng"
+            ASSUMED[key] = "nt_only"
+            nt_only_dbt += 1
+    print(f"[v11n] DBT New-Testament-only editions with text: {nt_only_dbt} (eng, assumed nt_only)")
+
     # Classify helloAO / eBible texts (preserve original scheme; cached)
     hao_index = classify_helloao(fetch)
     index.update(hao_index)

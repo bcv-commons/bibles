@@ -25,7 +25,7 @@
 //         | {"text": str, "poem": int}       // poetry indent -> \q1/\q2/...
 //         | {"text": str, "wordsOfJesus": true}
 //         | {"heading": str}                  // rare: inline heading mid-verse
-//         | {"lineBreak": true}               // rare: inline stanza break
+//         | {"lineBreak": true}               // end of a line (between poetry lines)
 //         | {"noteId": int}                   // footnote reference
 //     ]}
 //   chapter.footnotes[]:
@@ -112,11 +112,29 @@ function flushPara(topContent, state) {
   state.paraMarker = null;
 }
 
-function ensurePara(topContent, state, marker) {
-  if (state.paraMarker === marker) return state.para;
+// An inline {"lineBreak": true} ends the current line, nothing more: helloAO puts one
+// between every pair of poetry lines (BSB MAT 1:2, all of Psalms). Close the paragraph
+// so the next fragment opens a new one, even at the same poem level; a plain-string
+// fragment after it continues at that level. Only the top-level {"type": "line_break"}
+// is a blank line (\b).
+function endLine(topContent, state) {
+  const marker = state.paraMarker;
   flushPara(topContent, state);
-  state.para = { type: 'para', marker, content: [] };
-  state.paraMarker = marker;
+  state.lineMarker = marker;
+}
+
+function ensurePara(topContent, state, marker) {
+  if (state.paraMarker !== marker) {
+    flushPara(topContent, state);
+    state.para = { type: 'para', marker, content: [] };
+    state.paraMarker = marker;
+  }
+  // A verse's number goes into the paragraph its first content opens, so a verse that
+  // starts with poetry doesn't leave its number alone in a \p of its own.
+  if (state.pendingVerse) {
+    state.para.content.push(state.pendingVerse);
+    state.pendingVerse = null;
+  }
   return state.para;
 }
 
@@ -161,6 +179,7 @@ function appendHeading(topContent, state, marker, items, footnotesById) {
 
 function appendBlank(topContent, state) {
   flushPara(topContent, state);
+  state.lineMarker = null;
   topContent.push({ type: 'para', marker: 'b', content: [] });
 }
 
@@ -168,20 +187,20 @@ function walkVerseContent(item, topContent, state, footnotesById) {
   // Append one verse-content item into the currently-open paragraph
   // (opening/switching paragraphs as needed for poem-level changes).
   if (typeof item === 'string') {
-    const para = ensurePara(topContent, state, state.paraMarker || 'p');
+    const para = ensurePara(topContent, state, state.paraMarker || state.lineMarker || 'p');
     appendPiece(para.content, item);
     return;
   }
   if (!item || typeof item !== 'object') return;
 
   if ('noteId' in item) {
-    const para = ensurePara(topContent, state, state.paraMarker || 'p');
+    const para = ensurePara(topContent, state, state.paraMarker || state.lineMarker || 'p');
     const note = resolveNote(footnotesById, item.noteId);
     if (note) para.content.push(note);
     return;
   }
   if ('lineBreak' in item) {
-    appendBlank(topContent, state);
+    endLine(topContent, state);
     return;
   }
   if ('heading' in item) {
@@ -190,7 +209,7 @@ function walkVerseContent(item, topContent, state, footnotesById) {
   }
   if ('text' in item) {
     const poem = item.poem;
-    const marker = poem ? (POEM_MARKER[poem] || 'p') : (state.paraMarker || 'p');
+    const marker = poem ? (POEM_MARKER[poem] || 'p') : (state.paraMarker || state.lineMarker || 'p');
     const para = ensurePara(topContent, state, marker);
     const text = item.text;
     if (item.wordsOfJesus) {
@@ -215,7 +234,7 @@ export function chapterToUsj(chapterJson, bookCode) {
     { type: 'book', marker: 'id', code: bookCode, content: [] },
     { type: 'chapter', marker: 'c', number: String(chapter.number) },
   ];
-  const state = { para: null, paraMarker: null };
+  const state = { para: null, paraMarker: null, lineMarker: null, pendingVerse: null };
 
   for (const item of chapter.content || []) {
     const kind = item && typeof item === 'object' ? item.type : null;
@@ -226,11 +245,11 @@ export function chapterToUsj(chapterJson, bookCode) {
     } else if (kind === 'line_break') {
       appendBlank(topContent, state);
     } else if (kind === 'verse') {
-      const para = ensurePara(topContent, state, state.paraMarker || 'p');
-      para.content.push({ type: 'verse', marker: 'v', number: String(item.number) });
+      state.pendingVerse = { type: 'verse', marker: 'v', number: String(item.number) };
       for (const sub of item.content || []) {
         walkVerseContent(sub, topContent, state, footnotesById);
       }
+      if (state.pendingVerse) ensurePara(topContent, state, state.paraMarker || state.lineMarker || 'p'); // a verse with no content
     }
     // Any other/unknown top-level type is skipped, not guessed at.
   }

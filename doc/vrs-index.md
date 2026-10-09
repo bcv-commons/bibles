@@ -64,13 +64,13 @@ too. New Testament numbering varies on its own, so an edition can have an `nt` e
 
   | Profile | Variants | Editions (2026-10-09) |
   |---|---|---|
-  | `niv` | `REV12-17` (12:18 starts 13:1) | 346 |
-  | `nrsv` | `2CO13-13` | 293 |
-  | `kjv` | `3JN1-14`, `REV12-17` | 128 |
-  | `esv` | `REV12-17esv` (12:18's text ends 12:17) | 39 |
-  | `greek` | `2CO13-13`, `ACT19-40` (NA/UBS) | 28 |
+  | `nrsv` | `2CO13-13` | 603 |
+  | `niv` | `REV12-17` (12:18 starts 13:1) | 513 |
+  | `kjv` | `3JN1-14`, `REV12-17` | 172 |
+  | `greek` | `2CO13-13`, `ACT19-40` (NA/UBS) | 97 |
+  | `esv` | `REV12-17esv` (12:18's text ends 12:17) | 72 |
 
-  The other 298 entries have a variant list without a profile, most often with
+  The other 446 entries have a variant list without a profile, most often with
   `JHN7-52` (John 7:53 absent or merged into 8:1), which is a missing passage rather
   than a numbering tradition.
 - `unexplained`: chapters whose length matches no scheme and no variant, usually text
@@ -83,9 +83,18 @@ without one, use the `l` map for both testaments, as before.
 How it's found: for PKF collections, from their `.vrs` files (every chapter); for DBT and
 helloAO editions, by probing the last verse of the 15 chapters TVTMS tests
 (`pipeline/core/nt_probes.py`). Revelation 12 with 17 verses is told apart (KJV/NIV vs
-ESV) by the lengths of 12:17 and 13:1. As of 2026-10-09, 1,132 editions have an `nt`
-entry: 743 helloAO, 253 PKF, 136 DBT. Chapters outside the 15 tested ones aren't probed
+ESV) by the lengths of 12:17 and 13:1. As of 2026-10-09, 1,903 editions have an `nt`
+entry: 907 DBT, 743 helloAO, 253 PKF. An edition with fewer than 8 of the 15 tested
+chapters (a partial New Testament) gets none; 53 DBT editions couldn't be probed
+(44 refused with 403, 9 failing on a chapter). Chapters outside the 15 tested ones aren't probed
 for DBT and helloAO, so their `unexplained` lists are from those chapters only.
+
+## DBT New-Testament-only editions (added 2026-10-09)
+
+DBT editions without Psalms used to be left out of `l`. The 1,480 with a New Testament
+text fileset are now in, labelled `eng` and listed in `assumed` as `nt_only` (their Old
+Testament numbering is unknown), with an `nt` entry where their New Testament differs.
+Audio-only editions (no text to probe) are still left out.
 
 ## PKF collections (added 2026-10-09)
 

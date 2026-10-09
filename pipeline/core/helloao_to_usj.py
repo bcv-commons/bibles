@@ -19,7 +19,7 @@ from docs alone):
         | {"text": str, "poem": int}       # poetry indent level -> \\q1/\\q2/...
         | {"text": str, "wordsOfJesus": true}
         | {"heading": str}                  # rare: inline heading mid-verse
-        | {"lineBreak": true}               # rare: inline stanza break mid-verse
+        | {"lineBreak": true}               # end of a line (between poetry lines)
         | {"noteId": int}                   # footnote reference, see below
     ]}
   chapter.footnotes[]:
@@ -28,9 +28,16 @@ from docs alone):
 Mapping decisions:
   - "heading"/"hebrew_subtitle" -> top-level USJ para (marker "s1"/"d") —
     matches real USFM section-heading/descriptive-title conventions.
-  - "line_break" (top-level or inline) -> a "b" (blank line) para, closing
-    whatever paragraph was open — real USFM's own blank-line marker, the
-    closest real equivalent to a stanza break.
+  - top-level "line_break" -> a "b" (blank line) para, closing whatever
+    paragraph was open — real USFM's own blank-line marker, the closest real
+    equivalent to a stanza break.
+  - inline {"lineBreak": true} -> the end of a line only: the open paragraph
+    is closed, so the next fragment opens a new one, even at the same poem
+    level (a plain-string fragment continues at that level). helloAO puts one
+    between every pair of poetry lines (BSB MAT 1:2, all of Psalms), so a
+    "b" here gave a blank line between every line (fixed 2026-10-09).
+  - a verse's number goes into the paragraph its first content opens, so a
+    verse starting with poetry doesn't leave its number alone in a "p".
   - "poem": N -> a "q1"/"q2"/... para (real USFM poetry indent markers).
     Tracked as ongoing STATE across verses (a poem level begun in one
     verse continues until the level changes or a heading/line_break
@@ -144,12 +151,24 @@ def _flush_para(top_content, state):
 
 
 def _ensure_para(top_content, state, marker):
-    if state["para_marker"] == marker:
-        return state["para"]
-    _flush_para(top_content, state)
-    state["para"] = {"type": "para", "marker": marker, "content": []}
-    state["para_marker"] = marker
+    if state["para_marker"] != marker:
+        _flush_para(top_content, state)
+        state["para"] = {"type": "para", "marker": marker, "content": []}
+        state["para_marker"] = marker
+    if state["pending_verse"] is not None:
+        state["para"]["content"].append(state["pending_verse"])
+        state["pending_verse"] = None
     return state["para"]
+
+
+def _end_line(top_content, state):
+    marker = state["para_marker"]
+    _flush_para(top_content, state)
+    state["line_marker"] = marker
+
+
+def _current_marker(state):
+    return state["para_marker"] or state["line_marker"] or "p"
 
 
 def _append_heading(top_content, state, marker, items, footnotes_by_id):
@@ -176,6 +195,7 @@ def _append_heading(top_content, state, marker, items, footnotes_by_id):
 
 def _append_blank(top_content, state):
     _flush_para(top_content, state)
+    state["line_marker"] = None
     top_content.append({"type": "para", "marker": "b", "content": []})
 
 
@@ -206,7 +226,7 @@ def _walk_verse_content(item, top_content, state, footnotes_by_id):
     """Append one verse-content item into the currently-open paragraph
     (opening/switching paragraphs as needed for poem-level changes)."""
     if isinstance(item, str):
-        para = _ensure_para(top_content, state, state["para_marker"] or "p")
+        para = _ensure_para(top_content, state, _current_marker(state))
         _append_piece(para["content"], item)
         return
 
@@ -214,14 +234,14 @@ def _walk_verse_content(item, top_content, state, footnotes_by_id):
         return
 
     if "noteId" in item:
-        para = _ensure_para(top_content, state, state["para_marker"] or "p")
+        para = _ensure_para(top_content, state, _current_marker(state))
         note = _resolve_note(footnotes_by_id, item["noteId"])
         if note is not None:
             para["content"].append(note)
         return
 
     if "lineBreak" in item:
-        _append_blank(top_content, state)
+        _end_line(top_content, state)
         return
 
     if "heading" in item:
@@ -230,7 +250,7 @@ def _walk_verse_content(item, top_content, state, footnotes_by_id):
 
     if "text" in item:
         poem = item.get("poem")
-        marker = _POEM_MARKER.get(poem, "p") if poem else (state["para_marker"] or "p")
+        marker = _POEM_MARKER.get(poem, "p") if poem else _current_marker(state)
         para = _ensure_para(top_content, state, marker)
         text = item["text"]
         if item.get("wordsOfJesus"):
@@ -252,7 +272,7 @@ def chapter_to_usj(chapter_json: dict, book_code: str) -> dict:
         {"type": "book", "marker": "id", "code": book_code, "content": []},
         {"type": "chapter", "marker": "c", "number": str(chapter["number"])},
     ]
-    state = {"para": None, "para_marker": None}
+    state = {"para": None, "para_marker": None, "line_marker": None, "pending_verse": None}
 
     for item in chapter.get("content", []):
         kind = item.get("type") if isinstance(item, dict) else None
@@ -263,10 +283,11 @@ def chapter_to_usj(chapter_json: dict, book_code: str) -> dict:
         elif kind == "line_break":
             _append_blank(top_content, state)
         elif kind == "verse":
-            para = _ensure_para(top_content, state, state["para_marker"] or "p")
-            para["content"].append({"type": "verse", "marker": "v", "number": str(item["number"])})
+            state["pending_verse"] = {"type": "verse", "marker": "v", "number": str(item["number"])}
             for sub in item.get("content", []):
                 _walk_verse_content(sub, top_content, state, footnotes_by_id)
+            if state["pending_verse"] is not None:  # a verse with no content
+                _ensure_para(top_content, state, _current_marker(state))
         # Any other/unknown top-level type is skipped, not guessed at —
         # none found in real samples checked so far (heading,
         # hebrew_subtitle, line_break, verse are the only 4 real
