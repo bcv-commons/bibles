@@ -11,7 +11,7 @@ derive from a source catalog (sha256 of their fetched file, their own ingested b
 count) are theirs alone, not something a catalog merge can ever give us anyway.
 
 So this reads metadata we already cache locally — no live network calls — and merges
-it with textual_basis.py's own output (pipeline/comparison/textual_basis.py) where
+it with textual_basis.py's and psalm_titles.py's own output (pipeline/comparison/) where
 available. id format matches catalog-overlap.json's own convention (d:/h:/p:/o:
 prefix), not lexeme-aligner's lowercase "tag" — one less naming scheme to carry.
 
@@ -34,6 +34,8 @@ OPENBIBLE_TEXT_CACHE = API_CACHE / "openbible" / "text"
 # Internal build artifact, not published on its own — see its own module
 # docstring in textual_basis.py for why. We just fold its verdict in here.
 TEXTUAL_BASIS_FILE = COMPARISON_RESULTS_DIR / "textual-basis.json"
+# Same for psalm_titles.py: how the edition presents psalm titles (for lexeme-aligner).
+PSALM_TITLES_FILE = COMPARISON_RESULTS_DIR / "psalm-titles.json"
 
 
 def _load_json(path: Path) -> dict:
@@ -93,38 +95,42 @@ def main() -> None:
     openbible_abbr = (json.loads(OPENBIBLE_EDITIONS_FILE.read_text())["entries"]
                       if OPENBIBLE_EDITIONS_FILE.exists() else {})
     textual_basis = _load_json(TEXTUAL_BASIS_FILE).get("editions", {})
+    psalm_titles = _load_json(PSALM_TITLES_FILE).get("editions", {})
 
     editions: dict[str, dict] = {}
+
+    def add(edition_id: str, record: dict, scan_key: str) -> None:
+        tb = textual_basis.get(scan_key)
+        if tb:
+            record["textual_basis"] = tb["verdict"]
+        pt = psalm_titles.get(scan_key)
+        if pt:
+            record["psalm_titles"] = pt["psalm_titles"]
+            record["psalm_titles_basis"] = pt["basis"]
+        editions[edition_id] = record
+
     for canon in ("nt", "ot"):
         candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon)
         for iso, (dbt_ids, hao_ids, pkf_files, ob_ids) in candidates.items():
             for distinct_id in dbt_ids:
-                editions[f"d:{distinct_id}"] = dbt_record(distinct_id, iso)
-                tb = textual_basis.get(f"{iso}:dbt:{distinct_id}")
-                if tb:
-                    editions[f"d:{distinct_id}"]["textual_basis"] = tb["verdict"]
+                add(f"d:{distinct_id}", dbt_record(distinct_id, iso), f"{iso}:dbt:{distinct_id}")
             for hid in hao_ids:
-                editions[f"h:{hid}"] = helloao_record(hid, iso, helloao_translations)
-                tb = textual_basis.get(f"{iso}:helloao:{hid}")
-                if tb:
-                    editions[f"h:{hid}"]["textual_basis"] = tb["verdict"]
+                add(f"h:{hid}", helloao_record(hid, iso, helloao_translations), f"{iso}:helloao:{hid}")
             if pkf_files:
-                editions[f"p:{iso.upper()}PKF"] = pkf_record(iso, pkf_manifest)
-                tb = textual_basis.get(f"{iso}:pkf:{iso.upper()}PKF")
-                if tb:
-                    editions[f"p:{iso.upper()}PKF"]["textual_basis"] = tb["verdict"]
+                add(f"p:{iso.upper()}PKF", pkf_record(iso, pkf_manifest), f"{iso}:pkf:{iso.upper()}PKF")
             for project_id, abbr in ob_ids:
-                editions[f"o:{abbr}"] = openbible_record(project_id, abbr, iso)
-                tb = textual_basis.get(f"{iso}:openbible:{abbr}")
-                if tb:
-                    editions[f"o:{abbr}"]["textual_basis"] = tb["verdict"]
+                add(f"o:{abbr}", openbible_record(project_id, abbr, iso), f"{iso}:openbible:{abbr}")
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps({
         "note": "iso/name/license/script merged from our own cached source catalogs (DBT bible_details, "
                 "helloAO available_translations, PKF manifest, openbible project cache) — no live fetch. "
                 "textual_basis (when present) comes from pipeline/comparison/textual_basis.py's own scan, "
-                "not every edition has one yet.",
+                "not every edition has one yet. psalm_titles (when present) comes from psalm_titles.py: "
+                "numbered (the title is counted as a verse), mixed (numbered in one probe psalm, not the other), heading (a title marker before verse 1, "
+                "not counted), note (the title is only a footnote), unmarked (no marker: inline in verse 1 "
+                "or left out). psalm_titles_basis is 'markup' or 'verse-count' (DBT plain text has no "
+                "heading markup, so it can only show numbered or unmarked).",
         "editions": dict(sorted(editions.items())),
     }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"[edition-struct] {len(editions)} editions -> {OUT_PATH}")

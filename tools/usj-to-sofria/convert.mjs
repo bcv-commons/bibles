@@ -9,7 +9,10 @@
 // ever needed) reuses this one converter rather than each re-deriving
 // Sofria independently.
 //
-// Usage: node convert.mjs <usj-file> <out-dir> [--book-level-too]
+// Usage: node convert.mjs <usj-file> <out-dir> [--book-level-too] [--usfm <usfm-file>]
+//   --usfm: the book's original USFM. proskomma-core can't import USJ tables, so a
+//   book with a table is converted from this instead (tables kept). Without it, the
+//   tables are stripped and the run says so (TABLE-STRIPPED).
 //   Writes <out-dir>/<N>.json for each chapter number found in the USJ
 //   (matching cdn.bibel.wiki/dbt/<iso>/timing/<BOOK>.json's own per-book-dir,
 //   per-chapter-file convention). With --book-level-too also writes
@@ -33,22 +36,25 @@ class BiblesPk extends Proskomma {
   }
 }
 
-// proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
-// into node text. Remove it from the output; the wrapper itself is kept (red letter
-// is preserved as a usfm:wj wrapper).
-// A USFM \fig inside verse text becomes a Sofria graft, and proskomma then nests the
-// verses that follow it inside that graft (the decoder skips grafts, so they vanish).
-// Splitting the paragraph at each figure keeps the figure as its own graft block and
-// leaves the following verses in verse text.
 function splitFigures(content) {
+  // proskomma-core nests everything after an inline \fig inside the figure's graft.
+  // Each figure goes in a paragraph of its own, split out of its host paragraph.
+  // A figure inside the introduction is moved to the end of the introduction:
+  // there, proskomma nests the following intro paragraphs into it even when the
+  // figure has a paragraph of its own.
   const out = [];
+  let introFigs = [];
+  const isIntro = (n) => n && n.type === 'para' && /^i/.test(n.marker || '');
+  const flushIntro = () => { out.push(...introFigs); introFigs = []; };
   for (const node of content) {
+    if (!isIntro(node) && introFigs.length) flushIntro();
     if (node && node.type === 'para' && (node.content || []).some(c => c && c.type === 'figure')) {
       let cur = { ...node, content: [] };
       for (const c of node.content) {
         if (c && c.type === 'figure') {
           if (cur.content.length) out.push(cur);
-          out.push(c);
+          const own = { ...node, content: [c] };
+          if (isIntro(node)) introFigs.push(own); else out.push(own);
           cur = { ...node, content: [] };
         } else {
           cur.content.push(c);
@@ -59,9 +65,13 @@ function splitFigures(content) {
       out.push(node);
     }
   }
+  flushIntro();
   return out;
 }
 
+// proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
+// into node text. Remove it from the output; the wrapper itself is kept (red letter
+// is preserved as a usfm:wj wrapper).
 const STRAY_MARKER = /\| marker="[^"]*"/g;
 function stripWjLeak(json) {
   const walk = (x) => {
@@ -86,10 +96,11 @@ function collectChapterNumbers(usj) {
 function main() {
   const [, , usjPath, outDir, ...rest] = process.argv;
   if (!usjPath || !outDir) {
-    console.error('usage: node convert.mjs <usj-file> <out-dir> [--book-level-too]');
+    console.error('usage: node convert.mjs <usj-file> <out-dir> [--book-level-too] [--usfm <usfm-file>]');
     process.exit(2);
   }
   const bookLevelToo = rest.includes('--book-level-too');
+  const usfmPath = rest.includes('--usfm') ? rest[rest.indexOf('--usfm') + 1] : null;
 
   let usjText = readFileSync(usjPath, 'utf-8');
   let usj = JSON.parse(usjText);
@@ -104,16 +115,20 @@ function main() {
     doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usj', usjText);
   } catch (e) {
     if (!/table/i.test(e.message)) throw e;
-    // Real proskomma-core@0.11.3 has no USJ "table" handler — import
-    // fails the WHOLE document, not just the table (see
-    // strip_tables.mjs). Confirmed safe to strip: these tables carry no
-    // verse content of their own.
-    const stripped = stripTables(usj);
-    usj = stripped.usj;
-    usjText = JSON.stringify(usj);
+    // proskomma-core@0.11.3 has no USJ "table" handler: the import fails the whole
+    // book. Its USFM importer handles tables, so use the original USFM when given.
     pk = new BiblesPk();
-    doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usj', usjText);
-    console.log(`TABLE-STRIPPED tables=${stripped.tablesRemoved}`);
+    if (usfmPath) {
+      doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usfm', readFileSync(usfmPath, 'utf-8'));
+      console.log('TABLE-VIA-USFM');
+    } else {
+      // Last resort only: strip the tables and keep the rest of the book.
+      const stripped = stripTables(usj);
+      usj = stripped.usj;
+      usjText = JSON.stringify(usj);
+      doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usj', usjText);
+      console.log(`TABLE-STRIPPED (no --usfm given: tables lost) tables=${stripped.tablesRemoved}`);
+    }
   }
 
   mkdirSync(outDir, { recursive: true });

@@ -6,28 +6,39 @@
 // mirrors its relative path (minus .json) as a directory under
 // <sofria-out-dir> and writes one Sofria file per chapter into it.
 //
-// Usage: node convert_batch.mjs <usj-dir> <sofria-out-dir>
+// Usage: node convert_batch.mjs <usj-dir> <sofria-out-dir> [--usfm-dir <dir>]
+//
+// --usfm-dir: the books' original USFM, at the same relative paths as the USJ
+// (<rel>.usfm). proskomma-core's USJ importer can't handle tables at all, but its
+// USFM importer can, so a book with a table is converted from its USFM. Without it,
+// such a book's tables are stripped (logged as TABLE-STRIPPED, tables lost).
 import { Proskomma } from 'proskomma-core';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { sofriaForChapterViaWholeBook } from './whole_book_fallback.mjs';
 import { stripTables } from './strip_tables.mjs';
 
 // proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
 // into node text. Remove it; wrappers are kept (see convert.mjs).
-// A USFM \fig inside verse text becomes a Sofria graft, and proskomma then nests the
-// verses that follow it inside that graft (the decoder skips grafts, so they vanish).
-// Splitting the paragraph at each figure keeps the figure as its own graft block and
-// leaves the following verses in verse text.
 function splitFigures(content) {
+  // proskomma-core nests everything after an inline \fig inside the figure's graft.
+  // Each figure goes in a paragraph of its own, split out of its host paragraph.
+  // A figure inside the introduction is moved to the end of the introduction:
+  // there, proskomma nests the following intro paragraphs into it even when the
+  // figure has a paragraph of its own.
   const out = [];
+  let introFigs = [];
+  const isIntro = (n) => n && n.type === 'para' && /^i/.test(n.marker || '');
+  const flushIntro = () => { out.push(...introFigs); introFigs = []; };
   for (const node of content) {
+    if (!isIntro(node) && introFigs.length) flushIntro();
     if (node && node.type === 'para' && (node.content || []).some(c => c && c.type === 'figure')) {
       let cur = { ...node, content: [] };
       for (const c of node.content) {
         if (c && c.type === 'figure') {
           if (cur.content.length) out.push(cur);
-          out.push(c);
+          const own = { ...node, content: [c] };
+          if (isIntro(node)) introFigs.push(own); else out.push(own);
           cur = { ...node, content: [] };
         } else {
           cur.content.push(c);
@@ -38,6 +49,7 @@ function splitFigures(content) {
       out.push(node);
     }
   }
+  flushIntro();
   return out;
 }
 
@@ -89,9 +101,9 @@ function collectChapterNumbers(usj) {
 
 // Converts one book. Returns { chapterJson: Map<chNum, sofriaJsonString> }.
 // Throws on a genuine, unrecoverable failure.
-function convertBook(usjText, usj, abbrKey) {
+function convertBook(usjText, usj, abbrKey, format = 'usj') {
   const pk = new BiblesPk();
-  const doc = pk.importDocument({ lang: 'xx', abbr: abbrKey }, 'usj', usjText);
+  const doc = pk.importDocument({ lang: 'xx', abbr: abbrKey }, format, usjText);
   const chapterNumbers = collectChapterNumbers(usj);
 
   const chapterJson = new Map();
@@ -114,9 +126,12 @@ function convertBook(usjText, usj, abbrKey) {
 }
 
 function main() {
-  const [, , usjDir, sofriaOutDir] = process.argv;
+  const args = process.argv.slice(2);
+  const usfmAt = args.indexOf('--usfm-dir');
+  const usfmDir = usfmAt !== -1 ? args.splice(usfmAt, 2)[1] : null;
+  const [usjDir, sofriaOutDir] = args;
   if (!usjDir || !sofriaOutDir) {
-    console.error('usage: node convert_batch.mjs <usj-dir> <sofria-out-dir>');
+    console.error('usage: node convert_batch.mjs <usj-dir> <sofria-out-dir> [--usfm-dir <dir>]');
     process.exit(2);
   }
 
@@ -146,20 +161,30 @@ function main() {
       result = convertBook(usjText, usj, abbrKey);
     } catch (e) {
       if (/table/i.test(e.message)) {
-        // Real proskomma-core@0.11.3 has no USJ "table" handler at all —
-        // import fails the WHOLE document, not just the table (see
-        // strip_tables.mjs). Confirmed safe: these tables carry no verse
-        // content of their own, so stripping them recovers every other
-        // real verse in the book at the cost of just the table's own
-        // data, instead of losing the entire book's Sofria output.
-        const { usj: strippedUsj, tablesRemoved } = stripTables(usj);
-        try {
-          result = convertBook(JSON.stringify(strippedUsj), strippedUsj, abbrKey);
-          console.log('TABLE-STRIPPED', rel, bookCode, `tables=${tablesRemoved}`);
-        } catch (e2) {
-          console.log('SOFRIA-FAIL', rel, bookCode, e2.message);
-          booksFailed++;
-          continue;
+        // proskomma-core@0.11.3 has no USJ "table" handler: the import fails the whole
+        // book. Its USFM importer handles tables (\tr/\tc become Sofria rows), so use
+        // the book's original USFM when it is there.
+        const usfmPath = usfmDir ? join(usfmDir, `${rel}.usfm`) : null;
+        if (usfmPath && existsSync(usfmPath)) {
+          try {
+            result = convertBook(readFileSync(usfmPath, 'utf-8'), usj, abbrKey, 'usfm');
+            console.log('TABLE-VIA-USFM', rel, bookCode);
+          } catch (e2) {
+            console.log('SOFRIA-FAIL', rel, bookCode, `USFM import: ${e2.message}`);
+            booksFailed++;
+            continue;
+          }
+        } else {
+          // Last resort only: strip the tables and keep the rest of the book.
+          const { usj: strippedUsj, tablesRemoved } = stripTables(usj);
+          try {
+            result = convertBook(JSON.stringify(strippedUsj), strippedUsj, abbrKey);
+            console.log('TABLE-STRIPPED (no USFM source: tables lost)', rel, bookCode, `tables=${tablesRemoved}`);
+          } catch (e2) {
+            console.log('SOFRIA-FAIL', rel, bookCode, e2.message);
+            booksFailed++;
+            continue;
+          }
         }
       } else {
         console.log('SOFRIA-FAIL', rel, bookCode, e.message);

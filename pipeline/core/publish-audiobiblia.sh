@@ -27,7 +27,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 cd "$ROOT_DIR"
 
-SOURCE_DIR="export/audiobiblia"
+SOURCE_DIR="${SOURCE_DIR:-export/audiobiblia}"  # or the Sofria/USJ stage (stage_sofria_usj.py)
 CDN_PREFIX="audiobiblia"
 
 # ── Load credentials ──

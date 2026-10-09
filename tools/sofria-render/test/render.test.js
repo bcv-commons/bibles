@@ -76,6 +76,18 @@ test('introduction: inline by default, or returned separately; never dropped', (
     assert.match(sep.introduction, /Intro text/);
 });
 
+test('end titles (\\mte, \\imte) render as plain paragraphs; \\imte goes with the introduction', () => {
+    const d = doc(graft('end_title', para('imte', 'End of intro')), para('p', chapter(1, v(1), verses(1, 'x'))), graft('end_title', para('mte', 'End of book')));
+    const r = render(d);
+    assert.deepEqual(r.warnings, []);
+    assert.match(r.html, /<div class="imte">.*End of intro/s);
+    assert.match(r.html, /<div class="mte">.*End of book/s);
+    const sep = render(d, { introduction: 'separate' });
+    assert.match(sep.introduction, /End of intro/);
+    assert.doesNotMatch(sep.html, /End of intro/);
+    assert.match(sep.html, /End of book/);
+});
+
 test('remarks are kept, hidden by default', () => {
     const r = render(doc(graft('remark', para('rem', 'a comment'))));
     assert.match(r.html, /<div class="rem" hidden>.*a comment/);

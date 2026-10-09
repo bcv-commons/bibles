@@ -181,6 +181,13 @@ function renderBlockGraft(block, st, out, introOut) {
         renderBlocks(seq.blocks || [], 'introduction', st, parts, parts);
         const html = `<div class="introduction">${parts.join('\n')}</div>`;
         (st.o.introduction === 'separate' ? introOut : out).push(html);
+    } else if (kind === 'end_title') {
+        // \mte / \imte: plain paragraphs with their marker class, as SAB renders them.
+        // \imte ends the introduction, so it goes wherever the introduction goes.
+        const intro = (seq.blocks || []).every((b) => /^(usfm:)?imte/.test(b.subtype || ''));
+        const parts = [];
+        renderBlocks(seq.blocks || [], intro ? 'introduction' : 'end_title', st, parts, parts);
+        (intro && st.o.introduction === 'separate' ? introOut : out).push(...parts);
     } else if (kind === 'remark') {
         const parts = [];
         renderBlocks(seq.blocks || [], 'remark', st, parts, parts);

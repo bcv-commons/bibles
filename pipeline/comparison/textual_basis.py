@@ -15,7 +15,7 @@ No PKF text is retained, same verdict-only discipline the rest of this pipeline 
 
 Usage:
     python3 pipeline/comparison/textual_basis.py --iso ind,eng
-    python3 pipeline/comparison/textual_basis.py --scan           # every NT candidate
+    python3 pipeline/comparison/textual_basis.py --scan [--workers 8]   # every NT candidate
 """
 import json
 import re
@@ -23,7 +23,9 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from collections import defaultdict
 from pathlib import Path
 
@@ -46,6 +48,10 @@ from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
 # this is the slow, rarely-recomputed base; edition_struct.py's merge is the
 # cheap, frequently-recomputed one built on top of it.
 OUT_PATH = COMPARISON_RESULTS_DIR / "textual-basis.json"
+# Bumped when the input layer changes how verses are read; records made by an older
+# input layer are redone on the next run. 2: a verse missing from a chapter that was
+# read counts as absent, and merged ranges cover every verse in them (2026-10-08).
+INPUT_VERSION = 2
 
 # (book, chapter, verse, tr_only) — tr_only marks the four that separate TR from
 # Byzantine. Verbatim from lexeme-aligner's textual_basis.py.
@@ -61,6 +67,17 @@ _BRACKETED = re.compile(r"^\s*[\[\(【]")
 _VERSE_RE = re.compile(r"\\v\s+(\d+)(?:-(\d+))?\s*")
 
 
+def _lookup(by_verse: dict, verse: int) -> str | None:
+    """None only when the chapter itself could not be read. A verse missing from a
+    chapter that was read is checked and absent (""): critical-text editions such as
+    BSB or ESV leave out the verse number altogether rather than keeping it empty.
+    (Fixed 2026-10-08: returning None here counted those omissions as unchecked, so
+    such editions came out indeterminate and omissions never lowered the rate.)"""
+    if not by_verse:
+        return None
+    return by_verse.get(verse, "")
+
+
 def dbt_verse(fileset_id: str, book: str, chapter: int, verse: int, cache: dict) -> str | None:
     key = ("dbt", fileset_id, book, chapter)
     if key not in cache:
@@ -71,9 +88,11 @@ def dbt_verse(fileset_id: str, book: str, chapter: int, verse: int, cache: dict)
             for item in result["data"]:
                 vs = item.get("verse_start")
                 if vs is not None:
-                    by_verse[int(vs)] = item.get("verse_text", "")
+                    ve = item.get("verse_end") or vs
+                    for n in range(int(vs), int(ve) + 1):  # a merged range covers each verse
+                        by_verse[n] = item.get("verse_text", "")
         cache[key] = by_verse
-    return cache[key].get(verse)
+    return _lookup(cache[key], verse)
 
 
 def helloao_verse(translation_id: str, book: str, chapter: int, verse: int, cache: dict) -> str | None:
@@ -93,14 +112,13 @@ def helloao_verse(translation_id: str, book: str, chapter: int, verse: int, cach
         except (requests.RequestException, ValueError):
             pass
         cache[key] = by_verse
-    return cache[key].get(verse)
+    return _lookup(cache[key], verse)
 
 
 def _usfm_chapter_verses(text: str, chapter: int) -> dict[int, str]:
     """Verse number -> text, for one \\c block of raw USFM. A merged range
-    (`\\v 12-13`) is recorded under both numbers with the same text, matching
-    how the original textual_basis.py's single-verse lookup would see either
-    half as present."""
+    (`\\v 12-14`) is recorded under every number in it with the same text, so each
+    verse it covers is seen as present."""
     lines, in_chapter, buf = text.splitlines(), False, []
     for line in lines:
         if line.startswith("\\c "):
@@ -114,9 +132,8 @@ def _usfm_chapter_verses(text: str, chapter: int) -> dict[int, str]:
     i = 1
     while i + 2 < len(parts) + 1 and i < len(parts):
         vnum, vend, vtext = parts[i], parts[i + 1] if i + 1 < len(parts) else None, parts[i + 2] if i + 2 < len(parts) else ""
-        out[int(vnum)] = vtext.strip()
-        if vend:
-            out[int(vend)] = vtext.strip()
+        for n in range(int(vnum), int(vend or vnum) + 1):
+            out[n] = vtext.strip()
         i += 3
     return out
 
@@ -161,7 +178,7 @@ def pkf_verse(iso: str, pkf_file: str, book: str, chapter: int, verse: int,
     key = ("pkf", iso, pkf_file, book)
     if key not in cache:
         cache[key] = {"text": cache[coll_key].get(book), "chapters": {}}
-    return _chapter_from(cache[key], chapter).get(verse)
+    return _lookup(_chapter_from(cache[key], chapter), verse)
 
 
 def openbible_verse(project_id: str, book: str, chapter: int, verse: int, tmpdir: Path, cache: dict) -> str | None:
@@ -182,7 +199,7 @@ def openbible_verse(project_id: str, book: str, chapter: int, verse: int, tmpdir
                 except zipfile.BadZipFile:
                     pass
         cache[key] = {"text": book_text, "chapters": {}}
-    return _chapter_from(cache[key], chapter).get(verse)
+    return _lookup(_chapter_from(cache[key], chapter), verse)
 
 
 def classify(get_verse) -> dict:
@@ -294,6 +311,7 @@ def main() -> None:
     # so an interrupted run never loses everything done so far.
     doc = json.loads(OUT_PATH.read_text(encoding="utf-8")) if OUT_PATH.is_file() else {}
     editions: dict = doc.get("editions", {})
+    current = lambda k: editions[k].get("input") == INPUT_VERSION  # noqa: E731
 
     def expected_tags(iso: str) -> set[str]:
         dbt_ids, hao_ids, pkf_files, ob_ids = candidates[iso]
@@ -311,26 +329,40 @@ def main() -> None:
         }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     todo = [iso for iso in isos if iso in candidates
-            and not expected_tags(iso) <= {k[len(iso) + 1:] for k in editions if k.startswith(f"{iso}:")}]
+            and not expected_tags(iso) <= {k[len(iso) + 1:] for k in editions if k.startswith(f"{iso}:") and current(k)}]
     print(f"[textual-basis] {len(isos)} requested, {len(isos) - len(todo)} already fully done, "
           f"{len(todo)} to process this run")
 
     env, bucket = rclone_env()
     tmpdir = Path(tempfile.mkdtemp(prefix="textual_basis_"))
-    try:
-        for i, iso in enumerate(todo, 1):
-            have = {k[len(iso) + 1:] for k in editions if k.startswith(f"{iso}:")}
-            per_edition = classify_language(iso, catalog, helloao_by_iso, pkf_manifest,
-                                            openbible_by_iso, openbible_abbr, env, bucket, tmpdir, have)
+    workers = int(args[args.index("--workers") + 1]) if "--workers" in args else 8
+    lock = threading.Lock()
+    finished = 0
+
+    def one(iso: str) -> None:
+        nonlocal finished
+        with lock:
+            have = {k[len(iso) + 1:] for k in editions if k.startswith(f"{iso}:") and current(k)}
+        per_edition = classify_language(iso, catalog, helloao_by_iso, pkf_manifest,
+                                        openbible_by_iso, openbible_abbr, env, bucket, tmpdir, have)
+        with lock:
+            finished += 1
             for tag, r in per_edition.items():
-                editions[f"{iso}:{tag}"] = r
-                print(f"  [{i}/{len(todo)}] {iso}:{tag}: {r['verdict']} "
-                      f"(present={r['present']}/{r['checked']} tr_only={r['tr_only_present']}/{r['tr_only_checked']})")
-            if i % 10 == 0:
+                editions[f"{iso}:{tag}"] = {**r, "input": INPUT_VERSION}
+                print(f"  [{finished}/{len(todo)}] {iso}:{tag}: {r['verdict']} "
+                      f"(present={r['present']}/{r['checked']} tr_only={r['tr_only_present']}/{r['tr_only_checked']})",
+                      flush=True)
+            if finished % 10 == 0:
                 save()
+
+    # languages are independent and the time goes into waiting on the network
+    try:
+        with ThreadPoolExecutor(workers) as pool:
+            list(pool.map(one, todo))
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
-        save()
+        with lock:
+            save()
     print(f"[textual-basis] {len(editions)} editions recorded -> {OUT_PATH}")
 
 

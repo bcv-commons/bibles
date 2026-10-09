@@ -25,7 +25,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 cd "$ROOT_DIR"
 
-SOURCE_DIR="export/openbible"
+SOURCE_DIR="${SOURCE_DIR:-export/openbible}"  # or the Sofria/USJ stage (stage_sofria_usj.py)
 CDN_PREFIX="openbible"
 
 # ── Load credentials ──
@@ -71,7 +71,7 @@ echo "── Publishing $SOURCE_DIR -> ${REMOTE} (max-age=3600)..."
 rclone copy "$SOURCE_DIR" "$REMOTE" \
     --header-upload "Cache-Control: max-age=3600" \
     --no-traverse \
-    --transfers 32 \
+    --transfers "${TRANSFERS:-32}" \
     --checkers 16 \
     $DRY_FLAG \
     -v

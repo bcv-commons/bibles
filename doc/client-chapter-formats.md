@@ -1,24 +1,30 @@
 # Chapter text formats: what's available and how to use it
 
-Draft, 2026-10-06. This describes what is published today. Anything not yet
+Draft, updated 2026-10-08. This describes what is published today. Anything not yet
 published is listed under **Planned** and is not available.
 
 ## What is published today
 
 | Source | Format | Granularity | URL pattern |
 |---|---|---|---|
-| openbible (Biblica) | verse-json | chapter | `cdn.bibel.wiki/openbible/...` |
-| audiobiblia (BLL) | verse-json | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.json` |
-| openbible, audiobiblia | USJ | book | **not yet published** (the USJ trees exist locally) |
+| openbible (Biblica) | Sofria | chapter | `cdn.bibel.wiki/openbible/<iso>/<abbr>/<BOOK>/<chapter>.sofria.json` |
+| openbible (Biblica) | USJ | book | `cdn.bibel.wiki/openbible/<iso>/<abbr>/<BOOK>.usj.json` |
+| audiobiblia (BLL) | Sofria | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.sofria.json` |
+| audiobiblia (BLL) | USJ | book | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>.usj.json` |
+| openbible, audiobiblia | verse-json | chapter | `.../<BOOK>/<chapter>.json`. **Being replaced by Sofria**; it stays for now, so don't build anything new on it |
 | DBT `-json` filesets | Sofria | chapter | from the DBT API, `type=text_json`: the row's `path` field links to the Sofria document. Coverage varies; see below |
 
+**Sofria** is Proskomma's native format, one document per chapter. It keeps the full
+structure: headings, notes, poetry, tables, figures, red letter. Render it, or read its
+verse text, with `tools/sofria-render/` (below). The openbible and audiobiblia Sofria is
+converted from the books' USJ with `tools/usj-to-sofria/`. Every published chapter has
+been checked with the renderer: no text and no verse or chapter number is dropped.
+
+**USJ** is one file per book, in the USJ 3.0 format, as the source gave it. Use it when
+you want book-level content.
+
 **Verse-json** is one file per chapter: `{"book", "chapter", "verses": [{"verse", "text"}]}`.
-It needs no conversion.
-
-**USJ** is one file per book, in the USJ 3.0 format. Use it when you want book-level content. It is not yet published for openbible or audiobiblia; until it is, use the verse-json files.
-
-**Sofria** is Proskomma's native format, one document per chapter from DBT. It keeps the
-verse markers that decoders read.
+Sofria replaces it; `verseMap(extractEntries(doc))` gives the same per-verse text.
 
 ## DBT Sofria: coverage
 
@@ -32,8 +38,8 @@ So a 404 means the book is absent from that fileset, and a 403 means the key can
 
 ## Converting a book to Sofria locally
 
-If you hold a book in USJ and want per-chapter Sofria, convert it yourself. (USJ is not yet on the CDN, so this applies to USJ you already have.) This is a
-stopgap until sources publish Sofria directly.
+The openbible and audiobiblia Sofria is already published. For other USJ you hold, convert
+it yourself:
 
 ```
 cd tools/usj-to-sofria && npm install
@@ -42,7 +48,10 @@ node convert.mjs <book.usj.json> <out-dir>
 
 This writes `<out-dir>/<N>.json` for each chapter. Red-letter (`wj`) is kept as a Sofria
 `usfm:wj` wrapper, the same way word wrappers are kept. The converter removes a stray
-attribute string that proskomma-core writes into those wrappers.
+attribute string that proskomma-core writes into those wrappers, and gives each figure a
+paragraph of its own (proskomma-core otherwise nests the following text inside the
+figure). proskomma-core can't import USJ tables; `convert_batch.mjs --usfm-dir` converts
+such a book from its original USFM instead, which keeps the tables.
 
 Example, verified against the published BLL John:
 
