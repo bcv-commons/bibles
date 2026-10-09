@@ -765,6 +765,95 @@ def write_lxx(path: Path) -> None:
     print(f"[tvtms] lxx: {len(rows)} non-identity rows, report {report} -> {LXX_OUT.relative_to(REPO_ROOT)}")
 
 
+def section_multiverse(path: Path, label_of, src_shape: dict, single_sources: set,
+                       to_scheme=lambda ref: ref) -> tuple[list[dict], list[dict]]:
+    """Multi-verse relations from TVTMS's labelled sections: rows where the tradition
+    side and the English side have different verse counts (several verses into one,
+    or one into several), which a single-verse map can't hold.
+
+    label_of(chapter) -> the section label part to read for that source chapter
+    (e.g. "Latin"; for lxx, "Greek" or "Greek2"). Rows marking part of a verse
+    (`!a`, `!b`) are skipped: the matching whole-range row says the same. Published
+    when one side is a single verse and the other a range within one chapter; flagged
+    (not published) for range-to-range relations and for sources the single-verse map
+    already maps.
+    """
+    books = org_books()
+    eng = _shape(ENG_VRS)
+    accepted, flagged = [], []
+    for n, ln in enumerate(path.read_text(encoding="utf-8-sig").split("\n"), 1):
+        c = ln.split("\t")
+        if len(c) < 4:
+            continue
+        lab = c[0].strip()
+        if not lab or lab.startswith(("$", "#", "TEST", "BIBLES", "English")):
+            continue
+        src_raw, eng_raw, act = c[1].strip(), c[2].strip(), c[3].strip()
+        if "!" in src_raw or "!" in eng_raw or act.startswith(("Keep", "MergedPrev", "MergedFoll")):
+            continue
+        src, tgt = expand(src_raw, books), expand(eng_raw, books)
+        if not src or not tgt or len(src) == len(tgt):
+            continue
+        src, tgt = [to_scheme(norm(x)) for x in src], [norm(x) for x in tgt]
+        chapter = (src[0].split()[0], int(src[0].split()[1].split(":")[0]))
+        part = label_of(chapter)
+        if not part or not _has_part(lab, part) or src[0].split()[0] in NT_BOOKS:
+            continue
+        rec = {"tvtms_line": n, "tvtms_action": act, "source": src_raw, "english": eng_raw}
+        if not all(_valid(x, src_shape) for x in src) or not all(_valid_target(t, eng) for t in tgt):
+            flagged.append({**rec, "reason": "outside our shapes"})
+        elif len(src) > 1 and len(tgt) > 1:
+            flagged.append({**rec, "reason": "range-to-range (verse order differs; not expressed here)"})
+        elif any(x in single_sources for x in src):
+            flagged.append({**rec, "reason": "a source verse already has a single-verse row"})
+        else:
+            rng = lambda xs: xs[0] if len(xs) == 1 else f"{xs[0]}-{xs[-1].split(':')[1]}"  # noqa: E731
+            accepted.append({"s": rng(src), "t": rng(tgt), **rec})
+    # one relation per source range
+    seen, unique = set(), []
+    for r in accepted:
+        if r["s"] not in seen:
+            seen.add(r["s"])
+            unique.append(r)
+    return unique, flagged
+
+
+def write_section_multiverse(path: Path, scheme: str, rows: list, label_of, src_shape: dict,
+                             to_scheme=lambda ref: ref) -> None:
+    single_sources = {to_scheme(a) for a, _ in rows}
+    accepted, flagged = section_multiverse(path, label_of, src_shape, single_sources, to_scheme)
+    out = REPO_ROOT / "export" / "_vrs" / "map" / f"{scheme}-to-eng.multiverse.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({
+        "source_scheme": scheme,
+        "target_scheme": "eng",
+        "kind": "multi-verse relations (not in the single-verse map)",
+        "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
+        "attribution": "https://STEPBible.org",
+        "tvtms_rev": TVTMS_COMMIT,
+        "tvtms_sha256": TVTMS_SHA256,
+        "map": [{"s": r["s"], "t": r["t"]} for r in accepted],
+        "evidence": [{"s": r["s"], "t": r["t"], "tvtms_line": r["tvtms_line"],
+                      "tvtms_action": r["tvtms_action"]} for r in accepted],
+        "flagged_not_published": flagged,
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"[tvtms] {scheme} multi-verse: {len(accepted)} relations -> {out.relative_to(REPO_ROOT)}; flagged {len(flagged)}")
+
+
+def write_vul_lxx_multiverse(path: Path) -> None:
+    vul_rows, _ = derive_vul(path)
+    write_section_multiverse(path, "vul", vul_rows, lambda ch: "Latin", _shape(VUL_VRS))
+    lxx_rows, _ = derive_lxx(path)
+
+    def lxx_code(ref: str) -> str:
+        pos = _in_lxx(ref)
+        return f"{pos[0]} {pos[1]}:{pos[2]}" if pos else ref
+
+    def lxx_label(ch):  # ch is in lxx coordinates here; LXX_GREEK2_CHAPTERS uses TVTMS's
+        return "Greek2" if ch in LXX_GREEK2_CHAPTERS else "Greek"
+    write_section_multiverse(path, "lxx", lxx_rows, lxx_label, _shape(LXX_VRS), lxx_code)
+
+
 def main() -> None:
     path = fetch_pinned()
     if "--check" in sys.argv:
@@ -796,6 +885,7 @@ def main() -> None:
     write_rso(path)
     write_vul(path)
     write_lxx(path)
+    write_vul_lxx_multiverse(path)
     write_nt_fixes()
     print(f"[tvtms] derived {len(rows)} non-identity org->eng rows -> {OUT_TSV.relative_to(REPO_ROOT)}")
     print(f"[tvtms] skipped: {dict(skipped)}")

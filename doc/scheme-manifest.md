@@ -62,6 +62,7 @@ Old Testament only.
 
 - Shape: `_vrs/vul.vrs` `0b8f8ea8d07e5f3bf990434b070aa50e3870fde224c4d440daa142af6c40706b`
 - Map: `_vrs/map/vul-to-eng.json` `44025661ff5a6afbddac8559bc46ece29ddc661691a05f14ce0b94baa2e46dd7` (4,098 rows, 0 shape exceptions)
+- Multi-verse: `_vrs/map/vul-to-eng.multiverse.json` `dfa3c60a54fea2faf882e74df26f9fcdd8baf763a2d0600af91e8b0d540af451` (355 relations: several Vulgate verses in one English verse, e.g. SIR 1:17-20 → SIR 1:16, or one in several). They cover 340 of the 346 Vulgate verses that have no row in the single-verse map but whose own number is another row's target. 16 TVTMS relations are flagged in the file, not published (outside our shapes, or range-to-range).
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's Latin sections: Old Testament and deuterocanon, every source valid in `vul.vrs`, every target valid in `eng.vrs`, one-to-one (no source or target used twice).
 - Replaces the unpinned strongs-aligner baseline: all 2,845 of its rows are kept with the same target. Added: 1,253 rows, nearly all deuterocanon (SIR, DAN additions, TOB, JDT, WIS, BAR, 2MA).
 - Editions: helloAO `lat_clv`, `eng_dra`.
@@ -74,6 +75,7 @@ Old Testament only.
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's `Greek` sections, with its second Greek edition (`Greek2`) for MAL 3, JER 34 and 4MA 7, 8, 12, the chapters where it fits `lxx.vrs` better. Book codes are mapped by `data/vrs/crosswalk-lxx.toml` (DAN → DAG, NEH → EZR chapter + 10, 2CH 37 → MAN). Greek Esther comes from the hand-curated supplement `data/vrs/esg-lxx-to-eng.tsv`.
 - One-to-one: no source maps to two verses and no English verse is the target of two. Psalm titles are the one intended exception: a two-verse superscription maps both verses to the title (PSA 50:1 and 50:2 → PSA 51:title; the same for 52, 54 and 60), as in every map. The unpinned map it replaces had 141 and 191 of these (the collisions bcv-query found).
 - Compared with that map: 4,748 of its 5,109 rows are kept with the same target and none are added. Dropped: 202 collision rows, and 159 rows that are now identity, mostly renumberings from the second Greek edition in chapters where the first fits `lxx.vrs` better (DEU, JOB, HAG, SIR, TOB, WIS, HOS, 1ES, ZEC, EXO), plus 15 Prayer of Manasseh rows that mapped verses to themselves.
+- Multi-verse: `_vrs/map/lxx-to-eng.multiverse.json` `7035a06cb205bf8f4e621346e3949920999f1fdd3b828ccfc60e7e738f45e92d` (54 relations). Of the 118 Greek verses with no row whose own number is another row's target, they cover 32; 11 fall in passages whose verse order differs (range-to-range, not expressed), and 74 (JER 30/32, LEV 7, EXO 38-40, 1ES) have no TVTMS relation in the sections we read: still open.
 - Known gap: Esther 5:1-14 (Addition D, interleaved; varies by edition) has no rows.
 - Editions: helloAO `grc_bre`, `eng_boy`.
 - `lxx.vrs` has no New Testament.
