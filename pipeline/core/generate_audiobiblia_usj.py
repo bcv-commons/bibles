@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generate export/audiobiblia/<iso>/<edition>/<book>/<chapter>.json (real
-per-verse text) and export/audiobiblia-usj/<iso>/<edition>/<book>.json
-(real book-level USJ) for the two audiobiblia.org Spanish editions that
-carry a genuinely republishable license, confirmed live 2026-09-30:
+"""Generate export/audiobiblia-usj/<iso>/<edition>/<book>.json (real book-level
+USJ) and the edition's _meta.json for the audiobiblia.org Spanish editions that
+carry a genuinely republishable license, confirmed live 2026-09-30.
+(Formerly generate_audiobiblia_chapters.py, which also wrote per-chapter
+verse-json; verse-json was retired 2026-10-09 in favour of Sofria.)
 
   BLL — Biblia Libre Latinoamericana (Public Domain). Sourced NOT from
     audiobiblia.org's own site (which only offers per-chapter HTML pages,
@@ -33,15 +34,11 @@ extraction themselves.
 Both real USFM zips verified to parse cleanly via `usfmtc` before this
 script was written (real Matthew, 28 chapters, both editions).
 
-Output shape matches the established openbible convention exactly:
-    export/audiobiblia/<iso>/<edition>/<book>/<chapter>.json
-        {"book", "chapter", "verses": [{"verse", "text"}, ...]}
-    export/audiobiblia/<iso>/<edition>/_meta.json
-        {"name", "licenses": [...], "provider", "copyright", "source",
-         "draft_notice"?, "books": [...]}
-    export/audiobiblia-usj/<iso>/<edition>/<book>.json — one USJ 3.0
-        doc per book (book-level granularity, matching the reduced
-        USJ(book)+Sofria(chapter) scheme used elsewhere in this repo).
+Output, the same layout as openbible:
+    export/audiobiblia-usj/<iso>/<edition>/<book>.json — one USJ 3.0 doc per book
+    export/audiobiblia-usj/<iso>/<edition>/_meta.json
+        {"name", "licenses": [...], "provider", "copyright"?, "source",
+         "draft_notice"?, "books": [...], "formats": {...}}
 """
 import json
 import sys
@@ -51,13 +48,13 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from usfm_to_verses import extract_verses_from_file, fix_adjacent_w_spacing  # noqa: E402
+from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
+from edition_formats import META_FILE, write_meta  # noqa: E402
 import usfmtc  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import DOWNLOADS, EXPORT  # noqa: E402
 
 ZIP_CACHE = DOWNLOADS / "audiobiblia"
-OUT_DIR = EXPORT / "audiobiblia"
 USJ_OUT_DIR = EXPORT / "audiobiblia-usj"
 
 EDITIONS = {
@@ -88,6 +85,16 @@ EDITIONS = {
 }
 
 
+def edition_meta(meta: dict) -> dict:
+    out = {"name": meta["name"], "licenses": meta["licenses"],
+           "provider": meta["provider"], "source": meta["source"]}
+    if meta["copyright"]:
+        out["copyright"] = meta["copyright"]
+    if meta["draft_notice"]:
+        out["draft_notice"] = meta["draft_notice"]
+    return out
+
+
 def fetch_zip(edition: str, url: str) -> Path:
     ZIP_CACHE.mkdir(parents=True, exist_ok=True)
     dest = ZIP_CACHE / f"{edition}.zip"
@@ -101,23 +108,24 @@ def fetch_zip(edition: str, url: str) -> Path:
 
 def main():
     force = "--force" in sys.argv
-    written_editions, total_chapters, total_usj_books = 0, 0, 0
+    written_editions, total_usj_books = 0, 0
 
     for edition, meta in EDITIONS.items():
         iso = meta["iso"]
-        edition_dir = OUT_DIR / iso / edition
         usj_edition_dir = USJ_OUT_DIR / iso / edition
-        if edition_dir.exists() and not force:
-            print(f"[audiobiblia] {edition} already present, skipping (--force to redo)")
+        if usj_edition_dir.exists() and not force:
+            if not (usj_edition_dir / META_FILE).exists():
+                write_meta(usj_edition_dir, edition_meta(meta))
+                print(f"[audiobiblia] {edition} already present: _meta.json written (--force to redo the USJ)")
+            else:
+                print(f"[audiobiblia] {edition} already present, skipping (--force to redo)")
             continue
 
         zip_path = fetch_zip(edition, meta["zip_url"])
         z = zipfile.ZipFile(zip_path)
 
-        edition_dir.mkdir(parents=True, exist_ok=True)
         usj_edition_dir.mkdir(parents=True, exist_ok=True)
 
-        books_written = set()
         for name in z.namelist():
             if not name.endswith(".usfm"):
                 continue
@@ -133,7 +141,6 @@ def main():
                 tf.write(z.read(name).decode("utf-8"))
                 tmp_path = tf.name
             try:
-                chapters = extract_verses_from_file(tmp_path)
                 doc = usfmtc.readFile(tmp_path)
                 usj = doc.outUsj()
                 fix_adjacent_w_spacing(usj)
@@ -143,21 +150,6 @@ def main():
             finally:
                 Path(tmp_path).unlink(missing_ok=True)
 
-            if chapters:
-                book_dir = edition_dir / book
-                book_dir.mkdir(parents=True, exist_ok=True)
-                for chapter_num, verses in chapters.items():
-                    rows = [{"verse": v, "text": t} for v, t in sorted(
-                        verses.items(), key=lambda kv: (len(kv[0]), kv[0]))]
-                    out_path = book_dir / f"{chapter_num}.json"
-                    out_path.write_text(
-                        json.dumps({"book": book, "chapter": chapter_num, "verses": rows},
-                                   ensure_ascii=False, separators=(",", ":")),
-                        encoding="utf-8",
-                    )
-                    total_chapters += 1
-                books_written.add(book)
-
             usj_path = usj_edition_dir / f"{book}.json"
             usj_path.write_text(
                 json.dumps(usj, ensure_ascii=False, separators=(",", ":")),
@@ -165,25 +157,11 @@ def main():
             )
             total_usj_books += 1
 
-        meta_out = {
-            "name": meta["name"],
-            "licenses": meta["licenses"],
-            "provider": meta["provider"],
-            "source": meta["source"],
-            "books": sorted(books_written),
-        }
-        if meta["copyright"]:
-            meta_out["copyright"] = meta["copyright"]
-        if meta["draft_notice"]:
-            meta_out["draft_notice"] = meta["draft_notice"]
-        (edition_dir / "_meta.json").write_text(
-            json.dumps(meta_out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
-        )
+        write_meta(usj_edition_dir, edition_meta(meta))
         written_editions += 1
-        print(f"[audiobiblia] {edition}: {len(books_written)} books written")
+        print(f"[audiobiblia] {edition}: USJ and _meta.json written")
 
-    print(f"[audiobiblia] {written_editions} editions, {total_chapters} chapter files, "
-          f"{total_usj_books} USJ book files -> {OUT_DIR} / {USJ_OUT_DIR}")
+    print(f"[audiobiblia] {written_editions} editions, {total_usj_books} USJ book files -> {USJ_OUT_DIR}")
 
 
 if __name__ == "__main__":

@@ -6,53 +6,18 @@
 // mirrors its relative path (minus .json) as a directory under
 // <sofria-out-dir> and writes one Sofria file per chapter into it.
 //
-// Usage: node convert_batch.mjs <usj-dir> <sofria-out-dir> [--usfm-dir <dir>]
+// Usage: node convert_batch.mjs <usj-dir> <sofria-out-dir>
 //
-// --usfm-dir: the books' original USFM, at the same relative paths as the USJ
-// (<rel>.usfm). proskomma-core's USJ importer can't handle tables at all, but its
-// USFM importer can, so a book with a table is converted from its USFM. Without it,
-// such a book's tables are stripped (logged as TABLE-STRIPPED, tables lost).
+// Each book's USJ is first prepared for the importer (prepare_usj.mjs: figures,
+// tables, optional breaks, duplicate \cp).
 import { Proskomma } from 'proskomma-core';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { sofriaForChapterViaWholeBook } from './whole_book_fallback.mjs';
-import { stripTables } from './strip_tables.mjs';
+import { prepareUsj } from './prepare_usj.mjs';
 
 // proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
 // into node text. Remove it; wrappers are kept (see convert.mjs).
-function splitFigures(content) {
-  // proskomma-core nests everything after an inline \fig inside the figure's graft.
-  // Each figure goes in a paragraph of its own, split out of its host paragraph.
-  // A figure inside the introduction is moved to the end of the introduction:
-  // there, proskomma nests the following intro paragraphs into it even when the
-  // figure has a paragraph of its own.
-  const out = [];
-  let introFigs = [];
-  const isIntro = (n) => n && n.type === 'para' && /^i/.test(n.marker || '');
-  const flushIntro = () => { out.push(...introFigs); introFigs = []; };
-  for (const node of content) {
-    if (!isIntro(node) && introFigs.length) flushIntro();
-    if (node && node.type === 'para' && (node.content || []).some(c => c && c.type === 'figure')) {
-      let cur = { ...node, content: [] };
-      for (const c of node.content) {
-        if (c && c.type === 'figure') {
-          if (cur.content.length) out.push(cur);
-          const own = { ...node, content: [c] };
-          if (isIntro(node)) introFigs.push(own); else out.push(own);
-          cur = { ...node, content: [] };
-        } else {
-          cur.content.push(c);
-        }
-      }
-      if (cur.content.length) out.push(cur);
-    } else {
-      out.push(node);
-    }
-  }
-  flushIntro();
-  return out;
-}
-
 const STRAY_MARKER = /\| marker="[^"]*"/g;
 function stripWjLeak(json) {
   const walk = (x) => {
@@ -80,7 +45,7 @@ function walk(dir, out) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) walk(p, out);
-    else if (name.endsWith('.json')) out.push(p);
+    else if (name.endsWith('.json') && name !== '_meta.json') out.push(p); // _meta.json: edition metadata, not a book
   }
   return out;
 }
@@ -101,9 +66,9 @@ function collectChapterNumbers(usj) {
 
 // Converts one book. Returns { chapterJson: Map<chNum, sofriaJsonString> }.
 // Throws on a genuine, unrecoverable failure.
-function convertBook(usjText, usj, abbrKey, format = 'usj') {
+function convertBook(usjText, usj, abbrKey) {
   const pk = new BiblesPk();
-  const doc = pk.importDocument({ lang: 'xx', abbr: abbrKey }, format, usjText);
+  const doc = pk.importDocument({ lang: 'xx', abbr: abbrKey }, 'usj', usjText);
   const chapterNumbers = collectChapterNumbers(usj);
 
   const chapterJson = new Map();
@@ -126,12 +91,9 @@ function convertBook(usjText, usj, abbrKey, format = 'usj') {
 }
 
 function main() {
-  const args = process.argv.slice(2);
-  const usfmAt = args.indexOf('--usfm-dir');
-  const usfmDir = usfmAt !== -1 ? args.splice(usfmAt, 2)[1] : null;
-  const [usjDir, sofriaOutDir] = args;
+  const [usjDir, sofriaOutDir] = process.argv.slice(2);
   if (!usjDir || !sofriaOutDir) {
-    console.error('usage: node convert_batch.mjs <usj-dir> <sofria-out-dir> [--usfm-dir <dir>]');
+    console.error('usage: node convert_batch.mjs <usj-dir> <sofria-out-dir>');
     process.exit(2);
   }
 
@@ -145,7 +107,7 @@ function main() {
     try {
       usjText = readFileSync(usjPath, 'utf-8');
       usj = JSON.parse(usjText);
-      usj = { ...usj, content: splitFigures(usj.content || []) };
+      usj = prepareUsj(usj);
       usjText = JSON.stringify(usj);
     } catch (e) {
       console.log('READ-FAIL', usjPath, e.message);
@@ -160,37 +122,9 @@ function main() {
     try {
       result = convertBook(usjText, usj, abbrKey);
     } catch (e) {
-      if (/table/i.test(e.message)) {
-        // proskomma-core@0.11.3 has no USJ "table" handler: the import fails the whole
-        // book. Its USFM importer handles tables (\tr/\tc become Sofria rows), so use
-        // the book's original USFM when it is there.
-        const usfmPath = usfmDir ? join(usfmDir, `${rel}.usfm`) : null;
-        if (usfmPath && existsSync(usfmPath)) {
-          try {
-            result = convertBook(readFileSync(usfmPath, 'utf-8'), usj, abbrKey, 'usfm');
-            console.log('TABLE-VIA-USFM', rel, bookCode);
-          } catch (e2) {
-            console.log('SOFRIA-FAIL', rel, bookCode, `USFM import: ${e2.message}`);
-            booksFailed++;
-            continue;
-          }
-        } else {
-          // Last resort only: strip the tables and keep the rest of the book.
-          const { usj: strippedUsj, tablesRemoved } = stripTables(usj);
-          try {
-            result = convertBook(JSON.stringify(strippedUsj), strippedUsj, abbrKey);
-            console.log('TABLE-STRIPPED (no USFM source: tables lost)', rel, bookCode, `tables=${tablesRemoved}`);
-          } catch (e2) {
-            console.log('SOFRIA-FAIL', rel, bookCode, e2.message);
-            booksFailed++;
-            continue;
-          }
-        }
-      } else {
-        console.log('SOFRIA-FAIL', rel, bookCode, e.message);
-        booksFailed++;
-        continue;
-      }
+      console.log('SOFRIA-FAIL', rel, bookCode, e.message);
+      booksFailed++;
+      continue;
     }
 
     mkdirSync(outDir, { recursive: true });

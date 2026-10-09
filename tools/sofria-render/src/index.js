@@ -1,2 +1,2 @@
 export { renderChapter, plainText } from './render.js';
-export { extractEntries, verseMap } from './verses.js';
+export { extractEntries, verseList, verseMap } from './verses.js';

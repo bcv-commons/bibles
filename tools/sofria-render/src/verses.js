@@ -24,9 +24,16 @@ export function extractEntries(doc) {
     const out = [];
     const st = { verse: null };
     walkBlocks(doc.sequence?.blocks || [], doc.sequence?.type || 'main', st, out);
+    // a placeholder is only kept for a verse that has no text anywhere
+    const hasText = new Set(out.filter((e) => e.type === 'verse' && !e.placeholder).map((e) => e.verse));
+    const kept = out.filter((e) => !(e.placeholder && hasText.has(e.verse))).map((e) => {
+        if (!e.placeholder) return e;
+        const { placeholder, ...rest } = e; // eslint-disable-line no-unused-vars
+        return rest;
+    });
     // merge consecutive pieces of the same verse
     const merged = [];
-    for (const e of out) {
+    for (const e of kept) {
         const last = merged[merged.length - 1];
         if (e.type === 'verse' && last && last.type === 'verse' && last.verse === e.verse && !!last.title === !!e.title) {
             last.text = clean(last.text + ' ' + e.text);
@@ -47,7 +54,27 @@ export function extractEntries(doc) {
     return merged.filter((e) => e.text !== '' || e.type === 'verse');
 }
 
-/** Convenience: { '1': 'text', '2': '...' } — verse entries only. */
+/** The verses in reading order: [{ verse: '1', text }, { verse: '2-3', text }, ...].
+ *  Same shape as the old verse-json `verses` array. A verse given in pieces (split by
+ *  a heading, or a verse number used twice) is joined with a space. */
+export function verseList(entries) {
+    const list = [];
+    const at = new Map();
+    for (const e of entries) {
+        if (e.type !== 'verse') continue;
+        if (at.has(e.verse)) {
+            const v = list[at.get(e.verse)];
+            v.text = clean(v.text + ' ' + e.text);
+        } else {
+            at.set(e.verse, list.length);
+            list.push({ verse: e.verse, text: e.text });
+        }
+    }
+    return list;
+}
+
+/** Convenience: { '1': 'text', '2': '...' } — verse entries only. Key order follows
+ *  JavaScript's object rules (numeric keys first), so use verseList for reading order. */
 export function verseMap(entries) {
     const m = {};
     for (const e of entries) if (e.type === 'verse') m[e.verse] = m[e.verse] ? clean(m[e.verse] + ' ' + e.text) : e.text;
@@ -105,6 +132,8 @@ function walkInline(items, st, out, ctx) {
             st.verse = String(one(it.atts?.number));
             st.lastWasVerseMark = true;
             ctx.verseSeenHere = true;
+            // keeps a verse that has no text of its own (e.g. only a note) in the list
+            out.push({ type: 'verse', verse: st.verse, text: '', placeholder: true });
             continue;
         }
         if (it.type === 'mark' && it.subtype === 'pub_verse') {

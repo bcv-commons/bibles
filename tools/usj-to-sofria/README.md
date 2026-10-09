@@ -16,13 +16,16 @@ Known behaviour:
   word wrappers are kept. proskomma-core also writes the stray text
   `| marker="wj"` into those wrappers; the converter removes that text after
   output.
-- proskomma-core can't import USJ tables. Give the book's original USFM with
-  `--usfm <file>` (`convert_batch.mjs --usfm-dir <dir>` for a tree) and a book with
-  a table is converted from that, tables kept. Without it the tables are stripped
-  (`strip_tables.mjs`) and the run logs `TABLE-STRIPPED`.
-- Each `\fig` is moved into a paragraph of its own (one in the introduction goes to
-  the end of the introduction); otherwise proskomma-core nests the text that follows
-  a figure inside the figure.
+- Before import, `prepare_usj.mjs` works around four importer behaviours, without
+  removing any text:
+  - each `\fig` is moved into a paragraph of its own (one in the introduction goes to
+    the end of the introduction); otherwise the text after a figure is nested inside it;
+  - USJ `table:row` / `table:cell` nodes are renamed `row` / `cell`, the names the
+    importer's handlers use; otherwise a book with a table fails to import at all;
+  - optional line breaks (USFM `//`, USJ `optbreak`) are removed; the importer would
+    write them into the text as a literal `//`;
+  - a `\cp` paragraph that only repeats its chapter's `pubnumber` is removed; the
+    importer would add it as loose text after the previous chapter's last verse.
 
 Checked: BLL John (`export/audiobiblia-usj/spa/BLL/JHN.json`) produces 21
 chapter files. Chapter 3 keeps 17 `usfm:wj` wrappers, has no stray text, and

@@ -9,10 +9,7 @@
 // ever needed) reuses this one converter rather than each re-deriving
 // Sofria independently.
 //
-// Usage: node convert.mjs <usj-file> <out-dir> [--book-level-too] [--usfm <usfm-file>]
-//   --usfm: the book's original USFM. proskomma-core can't import USJ tables, so a
-//   book with a table is converted from this instead (tables kept). Without it, the
-//   tables are stripped and the run says so (TABLE-STRIPPED).
+// Usage: node convert.mjs <usj-file> <out-dir> [--book-level-too]
 //   Writes <out-dir>/<N>.json for each chapter number found in the USJ
 //   (matching cdn.bibel.wiki/dbt/<iso>/timing/<BOOK>.json's own per-book-dir,
 //   per-chapter-file convention). With --book-level-too also writes
@@ -23,7 +20,7 @@
 import { Proskomma } from 'proskomma-core';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { sofriaForChapterViaWholeBook } from './whole_book_fallback.mjs';
-import { stripTables } from './strip_tables.mjs';
+import { prepareUsj } from './prepare_usj.mjs';
 
 class BiblesPk extends Proskomma {
   constructor() {
@@ -34,39 +31,6 @@ class BiblesPk extends Proskomma {
     ];
     this.validateSelectors();
   }
-}
-
-function splitFigures(content) {
-  // proskomma-core nests everything after an inline \fig inside the figure's graft.
-  // Each figure goes in a paragraph of its own, split out of its host paragraph.
-  // A figure inside the introduction is moved to the end of the introduction:
-  // there, proskomma nests the following intro paragraphs into it even when the
-  // figure has a paragraph of its own.
-  const out = [];
-  let introFigs = [];
-  const isIntro = (n) => n && n.type === 'para' && /^i/.test(n.marker || '');
-  const flushIntro = () => { out.push(...introFigs); introFigs = []; };
-  for (const node of content) {
-    if (!isIntro(node) && introFigs.length) flushIntro();
-    if (node && node.type === 'para' && (node.content || []).some(c => c && c.type === 'figure')) {
-      let cur = { ...node, content: [] };
-      for (const c of node.content) {
-        if (c && c.type === 'figure') {
-          if (cur.content.length) out.push(cur);
-          const own = { ...node, content: [c] };
-          if (isIntro(node)) introFigs.push(own); else out.push(own);
-          cur = { ...node, content: [] };
-        } else {
-          cur.content.push(c);
-        }
-      }
-      if (cur.content.length) out.push(cur);
-    } else {
-      out.push(node);
-    }
-  }
-  flushIntro();
-  return out;
 }
 
 // proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
@@ -96,40 +60,20 @@ function collectChapterNumbers(usj) {
 function main() {
   const [, , usjPath, outDir, ...rest] = process.argv;
   if (!usjPath || !outDir) {
-    console.error('usage: node convert.mjs <usj-file> <out-dir> [--book-level-too] [--usfm <usfm-file>]');
+    console.error('usage: node convert.mjs <usj-file> <out-dir> [--book-level-too]');
     process.exit(2);
   }
   const bookLevelToo = rest.includes('--book-level-too');
-  const usfmPath = rest.includes('--usfm') ? rest[rest.indexOf('--usfm') + 1] : null;
 
   let usjText = readFileSync(usjPath, 'utf-8');
   let usj = JSON.parse(usjText);
-  usj = { ...usj, content: splitFigures(usj.content || []) };
+  usj = prepareUsj(usj);  // see prepare_usj.mjs
   usjText = JSON.stringify(usj);
   const bookNode = (usj.content || []).find(n => n && n.type === 'book');
   const bookCode = bookNode ? bookNode.code : 'XXX';
 
-  let pk = new BiblesPk();
-  let doc;
-  try {
-    doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usj', usjText);
-  } catch (e) {
-    if (!/table/i.test(e.message)) throw e;
-    // proskomma-core@0.11.3 has no USJ "table" handler: the import fails the whole
-    // book. Its USFM importer handles tables, so use the original USFM when given.
-    pk = new BiblesPk();
-    if (usfmPath) {
-      doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usfm', readFileSync(usfmPath, 'utf-8'));
-      console.log('TABLE-VIA-USFM');
-    } else {
-      // Last resort only: strip the tables and keep the rest of the book.
-      const stripped = stripTables(usj);
-      usj = stripped.usj;
-      usjText = JSON.stringify(usj);
-      doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usj', usjText);
-      console.log(`TABLE-STRIPPED (no --usfm given: tables lost) tables=${stripped.tablesRemoved}`);
-    }
-  }
+  const pk = new BiblesPk();
+  const doc = pk.importDocument({ lang: 'xx', abbr: bookCode }, 'usj', usjText);
 
   mkdirSync(outDir, { recursive: true });
 

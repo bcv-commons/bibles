@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
-"""Stage Sofria (per chapter) and USJ (per book) for the CDN, under the same tree as
-the verse-json chapters:
+"""Stage Sofria (per chapter), USJ (per book) and _meta.json for the CDN, one folder
+per edition:
 
+    <prefix>/<iso>/<abbr>/_meta.json
     <prefix>/<iso>/<abbr>/<BOOK>.usj.json
     <prefix>/<iso>/<abbr>/<BOOK>/<ch>.sofria.json
 
 The staging tree is hard links to the build outputs, so it takes no extra disk space.
 Publish it with publish-openbible.sh / publish-audiobiblia.sh (SOURCE_DIR=<stage>).
+
+Each edition's _meta.json (written into the USJ folder by the USJ generator, see
+edition_formats.py) is staged too, so clients can find the Sofria and USJ files.
 
 convert_batch.mjs writes a book's chapters only once the whole book has converted, so
 a book is staged whole or not at all; its USJ is staged only alongside its Sofria.
@@ -19,6 +23,9 @@ import shutil
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from edition_formats import META_FILE  # noqa: E402
+
 
 def main() -> None:
     usj_dir, sofria_dir, stage = (Path(a) for a in sys.argv[1:4])
@@ -26,7 +33,7 @@ def main() -> None:
         shutil.rmtree(stage)
     books = chapters = 0
     skipped = []
-    for usj in sorted(usj_dir.rglob("*.json")):
+    for usj in sorted(p for p in usj_dir.rglob("*.json") if p.name != META_FILE):
         rel = usj.relative_to(usj_dir).with_suffix("")  # <iso>/<abbr>/<BOOK>
         src = sofria_dir / rel
         if not src.is_dir() or not any(src.glob("*.json")):
@@ -39,6 +46,13 @@ def main() -> None:
             os.link(ch, out / f"{ch.stem}.sofria.json")
             chapters += 1
         books += 1
+    metas = 0
+    for meta in sorted(usj_dir.rglob(META_FILE)):
+        edition = stage / meta.parent.relative_to(usj_dir)
+        if edition.is_dir():  # only editions with staged books
+            os.link(meta, edition / META_FILE)
+            metas += 1
+    print(f"[stage] {metas} {META_FILE} files")
     print(f"[stage] {books} books, {chapters} chapters -> {stage}; no Sofria for {len(skipped)}: {skipped[:20]}")
 
 

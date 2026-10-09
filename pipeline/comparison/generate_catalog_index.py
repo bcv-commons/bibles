@@ -203,7 +203,7 @@ def openbible_rows():
 
 def audiobiblia_rows():
     """Real NT/OT/Portions classification for the audiobiblia.org
-    editions this repo republishes (`generate_audiobiblia_chapters.py`)
+    editions this repo republishes (`generate_audiobiblia_usj.py`)
     — same `"o"` source letter as openbible, per the 2026-10-02
     redefinition above: both are content fetched, verified, and
     republished by `bibles` itself wherever the license permits and the
@@ -212,7 +212,7 @@ def audiobiblia_rows():
     per-edition book list already recorded in each edition's own
     `_meta.json` (written by that generator, not re-derived here)."""
     counts = defaultdict(int)
-    audiobiblia_dir = EXPORT / "audiobiblia"
+    audiobiblia_dir = EXPORT / "audiobiblia-usj"
     if not audiobiblia_dir.exists():
         return counts
     for iso_dir in audiobiblia_dir.iterdir():

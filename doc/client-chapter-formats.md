@@ -11,7 +11,7 @@ published is listed under **Planned** and is not available.
 | openbible (Biblica) | USJ | book | `cdn.bibel.wiki/openbible/<iso>/<abbr>/<BOOK>.usj.json` |
 | audiobiblia (BLL) | Sofria | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.sofria.json` |
 | audiobiblia (BLL) | USJ | book | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>.usj.json` |
-| openbible, audiobiblia | verse-json | chapter | `.../<BOOK>/<chapter>.json`. **Being replaced by Sofria**; it stays for now, so don't build anything new on it |
+| openbible, audiobiblia | verse-json | chapter | **Removed**, replaced by Sofria. See [migrating-to-sofria.md](migrating-to-sofria.md) |
 | DBT `-json` filesets | Sofria | chapter | from the DBT API, `type=text_json`: the row's `path` field links to the Sofria document. Coverage varies; see below |
 
 **Sofria** is Proskomma's native format, one document per chapter. It keeps the full
@@ -23,8 +23,20 @@ been checked with the renderer: no text and no verse or chapter number is droppe
 **USJ** is one file per book, in the USJ 3.0 format, as the source gave it. Use it when
 you want book-level content.
 
-**Verse-json** is one file per chapter: `{"book", "chapter", "verses": [{"verse", "text"}]}`.
-Sofria replaces it; `verseMap(extractEntries(doc))` gives the same per-verse text.
+Each openbible and audiobiblia edition's `_meta.json` (`.../<iso>/<abbr>/_meta.json`) lists
+its formats, with paths relative to the edition folder:
+
+```json
+"formats": {
+  "sofria": {"path": "<BOOK>/<chapter>.sofria.json", "granularity": "chapter"},
+  "usj": {"path": "<BOOK>.usj.json", "granularity": "book"},
+  "verse-json": {"path": "<BOOK>/<chapter>.json", "granularity": "chapter", "deprecated": "..."}
+}
+```
+
+**Verse-json** (one file per chapter, `{"book", "chapter", "verses": [{"verse", "text"}]}`)
+was removed. `verseList(extractEntries(doc))` on the Sofria chapter gives the same
+`[{verse, text}]` list; [migrating-to-sofria.md](migrating-to-sofria.md) shows the switch.
 
 ## DBT Sofria: coverage
 
@@ -48,10 +60,9 @@ node convert.mjs <book.usj.json> <out-dir>
 
 This writes `<out-dir>/<N>.json` for each chapter. Red-letter (`wj`) is kept as a Sofria
 `usfm:wj` wrapper, the same way word wrappers are kept. The converter removes a stray
-attribute string that proskomma-core writes into those wrappers, and gives each figure a
-paragraph of its own (proskomma-core otherwise nests the following text inside the
-figure). proskomma-core can't import USJ tables; `convert_batch.mjs --usfm-dir` converts
-such a book from its original USFM instead, which keeps the tables.
+attribute string that proskomma-core writes into those wrappers. Before import it prepares
+the USJ (`prepare_usj.mjs`): figures, tables, optional line breaks and duplicate `\cp`
+numbers; see `tools/usj-to-sofria/README.md`.
 
 Example, verified against the published BLL John:
 
@@ -68,10 +79,11 @@ works the same for PKF, DBT `text_json` and our own Sofria:
 
 ```js
 import { renderChapter } from './tools/sofria-render/src/render.js';
-import { extractEntries, verseMap } from './tools/sofria-render/src/verses.js';
+import { extractEntries, verseList, verseMap } from './tools/sofria-render/src/verses.js';
 
 const { html, notes, warnings } = renderChapter(doc);  // HTML in SAB's DOM and class names
 const entries = extractEntries(doc);                     // typed: verse, heading, intro, note
+const list = verseList(entries);                         // [{ verse: "1", text }, ...] in order
 const verses = verseMap(entries);                        // { "1": "...", "2": "...", ... }
 ```
 

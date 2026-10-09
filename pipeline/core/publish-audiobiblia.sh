@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 #
-# Publish export/audiobiblia/ to cdn.bibel.wiki/audiobiblia/ via rclone (Cloudflare R2).
+# Publish the staged audiobiblia Sofria + USJ + _meta.json (make stage-sofria) to
+# cdn.bibel.wiki/audiobiblia/ via rclone (Cloudflare R2). Verse-json is no longer published.
 #
 # New top-level CDN path (not under /dbt/ or /catalog/) — per-chapter text
 # for the two audiobiblia.org Spanish editions (BLL, BES) with a genuinely
 # republishable license, real text sourced from eBible.org's structured
 # USFM (not audiobiblia.org's own HTML/PDF — see
-# pipeline/core/generate_audiobiblia_chapters.py's own module docstring
+# pipeline/core/generate_audiobiblia_usj.py's own module docstring
 # for the full source/license verification). Modeled on
 # publish-openbible.sh/publish-catalog.sh's simple rclone-copy approach
 # (rclone's own checksum comparison skips unchanged files — no custom
@@ -19,6 +20,8 @@
 # Usage:
 #   make publish-audiobiblia              # upload changed files
 #   make publish-audiobiblia-dry          # dry-run (no writes)
+#   FULL_LIST=1 ...                           # republishing most files: compare by checksum
+#   RCLONE_EXTRA="--include */*/_meta.json"   # extra rclone flags, e.g. a filter
 #   DRY_RUN=1 pipeline/core/publish-audiobiblia.sh   # same as above
 #
 set -euo pipefail
@@ -27,7 +30,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 cd "$ROOT_DIR"
 
-SOURCE_DIR="${SOURCE_DIR:-export/audiobiblia}"  # or the Sofria/USJ stage (stage_sofria_usj.py)
+# The staged Sofria + USJ + _meta.json (make stage-sofria). The verse-json tree
+# (export/audiobiblia) is no longer published: Sofria replaced it on the CDN (2026-10-09).
+SOURCE_DIR="${SOURCE_DIR:-export/publish/stage/audiobiblia}"
 CDN_PREFIX="audiobiblia"
 
 # ── Load credentials ──
@@ -65,17 +70,27 @@ if [ "${DRY_RUN:-}" = "1" ]; then
 fi
 
 if [ ! -d "$SOURCE_DIR" ]; then
-    echo "[ERROR] $SOURCE_DIR not found. Run: python3 pipeline/core/generate_audiobiblia_chapters.py"
+    echo "[ERROR] $SOURCE_DIR not found. Run: make stage-sofria"
     exit 1
 fi
+
+# Default: check each file on its own (fast for a few changed files). FULL_LIST=1 lists
+# the whole remote once and compares checksums instead: much faster when most files
+# are being republished.
+LIST_FLAGS="--no-traverse"
+[ "${FULL_LIST:-}" = "1" ] && LIST_FLAGS="--fast-list --checksum"
+
+# split RCLONE_EXTRA into words without glob-expanding a filter like */*/_meta.json
+read -r -a EXTRA <<< "${RCLONE_EXTRA:-}"
 
 echo "── Publishing $SOURCE_DIR -> ${REMOTE} (max-age=3600)..."
 rclone copy "$SOURCE_DIR" "$REMOTE" \
     --header-upload "Cache-Control: max-age=3600" \
-    --no-traverse \
+    $LIST_FLAGS \
     --transfers 16 \
     --checkers 8 \
     $DRY_FLAG \
+    ${EXTRA[@]+"${EXTRA[@]}"} \
     -v
 
 echo "── Done."

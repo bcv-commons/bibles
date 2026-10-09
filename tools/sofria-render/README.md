@@ -27,10 +27,11 @@ every verse and chapter number, in the input must appear in the output.
 
 ```js
 import { renderChapter } from './src/render.js';
-import { extractEntries, verseMap } from './src/verses.js';
+import { extractEntries, verseList, verseMap } from './src/verses.js';
 
 const { html, introduction, notes, warnings } = renderChapter(sofriaDoc, options);
 const entries = extractEntries(sofriaDoc);   // typed text entries, see below
+const list = verseList(entries);             // [{ verse: '1', text }, ...] in reading order
 const verses = verseMap(entries);            // { '1': '...', '2': '...' }
 ```
 

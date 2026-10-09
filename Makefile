@@ -6,7 +6,7 @@ CORE := pipeline/core
         publish-catalog publish-catalog-dry \
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
-        sofria-openbible sofria-audiobiblia stage-sofria publish-sofria publish-sofria-dry \
+        sofria-openbible sofria-audiobiblia stage-sofria publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
         publish-vrs-maps publish-vrs-maps-dry vrs-check \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
@@ -33,9 +33,9 @@ help: ## Show available targets
 	@echo "  make cleanup-dbt-dry  Dry-run orphan cleanup"
 	@echo "  make publish-catalog     Upload export/catalog/ to cdn.bibel.wiki/catalog/"
 	@echo "  make publish-catalog-dry Dry-run (no writes to CDN)"
-	@echo "  make publish-openbible   Upload export/openbible/ to cdn.bibel.wiki/openbible/"
+	@echo "  make publish-openbible   Upload staged Sofria + USJ (make stage-sofria) to cdn.bibel.wiki/openbible/"
 	@echo "  make publish-openbible-dry Dry-run (no writes to CDN)"
-	@echo "  make publish-audiobiblia Upload export/audiobiblia/ to cdn.bibel.wiki/audiobiblia/"
+	@echo "  make publish-audiobiblia Upload staged Sofria + USJ (make stage-sofria) to cdn.bibel.wiki/audiobiblia/"
 	@echo "  make publish-audiobiblia-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
 	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
@@ -158,13 +158,13 @@ publish-catalog: ## Upload export/catalog/ to cdn.bibel.wiki/catalog/
 publish-catalog-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-catalog.sh
 
-publish-openbible: ## Upload export/openbible/ to cdn.bibel.wiki/openbible/
+publish-openbible: ## Upload the staged Sofria + USJ + _meta.json (make stage-sofria) to cdn.bibel.wiki/openbible/
 	bash $(CORE)/publish-openbible.sh
 
 publish-openbible-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-openbible.sh
 
-publish-audiobiblia: ## Upload export/audiobiblia/ to cdn.bibel.wiki/audiobiblia/
+publish-audiobiblia: ## Upload the staged Sofria + USJ + _meta.json (make stage-sofria) to cdn.bibel.wiki/audiobiblia/
 	bash $(CORE)/publish-audiobiblia.sh
 
 publish-audiobiblia-dry: ## Dry-run CDN upload (no writes)
@@ -173,20 +173,29 @@ publish-audiobiblia-dry: ## Dry-run CDN upload (no writes)
 SOFRIA_OUT := export/publish/sofria
 SOFRIA_STAGE := export/publish/stage
 
-sofria-openbible: ## Convert openbible USJ to per-chapter Sofria (tables via original USFM)
-	$(PYTHON) $(CORE)/extract_openbible_table_usfm.py
-	node tools/usj-to-sofria/convert_batch.mjs export/openbible-usj $(SOFRIA_OUT)/openbible --usfm-dir export/openbible-usfm-tables
+sofria-openbible: ## Convert openbible USJ to per-chapter Sofria
+	node tools/usj-to-sofria/convert_batch.mjs export/openbible-usj $(SOFRIA_OUT)/openbible
 
 sofria-audiobiblia: ## Convert audiobiblia USJ to per-chapter Sofria
 	node tools/usj-to-sofria/convert_batch.mjs export/audiobiblia-usj $(SOFRIA_OUT)/audiobiblia
 
-stage-sofria: ## Stage USJ (<BOOK>.usj.json) + Sofria (<BOOK>/<ch>.sofria.json) as hard links
+stage-sofria: ## Stage USJ (<BOOK>.usj.json), Sofria (<BOOK>/<ch>.sofria.json) and _meta.json as hard links
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/openbible-usj $(SOFRIA_OUT)/openbible $(SOFRIA_STAGE)/openbible
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/audiobiblia-usj $(SOFRIA_OUT)/audiobiblia $(SOFRIA_STAGE)/audiobiblia
 
 publish-sofria: ## Upload the staged USJ + Sofria to cdn.bibel.wiki/{openbible,audiobiblia}/
 	SOURCE_DIR=$(SOFRIA_STAGE)/openbible bash $(CORE)/publish-openbible.sh
 	SOURCE_DIR=$(SOFRIA_STAGE)/audiobiblia bash $(CORE)/publish-audiobiblia.sh
+
+publish-sofria-meta: ## Upload only the staged _meta.json files (with formats)
+	RCLONE_EXTRA="--include */*/_meta.json" SOURCE_DIR=$(SOFRIA_STAGE)/openbible bash $(CORE)/publish-openbible.sh
+	RCLONE_EXTRA="--include */*/_meta.json" SOURCE_DIR=$(SOFRIA_STAGE)/audiobiblia bash $(CORE)/publish-audiobiblia.sh
+
+retire-verse-json-dry: ## List the verse-json chapter files that retire-verse-json would delete
+	bash $(CORE)/retire-verse-json.sh
+
+retire-verse-json: ## Delete verse-json chapters from the CDN (needs CONFIRM=delete; Sofria replaces them)
+	bash $(CORE)/retire-verse-json.sh
 
 publish-sofria-dry: ## Dry-run of publish-sofria (no writes)
 	DRY_RUN=1 SOURCE_DIR=$(SOFRIA_STAGE)/openbible bash $(CORE)/publish-openbible.sh

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractEntries, verseMap } from '../src/verses.js';
+import { extractEntries, verseList, verseMap } from '../src/verses.js';
 import { doc, para, graft, v, mark, w, verses, chapter, note } from './fixtures.js';
 
 const strip = (entries) => entries.map(({ type, verse, marker, text, title, beforeVerse }) => ({ type, verse, marker, text, title, beforeVerse }));
@@ -66,4 +66,17 @@ test('published and alternate verse numbers are recorded', () => {
         ['1-3', 'first', true],
         ['4', 'second', true]
     ]);
+});
+
+test('a verse with no text of its own (only a note) is still listed, with empty text', () => {
+    const e = extractEntries(doc(para('p', v(10), 'ten ', v(11), note('xref', '-', w('usfm:xt', ['Luke 19:10'])), v(12), 'twelve')));
+    assert.deepEqual(verseList(e).map((x) => x.verse), ['10', '11', '12']);
+    assert.equal(verseMap(e)['11'], '');
+    assert.equal(e.filter((x) => x.type === 'verse' && x.verse === '10').length, 1); // no leftover placeholder
+});
+
+test('verseList keeps reading order, ranges included, and joins a verse given in pieces', () => {
+    const e = extractEntries(doc(para('p', v(1), 'one ', v('2-3'), 'two three ', v(4), 'four'), para('s', 'Heading'), para('p', verses(4, 'more'))));
+    assert.deepEqual(verseList(e), [{ verse: '1', text: 'one' }, { verse: '2-3', text: 'two three' }, { verse: '4', text: 'four more' }]);
+    assert.deepEqual(Object.keys(verseMap(e)), ['1', '4', '2-3']); // why verseList exists
 });
