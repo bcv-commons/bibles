@@ -21,6 +21,7 @@ const DEFAULTS = {
     hideVerseNumberOne: false,
     wordsOfJesus: true,
     glossaryLinks: true,
+    keywordLinks: false, // true: \k keywords become glossary links too, like \w (SAB: plain span)
     introduction: 'inline', // 'inline' | 'separate'
     remarks: 'hidden', // 'hidden' | 'shown'
     figureUrl: null, // function(src) -> url | null
@@ -34,6 +35,11 @@ const DEFAULTS = {
     },
     showNotes: true, // false: callers hidden, notes still in the output
     showImages: true, // false: figures still in the output, hidden
+    // figure captions: 'show' | 'hide' | 'heuristic' | function(caption, atts) -> boolean (show?).
+    // A hidden caption stays in the output with `hidden`. 'heuristic' hides a plain-ASCII
+    // caption that shares no word with the chapter's own text: untranslated English
+    // placeholders. It can also hide a genuine short caption (a name, one word).
+    captions: 'show',
     showVideos: true, // false: video blocks still in the output, hidden
     verseLayout: 'paragraphs', // 'paragraphs' | 'one-per-line' (SAB's verse-layout)
     verseRangeSeparator: '-' // how a verse range like 1-3 is printed (SAB's ref-verse-range-separator)
@@ -77,6 +83,9 @@ export function renderChapter(doc, options = {}) {
     const o = { ...DEFAULTS, ...options };
     const st = {
         o,
+        doc,
+        chapterWords: null, // lazily, for captions: 'heuristic'
+
         warnings: [],
         warned: new Set(),
         notes: [],
@@ -532,6 +541,12 @@ function renderWrapper(it, st, seqType) {
             }
             return `<span class="w"${attData(it.atts)}>${inner()}</span>${meta}`;
         }
+        case 'k':
+            if (st.o.keywordLinks) {
+                const text = plainText(it.content).trim();
+                return `<span class="glossary"><a class="glossary" match="${esc(text)}"${attData(it.atts)}>${inner()}</a></span>${meta}`;
+            }
+            return `<span class="k"${attData(it.atts)}>${inner()}</span>${meta}`;
         case 'wj':
             return (st.o.wordsOfJesus ? `<span class="wj">${inner()}</span>` : `<span class="wj-off">${inner()}</span>`) + meta;
         case 'jmp': {
@@ -570,8 +585,38 @@ function renderFigure(atts, caption, st) {
     const img = url
         ? `<img src="${esc(url)}" alt="${esc(caption || src)}" loading="lazy" decoding="async">`
         : `<span class="image-missing" data-src="${esc(src)}"></span>`;
-    const cap = caption ? `<div class="caption"><span class="caption">${esc(caption)}</span></div>` : '';
+    const cap = caption
+        ? `<div class="caption"${showCaption(caption, atts, st) ? '' : ' hidden'}><span class="caption">${esc(caption)}</span></div>`
+        : '';
     return `<div class="image-block" data-src="${esc(src)}"${st.o.showImages ? '' : ' hidden'}>${img}${cap}</div>`;
+}
+
+const WORD = /[\p{L}\p{M}]+(?:['\u2019\uA78B\uA78C][\p{L}\p{M}]+)*/gu;
+const wordsOf = (s) => (String(s).match(WORD) || []).map((w) => w.toLowerCase());
+
+function showCaption(caption, atts, st) {
+    const c = st.o.captions;
+    if (typeof c === 'function') return !!c(caption, atts);
+    if (c === 'hide') return false;
+    if (c !== 'heuristic') return true;
+    // untranslated placeholders are English: plain ASCII. A caption in any other script,
+    // or with any accented letter, is never hidden by the heuristic.
+    if (!/^[\x20-\x7E]+$/.test(caption)) return true;
+    if (!st.chapterWords) st.chapterWords = new Set(wordsOf(textOutsideFigures(st.doc.sequence?.blocks || [])));
+    const ws = wordsOf(caption);
+    return ws.length === 0 || ws.some((w) => st.chapterWords.has(w));
+}
+
+function textOutsideFigures(items) {
+    let s = '';
+    for (const it of items || []) {
+        if (typeof it === 'string') s += ' ' + it;
+        else if (it && typeof it === 'object') {
+            if (it.subtype === 'fig' || it.subtype === 'usfm:fig' || it.sequence?.type === 'fig') continue;
+            s += textOutsideFigures(it.content) + textOutsideFigures(it.sequence?.blocks);
+        }
+    }
+    return s;
 }
 
 // ---------- notes ----------

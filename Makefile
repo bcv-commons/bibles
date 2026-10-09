@@ -6,7 +6,7 @@ CORE := pipeline/core
         publish-catalog publish-catalog-dry \
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
-        sofria-openbible sofria-audiobiblia stage-sofria publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
+        sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
         publish-vrs-maps publish-vrs-maps-dry vrs-check \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
@@ -182,6 +182,9 @@ sofria-audiobiblia: ## Convert audiobiblia USJ to per-chapter Sofria
 stage-sofria: ## Stage USJ (<BOOK>.usj.json), Sofria (<BOOK>/<ch>.sofria.json) and _meta.json as hard links
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/openbible-usj $(SOFRIA_OUT)/openbible $(SOFRIA_STAGE)/openbible
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/audiobiblia-usj $(SOFRIA_OUT)/audiobiblia $(SOFRIA_STAGE)/audiobiblia
+
+openbible-editions: ## Add published/books/canon/licenses/path to catalog/openbible-editions.json (after stage-sofria)
+	$(PYTHON) $(CORE)/enrich_openbible_editions.py
 
 publish-sofria: ## Upload the staged USJ + Sofria to cdn.bibel.wiki/{openbible,audiobiblia}/
 	SOURCE_DIR=$(SOFRIA_STAGE)/openbible bash $(CORE)/publish-openbible.sh

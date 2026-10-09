@@ -249,3 +249,19 @@ test('idPrefix keeps ids unique when several chapters share a page', () => {
     assert.match(r.html, /id="MAT1-1a"/);
     assert.match(r.html, /id="MAT1-X-1"/);
 });
+
+test('captions: shown by default; hide, heuristic and a function keep the caption in the output, hidden', () => {
+    const fig = (cap) => w('usfm:fig', [cap], { src: ['f.jpg'] });
+    const d = doc(para('p', chapter(1, v(1), verses(1, 'Mdimi kangulolela migongolo ', fig('Mdimi kangulolela'), fig('David becomes king')))));
+    const shown = (r) => [...r.html.matchAll(/<div class="caption"( hidden)?>/g)].map((m) => !m[1]);
+    assert.deepEqual(shown(render(d)), [true, true]);
+    assert.deepEqual(shown(render(d, { captions: 'hide' })), [false, false]);
+    assert.deepEqual(shown(render(d, { captions: 'heuristic' })), [true, false]); // no word shared with the chapter
+    assert.deepEqual(shown(render(d, { captions: (cap) => cap.startsWith('David') })), [false, true]);
+});
+
+test('\\k keywords: a plain span by default (as SAB), glossary links with keywordLinks', () => {
+    const d = doc(para('p', chapter(1, v(1), verses(1, 'the ', w('usfm:k', ['Sabbath']), ' day'))));
+    assert.match(render(d).html, /<span class="k">Sabbath<\/span>/);
+    assert.match(render(d, { keywordLinks: true }).html, /<span class="glossary"><a class="glossary" match="Sabbath">Sabbath<\/a><\/span>/);
+});

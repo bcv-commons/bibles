@@ -84,10 +84,12 @@ up.
 | `showVerseNumbers`, `hideVerseNumberOne` | `true`, `false` | hidden numbers stay in the output |
 | `wordsOfJesus` | `true` | `\wj` as `span.wj` (red letters); off: `span.wj-off` |
 | `glossaryLinks` | `true` | `\w` as SAB's glossary link, matched on the `lemma` attribute when present |
+| `keywordLinks` | `false` | `\k` as a glossary link too, matched on its text (SAB: a plain `span.k`) |
 | `introduction` | `'inline'` | `'separate'` returns it in `introduction` instead |
 | `remarks` | `'hidden'` | `\rem` text, kept hidden |
 | `callers` | SAB defaults | `{ footnote: {type, symbol, noCallerToAuto}, xref: {…} }`, SAB's `default` / `abc` / `custom-symbol` rules |
 | `showNotes`, `showImages`, `showVideos` | `true` | off: still in the output, hidden |
+| `captions` | `'show'` | `'hide'`, `'heuristic'`, or `function(caption, atts)` returning whether to show it. A hidden caption stays in the output with `hidden`. `'heuristic'` hides a plain-ASCII caption that shares no word with the chapter: untranslated (usually English) placeholders. Measured 2026-10-09: it hid 95 of the 106 English placeholders in PKF `mzz`/`vmj`, and 64 of 1,944 genuine openbible captions (3.3%, all single words or names in Latin script) |
 | `verseLayout` | `'paragraphs'` | `'one-per-line'` wraps each verse in `div.verse-block` |
 | `verseRangeSeparator` | `'-'` | how `1-3` is printed |
 | `figureUrl(src)` | — | returns an image URL for a figure's `src`; without it, a placeholder with `data-src` |
@@ -110,6 +112,7 @@ up.
 | footnote / cross-ref | `sup.footnote` caller (SAB caller rules), body collected or inline |
 | character styles | `span.X`, nested (SAB keeps only one at a time) |
 | `\w` | `span.glossary > a.glossary[match]`, attributes as `data-*` |
+| `\k` | `span.k`; with `keywordLinks`, `span.glossary > a.glossary[match]` |
 | `\jmp` | `a.web-link` / `a.email-link` / `a.tel-link`; only `http(s)`, `mailto`, `tel`, anything else stays text |
 | `\xt` | `span.xt.reflink` |
 | figure (wrapper or graft) | `div.image-block`, caption `div.caption > span.caption` |

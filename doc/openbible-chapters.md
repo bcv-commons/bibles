@@ -1,118 +1,93 @@
-# openbible per-chapter text
+# openbible text (Biblica's Open Bible)
 
-`https://cdn.bibel.wiki/openbible/<iso>/<edition>/<book>/<chapter>.json`
+Biblica publishes its Open Bible editions only as whole-edition USFM/USX zips. We parse
+those zips (with [`usfmtc`](https://pypi.org/project/usfmtc/)) and publish each edition
+per chapter and per book:
 
-e.g. `https://cdn.bibel.wiki/openbible/yal/YALUNKA/JHN/21.json`
+| File | What it is |
+|---|---|
+| `cdn.bibel.wiki/openbible/<iso>/<edition>/_meta.json` | the edition: name, licenses, provider, books, formats |
+| `cdn.bibel.wiki/openbible/<iso>/<edition>/<BOOK>/<chapter>.sofria.json` | one chapter, Sofria |
+| `cdn.bibel.wiki/openbible/<iso>/<edition>/<BOOK>.usj.json` | one book, USJ 3.0 |
 
-A lightweight, per-chapter-fetchable derived endpoint for Biblica's Open
-Bible text (see [`sources.md`](sources.md)'s openbible section) —
-requested by a client 2026-09-16 (real content in that source is only
-available as whole-edition USFM/USX zips, a bigger lift than the
-per-chapter access this repo's other three sources already give).
+e.g. <https://cdn.bibel.wiki/openbible/yal/YALUNKA/JHN/21.sofria.json>
 
-## Extracted locally from this repo's own cached zips, via `usfmtc`
+The per-chapter verse-json files (`<BOOK>/<chapter>.json`) were removed on 2026-10-09;
+[`migrating-to-sofria.md`](migrating-to-sofria.md) shows how to get the same verse list
+from the Sofria chapter. Rendering and text extraction: `tools/sofria-render/`, see
+[`client-chapter-formats.md`](client-chapter-formats.md).
 
-Real per-verse text, extracted directly from this repo's own persistent
-USFM zip cache (`internal-data/api-cache/openbible/text-zips/`,
-~380MB) — `pipeline/core/usfm_to_verses.py`, backed by
-[`usfmtc`](https://pypi.org/project/usfmtc/), a real, actively maintained
-USFM parser (not a second hand-rolled parser here).
+## Choosing an edition: `catalog/openbible-editions.json`
 
-This was originally built as a caching layer in front of
-[`yaapi.bible`](https://yaapi.bible/)'s own `/verses/` API instead — that
-approach was replaced 2026-09-19 after `usfmtc` proved a 100% real
-success rate parsing this repo's own zips (vs. thousands of failures
-across 30+ distinct real marker types from this repo's own narrower,
-vendored USFM tokenizer, `tools/pkf-encode-py`'s `usfm_lexer.py`, which
-was tried first). Extracting locally removed a real operational problem
-too — the yaapi-based fetch repeatedly failed to complete due to
-rate-limited, real per-page pagination against a third-party API.
-
-**yaapi.bible's `/versions/` catalog is still used, but only for the
-edition id** — see `catalog/openbible-editions.json`'s own doc.
-Biblica's own catalog has no human-readable edition id at all (confirmed
-2026-09-16), so the `<edition>` path segment (e.g. `YALUNKA`) still comes
-from yaapi.bible's own `abbreviation` field — that part of the
-coordination with yaapi.bible's owner is unchanged. Only the *content*
-no longer depends on their API.
-
-## Scope: not all Biblica editions — two independent gates
-
-1. **Must have a resolved yaapi.bible abbreviation** — only Biblica
-   projects present in `catalog/openbible-editions.json` get a
-   client-facing id at all (see that file's own doc for why a raw
-   Biblica hex project id is deliberately never published). Check
-   `catalog/index.json`'s `pending_openbible_coverage` field for how
-   many more exist but aren't mapped yet.
-2. **Must have at least one non-ND license** — checked against Biblica's
-   own real per-version `licenses[]` array (not yaapi's single-string
-   field), same lenient rule used elsewhere this session: an edition
-   carrying an ND tag *alongside* a real non-ND alternative (e.g. dual
-   CC BY-SA + CC BY-NC-ND) is still included — only ND-only editions are
-   excluded (33 of 307 mapped editions, as of 2026-09-19).
-
-Both gates are independent — an edition can fail either one. Check an
-edition's own `_meta.json` `licenses` field before assuming coverage —
-`CC BY-NC` editions are included but still carry a real non-commercial
-restriction a client must respect.
-
-## Shape
-
-Per-chapter file:
+`cdn.bibel.wiki/catalog/openbible-editions.json` lists every Biblica project we can
+name, keyed by Biblica's project id (the `o:` ids in `catalog/overlap.json`):
 
 ```json
 {
-  "book": "1TH",
-  "chapter": 1,
-  "verses": [
-    {"verse": "1", "text": "..."},
-    {"verse": "2", "text": "..."}
-  ]
+  "formats": {
+    "sofria": {"path": "<BOOK>/<chapter>.sofria.json", "granularity": "chapter"},
+    "usj": {"path": "<BOOK>.usj.json", "granularity": "book"}
+  },
+  "entries": {
+    "65174ecae3ab186d581e98ff": {
+      "abbr": "OECV", "iso": "ekk",
+      "published": true,
+      "books": ["1CO", "1JN", "..."],
+      "canon": ["nt"],
+      "licenses": [{"type": "CC BY-SA", "url": "..."}],
+      "path": "openbible/ekk/OECV/"
+    },
+    "<project id>": {"abbr": "...", "iso": "...", "published": false, "reason": "nd_license"}
+  }
 }
 ```
 
-`book` — standard USFM/Paratext 3-letter code. `chapter` — bare int.
-`verses[]` — sequential, `verse` is a **string, not always a bare
-integer** — real verse bridges (e.g. `"28-29"`, two verses combined
-under one marker in the source itself) are preserved as-is, not split
-or renumbered. `text` is the real verse text (plain, footnotes/
-cross-references stripped, USFM markup removed).
+- `published`: the edition's Sofria and USJ are on the CDN. As of 2026-10-09: 274 of
+  307 editions, in 213 languages.
+- `books`: the book codes published (books with at least one chapter). Not every
+  edition has a full NT, let alone a full Bible.
+- `canon`: `nt` / `ot` for a complete testament, `ntp` / `otp` for part of one.
+- `licenses`: Biblica's own per-version license list, as in `_meta.json`.
+- `path`: the edition folder, relative to `https://cdn.bibel.wiki/`; combine with
+  `formats` for file URLs.
+- `reason`, when not published: `nd_license` (only no-derivatives licenses: we don't
+  republish those), `no_source` (Biblica's text isn't cached here), `not_built`.
 
-Per-edition metadata (one per edition, sibling to its chapter files, not
-repeated per chapter):
+## What is covered
 
-`https://cdn.bibel.wiki/openbible/<iso>/<edition>/_meta.json`
+1. **Only projects with a yaapi.bible edition abbreviation.** Biblica's catalog has no
+   human-readable edition id, so the `<edition>` path segment comes from yaapi.bible's
+   `abbreviation`, matched on the USFM artifact id (never on a name). A raw Biblica
+   project id is never used as a path. `catalog/index.json`'s
+   `pending_openbible_coverage` counts the Biblica projects not mapped yet.
+2. **Only editions with at least one non-ND license.** An edition with an ND tag next to
+   a non-ND alternative (e.g. CC BY-SA and CC BY-NC-ND) is included; ND-only editions
+   are listed with `published: false`, `reason: "nd_license"`.
+
+`CC BY-NC` editions are included but carry a non-commercial restriction you must respect.
+
+## `_meta.json`
 
 ```json
 {
   "name": "<edition name>",
-  "licenses": [
-    {"type": "CC BY-SA", "url": "https://creativecommons.org/licenses/by-sa/4.0/"}
-  ],
+  "licenses": [{"type": "CC BY-SA", "url": "https://creativecommons.org/licenses/by-sa/4.0/"}],
   "provider": "<rights holder>",
   "source": "biblica",
   "openbible_link": "https://openbible-api-1.biblica.com/projects/<project_id>",
-  "books": ["1TH", "1TI", "..."]
+  "books": ["1TH", "1TI", "..."],
+  "formats": {"sofria": {...}, "usj": {...}}
 }
 ```
 
-`licenses[]` — a real **array**, not a single value: some editions carry
-more than one license tag at once (e.g. dual CC BY-SA + CC BY-NC-ND) and
-both are kept, never collapsed to "the more permissive one." `books[]` —
-the real book codes this edition actually has chapter files for (check
-before assuming a book exists; not every edition covers the full Bible
-or even the full NT). `openbible_link` — the real Biblica project URL
-this content was extracted from (queryable directly against
-`openbible-api-1.biblica.com/projects/{id}`).
+`licenses[]` is an array: some editions carry more than one license, and all are kept.
 
 ## Attribution
 
-Credit Biblica (the edition's own `provider` field) as the content
-source when displaying this text — the extraction pipeline is this
-repo's own, but the content and its rights remain Biblica's.
+Credit Biblica (the edition's `provider`) as the source of the text. The conversion is
+ours; the content and its rights are Biblica's.
 
-## `<iso>` note
+## `<iso>`
 
-Derived from `catalog/openbible-editions.json` (itself sourced from
-yaapi.bible's own `language.iso639p3` field) — real ISO 639-3, same
-convention every other file in this repo uses.
+From yaapi.bible's `language.iso639p3`: ISO 639-3, as everywhere in this repo. It can
+differ from Biblica's own `languageCode` for the same project (e.g. `ort` vs `ory`).
