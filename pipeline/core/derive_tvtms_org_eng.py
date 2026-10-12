@@ -69,6 +69,12 @@ NT_FIX_REV12_MULTIVERSE = {"s": "REV 13:1", "t": "REV 12:18-13:1",
                            "tvtms_line": "4105-4106", "tvtms_action": "OneToOne"}
 
 
+MULTI_KIND = ("multi-verse relations: one verse in one scheme is several in the other. A source "
+              "that also has a row in the single-verse map: that row is the relation's first verse.")
+NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH",
+            "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
+
+
 def _merge_multiverse(path: Path, new_entries: list[dict], source_scheme: str) -> None:
     """Merges NT-fix entries into a <scheme>-to-eng.multiverse.json, creating
     it fresh if absent (same shape write_multiverse() already writes),
@@ -80,12 +86,13 @@ def _merge_multiverse(path: Path, new_entries: list[dict], source_scheme: str) -
     else:
         doc = {
             "source_scheme": source_scheme, "target_scheme": "eng",
-            "kind": "multi-verse relations (not in the single-verse map)",
+            "kind": MULTI_KIND,
             "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
             "attribution": "https://STEPBible.org",
             "tvtms_rev": TVTMS_COMMIT, "tvtms_sha256": TVTMS_SHA256,
             "map": [], "evidence": [], "flagged_not_published": [],
         }
+    doc["kind"] = MULTI_KIND
     existing = {(e["s"], e["t"]) for e in doc["map"]}
     for e in new_entries:
         if (e["s"], e["t"]) in existing:
@@ -97,7 +104,7 @@ def _merge_multiverse(path: Path, new_entries: list[dict], source_scheme: str) -
 
 def write_nt_fixes() -> None:
     """The one deliberate NT exception — see NT_FIX_* above."""
-    for out_path, scheme in ((OUT_TSV, "org"), (ORGW_OUT, "orgw"), (RSO_OUT, "rso")):
+    for out_path, scheme in ((OUT_TSV, "org"), (ORGW_OUT, "orgw"), (RSO_OUT, "rso"), (CATM_OUT, "catm")):
         if not out_path.is_file():
             continue
         text = out_path.read_text(encoding="utf-8")
@@ -119,10 +126,8 @@ def write_nt_fixes() -> None:
                        [NT_FIX_ACT19_MULTIVERSE, NT_FIX_2CO13_MULTIVERSE, NT_FIX_REV12_MULTIVERSE], "rso")
     _merge_multiverse(REPO_ROOT / "export" / "_vrs" / "map" / "catm-to-eng.multiverse.json",
                        [NT_FIX_ACT19_MULTIVERSE, NT_FIX_2CO13_MULTIVERSE], "catm")
-    # catm's single-verse map is built from org's derived.tsv directly (see
-    # `make vrs-map`'s catm rule, --mapping tvtms-org-to-eng.derived.tsv) —
-    # the 2CO 13:13 renumber row above, written to OUT_TSV, already reaches
-    # catm's published map with no separate catm-side row needed.
+    # catm's single-verse map reads tvtms-catm-to-eng.derived.tsv (org's rows minus the
+    # chapters catm numbers as English), which gets the 2CO 13:13 row above like the others.
 
     print("[tvtms] NT fixes: 2CO 13 + ACT 19 applied to org/orgw/rso/catm; REV 12/13 applied to rso only")
 PROVENANCE = REPO_ROOT / "data" / "vrs" / "tvtms-org-to-eng.provenance.json"
@@ -377,7 +382,7 @@ def write_multiverse(path: Path) -> None:
     MULTI_OUT.write_text(json.dumps({
         "source_scheme": "org",
         "target_scheme": "eng",
-        "kind": "multi-verse relations (not in the single-verse map)",
+        "kind": MULTI_KIND,
         "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
         "attribution": "https://STEPBible.org",
         "tvtms_rev": TVTMS_COMMIT,
@@ -430,6 +435,24 @@ def _orgw_chaptering_artifact(ref: str) -> bool:
         or ref.startswith("1KI 5:") and int(ref.split(":")[1]) <= 18
 
 
+ORG_VRS_SHAPE = REPO_ROOT / "data" / "vrs" / "org.vrs"
+
+
+def _english_chapter(ref: str, shape: dict[str, dict[int, int]], eng: dict[str, dict[int, int]],
+                     org: dict[str, dict[int, int]]) -> bool:
+    """The source verse's chapter has the English length in this scheme but not in org: the
+    scheme numbers that chapter as English does, so org's renumbering rows there don't apply.
+    Text-checked 2026-10-12: orgw EXO 22, 2CH 2, 1SA 21 (fra_lsg, swe_fol, nld_nbg), HOS 14
+    (orgw.vrs's own English chapters; fra_lsg); catm 1CH 12, NEH 7 (fra_ncl). Also covers
+    the two orgw chapters _orgw_chaptering_artifact() names."""
+    m = re.match(r"^(\S+) (\d+):", ref)
+    if not m:
+        return False
+    b, c = m.group(1), int(m.group(2))
+    n = shape.get(b, {}).get(c)
+    return n is not None and n == eng.get(b, {}).get(c) and n != org.get(b, {}).get(c)
+
+
 def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
     """orgw = org's Hebrew-column pairs restricted to refs valid in orgw.vrs and eng.vrs.
 
@@ -437,12 +460,12 @@ def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
     the remaining differences are the 62 Daniel rows (the intended fix), PSA 13:6, and
     the excluded JOL rows above.
     """
-    ow, eng = _shape(ORGW_VRS), _shape(ENG_VRS)
+    ow, eng, org = _shape(ORGW_VRS), _shape(ENG_VRS), _shape(ORG_VRS_SHAPE)
     identity_books = {b for b in ow if b in eng and ow[b] == eng[b]}
     rows = {(a, b) for a, b in pairs
             if _valid(a, ow) and _valid_target(b, eng) and a not in ORGW_EXCLUDE_SOURCES
             and a.split()[0] not in identity_books and a.split()[0] != "DAN"
-            and not _orgw_chaptering_artifact(a)}
+            and not _orgw_chaptering_artifact(a) and not _english_chapter(a, ow, eng, org)}
     return sorted((a, b) for a, b in rows if a != b)
 
 
@@ -456,6 +479,87 @@ def write_orgw() -> None:
         + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),
         encoding="utf-8")
     print(f"[tvtms] orgw: {len(rows)} non-identity rows -> {ORGW_OUT.relative_to(REPO_ROOT)}")
+
+
+CATM_VRS = REPO_ROOT / "data" / "vrs" / "catm.vrs"
+CATM_OUT = REPO_ROOT / "data" / "vrs" / "tvtms-catm-to-eng.derived.tsv"
+
+
+def write_catm() -> None:
+    """catm = org's rows, minus those in chapters catm numbers as English (_english_chapter).
+    Everything else stays org's, so generate_vrs_map.py --compare-vrs org still records the
+    remaining catm/org shape differences as exceptions."""
+    ca, eng, org = _shape(CATM_VRS), _shape(ENG_VRS), _shape(ORG_VRS_SHAPE)
+    lines = OUT_TSV.read_text(encoding="utf-8").splitlines(keepends=True)
+    keep = [ln for ln in lines[2:] if not _english_chapter(ln.split("\t")[0], ca, eng, org)]
+    CATM_OUT.write_text(
+        f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
+        f"pipeline/core/derive_tvtms_org_eng.py (catm). TVTMS is CC BY 4.0, STEPBible.org.\n"
+        + lines[1] + "".join(keep), encoding="utf-8")
+    print(f"[tvtms] catm: {len(keep)} rows ({len(lines) - 2 - len(keep)} English-chapter rows dropped) "
+          f"-> {CATM_OUT.relative_to(REPO_ROOT)}")
+
+
+# orgw 1 Samuel 20-21: orgw puts Hebrew 21:1 at the end of chapter 20, as 20:43 (fra_lsg
+# 1SA 20:43 "David se leva, et s'en alla...", the second half of English 20:42), and then
+# numbers chapter 21 as English does. So org's relation 1SA 20:42-21:1 -> 1SA 20:42 is, in
+# orgw numbering, 1SA 20:42-43 -> 1SA 20:42. Text-checked 2026-10-12.
+ORGW_FIX_1SA20 = {"s": "1SA 20:42-43", "t": "1SA 20:42", "org": "1SA 20:42-21:1"}
+
+
+def _rel_chapters(ref: str) -> set[tuple[str, int]]:
+    book, cv = ref.split(" ", 1)
+    out = set()
+    for part in cv.split("-"):
+        if ":" in part:
+            out.add((book, int(part.split(":")[0])))
+    return out
+
+
+def _rows_by_chapter(tsv: Path) -> dict[tuple[str, int], set[tuple[str, str]]]:
+    out: dict[tuple[str, int], set[tuple[str, str]]] = collections.defaultdict(set)
+    for ln in tsv.read_text(encoding="utf-8").splitlines()[2:]:
+        a, b = ln.split("\t")[:2]
+        for ref in (a, b):
+            for ch in _rel_chapters(ref):
+                out[ch].add((a, b))
+    return out
+
+
+def write_scheme_ot_multiverse(scheme: str, vrs: Path, tsv: Path) -> None:
+    """org's Old Testament relations that hold in this scheme: every chapter a relation
+    touches has org's length in the scheme's .vrs and exactly org's single-verse rows. Plus
+    the text-checked orgw 1 Samuel fix. Replaces the scheme's OT relations; NT ones stay."""
+    org_doc = json.loads(MULTI_OUT.read_text(encoding="utf-8"))
+    shape, org = _shape(vrs), _shape(ORG_VRS_SHAPE)
+    mine, theirs = _rows_by_chapter(tsv), _rows_by_chapter(OUT_TSV)
+    ev = {(e["s"], e["t"]): e for e in org_doc["evidence"]}
+    new = []
+    for rel in org_doc["map"]:
+        if rel["s"].split()[0] in NT_BOOKS:
+            continue
+        chs = _rel_chapters(rel["s"]) | _rel_chapters(rel["t"])
+        if all(shape.get(b, {}).get(c) == org.get(b, {}).get(c) and mine.get((b, c), set()) == theirs.get((b, c), set())
+               for b, c in chs):
+            e = ev[(rel["s"], rel["t"])]
+            new.append({"s": rel["s"], "t": rel["t"], "tvtms_line": e["tvtms_line"], "tvtms_action": e["tvtms_action"]})
+    if scheme == "orgw":
+        e = next(x for x in org_doc["evidence"] if x["s"] == ORGW_FIX_1SA20["org"])
+        new.append({"s": ORGW_FIX_1SA20["s"], "t": ORGW_FIX_1SA20["t"], "tvtms_line": e["tvtms_line"],
+                    "tvtms_action": e["tvtms_action"],
+                    "note": f"org {ORGW_FIX_1SA20['org']} in orgw numbering (orgw 1SA 20:43 = Hebrew 21:1)"})
+    path = REPO_ROOT / "export" / "_vrs" / "map" / f"{scheme}-to-eng.multiverse.json"
+    doc = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {
+        "source_scheme": scheme, "target_scheme": "eng", "kind": MULTI_KIND,
+        "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
+        "attribution": "https://STEPBible.org", "tvtms_rev": TVTMS_COMMIT, "tvtms_sha256": TVTMS_SHA256,
+        "map": [], "evidence": [], "flagged_not_published": []}
+    nt = lambda r: r["s"].split()[0] in NT_BOOKS  # noqa: E731
+    doc["kind"] = MULTI_KIND
+    doc["map"] = [{"s": r["s"], "t": r["t"]} for r in new] + [r for r in doc["map"] if nt(r)]
+    doc["evidence"] = new + [r for r in doc["evidence"] if nt(r)]
+    path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"[tvtms] {scheme} multi-verse: {len(new)} Old Testament relations -> {path.relative_to(REPO_ROOT)}")
 
 
 RSO_VRS = REPO_ROOT / "data" / "vrs" / "rso.vrs"
@@ -827,7 +931,7 @@ def write_section_multiverse(path: Path, scheme: str, rows: list, label_of, src_
     out.write_text(json.dumps({
         "source_scheme": scheme,
         "target_scheme": "eng",
-        "kind": "multi-verse relations (not in the single-verse map)",
+        "kind": MULTI_KIND,
         "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0)",
         "attribution": "https://STEPBible.org",
         "tvtms_rev": TVTMS_COMMIT,
@@ -882,6 +986,9 @@ def main() -> None:
     }, indent=2) + "\n", encoding="utf-8")
     write_multiverse(path)
     write_orgw()
+    write_catm()
+    write_scheme_ot_multiverse("orgw", ORGW_VRS, ORGW_OUT)
+    write_scheme_ot_multiverse("catm", CATM_VRS, CATM_OUT)
     write_rso(path)
     write_vul(path)
     write_lxx(path)

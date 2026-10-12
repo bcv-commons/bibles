@@ -7,7 +7,7 @@ revision and what the checks found. Per-edition assignments live in
 `cdn.bibel.wiki/dbt/_vrs/index.json`; its `maps` list names every map file
 below.
 
-Checksums are sha256 of the live CDN files, as of 2026-10-09.
+Checksums are sha256 of the live CDN files, as of 2026-10-09 (orgw, catm and the multi-verse files: 2026-10-12).
 
 ## New Testament
 
@@ -29,7 +29,7 @@ Old Testament only.
 
 - Shape: `_vrs/rso.vrs` `56e9042dabaf53017bac48f8e82ff4cfffca91e5f9aba4d0d9caab937a33c761`
 - Map: `_vrs/map/rso-to-eng.json` `cf324586456ab280dbc421a08a368f19ddd4fe295f87562ec88d3375f64c4637` (3,004 rows)
-- Multi-verse: `_vrs/map/rso-to-eng.multiverse.json` `48defe348e12be6940d0db5cd9e50da5365cdea6d55f83880d44bc90383c81f6` (7 relations: 4 Old Testament, 3 New Testament)
+- Multi-verse: `_vrs/map/rso-to-eng.multiverse.json` `c4408debfd7fa2f23eaafb209787423788e0963887c96b2c94e0e4b4d1725f6d` (7 relations: 4 Old Testament, 3 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: zero collisions outside title rows; no rows in books or chapters where the shape equals English; text-checked against `rus_syn` on the cases listed in the message history (Job 39–41, Proverbs 18, Psalms 12–13 and 50–60, Jeremiah 25/26/30/38, Exodus 36/38, 1 Chronicles 6, Joshua 5–6, Leviticus 14, Daniel 3–4). Audited by lexeme-aligner (0 spine verses unmapped; 8 unreached verses, all expected).
 - Not verified against text: the deuterocanon rows (1 Esdras, Sirach, Tobit, Judith, Wisdom, Baruch, the Letter of Jeremiah). Kept because five editions use them. Susanna and Bel (Daniel 13–14) have no rows.
@@ -39,30 +39,32 @@ Old Testament only.
 
 - Shape: `_vrs/org.vrs` `bf70cea4115322d4b286206f240e90d12cf16abeec39ba351df1ef8cf9174e23`
 - Map: `_vrs/map/org-to-eng.json` `efed1a4ea7e4e4ac5bab19f78a759ba641d0f25af086863c1fb1ff5327b83c98` (2,033 rows)
-- Multi-verse: `_vrs/map/org-to-eng.multiverse.json` `814549a9d64256e36a44c59c1106e4b269156a8cf19accdd64a649690771985d` (8 relations: 6 Old Testament, 2 New Testament)
+- Multi-verse: `_vrs/map/org-to-eng.multiverse.json` `63c5f9f4ee047769bbe65af21a3b2c6e1fc98f0873bc4402ba8307a8a934356b` (8 relations: 6 Old Testament, 2 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: Daniel included (Hebrew numbering in 3–4). Verified against the org baseline and the partner's shape check (clean).
 
 ## orgw (Hebrew numbering, English chapters)
 
 - Shape: `_vrs/orgw.vrs` `f272d18468275638c569cc7cdc19dd1b727486b64d245b080b4fb0bc48257950`
-- Map: `_vrs/map/orgw-to-eng.json` `f35c76a29779d9a1e93579721493449f680befb6059360def7a98fc84ef79a64` (1,465 rows)
-- Multi-verse: `_vrs/map/orgw-to-eng.multiverse.json` `e023051e1ad3ba193d51a8f0a52ec8d3f8c6eb3228be37b130d649fe2e12fc61` (2 relations, both New Testament)
+- Map: `_vrs/map/orgw-to-eng.json` `1f20cd5fb0a5f79ea953db28a49c46d9086b129582ca5be5f5cd155ded4620b0` (1,395 rows)
+- Multi-verse: `_vrs/map/orgw-to-eng.multiverse.json` `f05f1012050e47cfb4ac11746de5b8e425d52f192031291687fb808a58852679` (6 relations: 4 Old Testament, 2 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: no rows in books where the shape equals English; no Daniel rows; no Numbers 17 or 1 Kings 5 chapter-boundary rows. bcv-query's shape check: 67 defects against `orgw.vrs`, as predicted. Text evidence: Louis Segond (`fra/FRNTLS`) numbers Psalm 51's title as verses 1–2 and keeps English chapters (Malachi 4), checked 2026-10-08.
+- Fixed 2026-10-12: 70 rows removed from four chapters orgw numbers as English (EXO 22, 1SA 21, 2CH 2, HOS 14; org's renumbering doesn't apply there), checked against fra_lsg, swe_fol and nld_nbg. Old Testament multi-verse relations added: org's where orgw's shape and rows agree (1KI 22:43-44, PSA 13:6, ISA 63:19), plus 1SA 20:42-43 → 1SA 20:42 (orgw puts Hebrew 21:1 at 20:43; fra_lsg). Hosea 13–14 isn't uniform among orgw editions: swe_fol and nld_nbg use Hebrew chapters there (15/10), fra_lsg and `orgw.vrs` English ones (16/9).
 
 ## catm (Catholic Masoretic)
 
 - Shape: `_vrs/catm.vrs` `9c76c19ed695b65704d81b6d7eca285e98961ce8c90c372543ecf9223da5bf68`
-- Map: `_vrs/map/catm-to-eng.json` `9d55b6a53b04b26b81badf07c8ece51d1e5fc110d7650a5064f6c668be0d638c` (2,033 rows)
-- Multi-verse: `_vrs/map/catm-to-eng.multiverse.json` `4bc201a472ee7c02bd86e82e91c66a1998f09a4290deca5f5150d6401958e706` (2 relations, both New Testament)
-- Built from the same derived org rows, compared against `org.vrs`: 50 shape exceptions recorded in the map file (chapter-level divergences from org).
+- Map: `_vrs/map/catm-to-eng.json` `ebefc0af68d678ab1f60836671f96be3cd23a84fd86d125d1f293032c7d8a724` (1,992 rows)
+- Multi-verse: `_vrs/map/catm-to-eng.multiverse.json` `693634e6475faaac0107343448b72013bd8aca079a7e2619401eae972d9de2e0` (7 relations: 5 Old Testament, 2 New Testament)
+- Built from org's derived rows minus the chapters catm numbers as English (`data/vrs/tvtms-catm-to-eng.derived.tsv`), compared against `org.vrs`: 51 shape exceptions recorded in the map file (chapter-level divergences from org).
+- Fixed 2026-10-12: 41 rows removed from 1CH 12 and NEH 7, which catm numbers as English (fra_ncl). Old Testament multi-verse relations added where catm's shape and rows agree with org's: NUM 25:19-26:1, 1SA 20:42-21:1, 1KI 22:43-44, PSA 13:6, ISA 63:19.
 
 ## vul (Vulgate)
 
 - Shape: `_vrs/vul.vrs` `0b8f8ea8d07e5f3bf990434b070aa50e3870fde224c4d440daa142af6c40706b`
 - Map: `_vrs/map/vul-to-eng.json` `44025661ff5a6afbddac8559bc46ece29ddc661691a05f14ce0b94baa2e46dd7` (4,098 rows, 0 shape exceptions)
-- Multi-verse: `_vrs/map/vul-to-eng.multiverse.json` `dfa3c60a54fea2faf882e74df26f9fcdd8baf763a2d0600af91e8b0d540af451` (355 relations: several Vulgate verses in one English verse, e.g. SIR 1:17-20 → SIR 1:16, or one in several). They cover 340 of the 346 Vulgate verses that have no row in the single-verse map but whose own number is another row's target. 16 TVTMS relations are flagged in the file, not published (outside our shapes, or range-to-range).
+- Multi-verse: `_vrs/map/vul-to-eng.multiverse.json` `732b91d8b344f440876e4d9f196f75d9a9e867add29e22865d8fdfc2f3976ebb` (355 relations: several Vulgate verses in one English verse, e.g. SIR 1:17-20 → SIR 1:16, or one in several). They cover 340 of the 346 Vulgate verses that have no row in the single-verse map but whose own number is another row's target. 16 TVTMS relations are flagged in the file, not published (outside our shapes, or range-to-range).
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's Latin sections: Old Testament and deuterocanon, every source valid in `vul.vrs`, every target valid in `eng.vrs`, one-to-one (no source or target used twice).
 - Replaces the unpinned strongs-aligner baseline: all 2,845 of its rows are kept with the same target. Added: 1,253 rows, nearly all deuterocanon (SIR, DAN additions, TOB, JDT, WIS, BAR, 2MA).
 - Editions: helloAO `lat_clv`, `eng_dra`.
@@ -75,7 +77,7 @@ Old Testament only.
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's `Greek` sections, with its second Greek edition (`Greek2`) for MAL 3, JER 34 and 4MA 7, 8, 12, the chapters where it fits `lxx.vrs` better. Book codes are mapped by `data/vrs/crosswalk-lxx.toml` (DAN → DAG, NEH → EZR chapter + 10, 2CH 37 → MAN). Greek Esther comes from the hand-curated supplement `data/vrs/esg-lxx-to-eng.tsv`.
 - One-to-one: no source maps to two verses and no English verse is the target of two. Psalm titles are the one intended exception: a two-verse superscription maps both verses to the title (PSA 50:1 and 50:2 → PSA 51:title; the same for 52, 54 and 60), as in every map. The unpinned map it replaces had 141 and 191 of these (the collisions bcv-query found).
 - Compared with that map: 4,748 of its 5,109 rows are kept with the same target and none are added. Dropped: 202 collision rows, and 159 rows that are now identity, mostly renumberings from the second Greek edition in chapters where the first fits `lxx.vrs` better (DEU, JOB, HAG, SIR, TOB, WIS, HOS, 1ES, ZEC, EXO), plus 15 Prayer of Manasseh rows that mapped verses to themselves.
-- Multi-verse: `_vrs/map/lxx-to-eng.multiverse.json` `7035a06cb205bf8f4e621346e3949920999f1fdd3b828ccfc60e7e738f45e92d` (54 relations). Of the 118 Greek verses with no row whose own number is another row's target, they cover 32; 11 fall in passages whose verse order differs (range-to-range, not expressed), and 74 (JER 30/32, LEV 7, EXO 38-40, 1ES) have no TVTMS relation in the sections we read: still open.
+- Multi-verse: `_vrs/map/lxx-to-eng.multiverse.json` `40dad35a96aa383a0ade94e2fc748a2e25be7a5f108392cd57651d87ab59a93b` (54 relations). Of the 118 Greek verses with no row whose own number is another row's target, they cover 32; 11 fall in passages whose verse order differs (range-to-range, not expressed), and 74 (JER 30/32, LEV 7, EXO 38-40, 1ES) have no TVTMS relation in the sections we read: still open.
 - Known gap: Esther 5:1-14 (Addition D, interleaved; varies by edition) has no rows.
 - Editions: helloAO `grc_bre`, `eng_boy`.
 - `lxx.vrs` has no New Testament.

@@ -105,13 +105,13 @@ vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS) + nt-v
 	  --crosswalk data/vrs/crosswalk-org.toml \
 	  --mapping data/vrs/tvtms-org-to-eng.derived.tsv \
 	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
-	@# catm's data rows are identical to org's (verified), so it reads the same derived map.
+	@# catm's rows are org's minus the chapters catm numbers as English (derive_tvtms_org_eng.py).
 	@# --compare-vrs so real catm/org shape divergence gets recorded honestly
 	@# instead of silently falling through classify_exceptions()'s blind spot
 	@# for chapters the reused map never had a row for.
 	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme catm \
 	  --crosswalk data/vrs/crosswalk-catm.toml \
-	  --mapping data/vrs/tvtms-org-to-eng.derived.tsv \
+	  --mapping data/vrs/tvtms-catm-to-eng.derived.tsv \
 	  --compare-vrs org \
 	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
 

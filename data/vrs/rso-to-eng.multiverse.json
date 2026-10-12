@@ -1,7 +1,7 @@
 {
   "source_scheme": "rso",
   "target_scheme": "eng",
-  "kind": "multi-verse relations (not in the single-verse rso map)",
+  "kind": "multi-verse relations: one verse in one scheme is several in the other. A source that also has a row in the single-verse map: that row is the relation's first verse.",
   "authority": "TVTMS — Translators Versification Traditions, STEPBible-Data (CC BY 4.0), tradition rows checked against the Russian Synodal text",
   "attribution": "https://STEPBible.org",
   "tvtms_rev": "902681f77a4a2975b809555ff3c35ffe3c48a1d5",

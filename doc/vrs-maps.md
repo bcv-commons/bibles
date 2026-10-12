@@ -76,6 +76,36 @@ where the boundary falls verse-by-verse) — `map`'s row sequence already
 tells you precisely, you just have to fill the gaps by adjacency rather
 than expect an explicit row for every single verse.
 
+## Merged and split verses: `<scheme>-to-eng.multiverse.json`
+
+`map` only holds one verse to one verse. Where the two schemes divide the text
+differently (one verse in one scheme is two in the other), the relation is in the
+sibling file `https://cdn.bibel.wiki/_vrs/map/<scheme>-to-eng.multiverse.json`, the
+same shape with a range on one side:
+
+```json
+{"s": "1SA 20:42-21:1", "t": "1SA 20:42"}   // two org verses are one eng verse
+{"s": "PSA 13:6", "t": "PSA 13:5-6"}       // one org verse is two eng verses
+{"s": "ISA 63:19", "t": "ISA 63:19-64:1"}  // the second half of org 63:19 is eng 64:1
+```
+
+Read both files. For a verse inside a multiverse relation, the relation is the
+answer, and it overrides identity: without it, org `1SA 21:1` would keep its number
+and collide with org `21:2 → 21:1`. A verse can also have a `map` row (org `PSA 13:6 →
+PSA 13:5`): that row gives the first verse of the range only, for a client that wants
+a single verse; the multiverse relation is the full answer.
+
+For `org`, these are the six Old Testament places where Hebrew and English split a
+verse differently: NUM 25:19 / 26:1, 1SA 20:42 / 21:1, 1KI 22:43-44, 1CH 12:4-5,
+PSA 13:5-6 and ISA 63:19 / 64:1, plus two in the New Testament (ACT 19:40-41,
+2CO 13:12-13). `orgw`, `catm` and `rso` have the ones that hold in their own
+numbering (e.g. `orgw` puts Hebrew 1SA 21:1 at 20:43, so its relation is
+`1SA 20:42-43 → 1SA 20:42`); `vul` and `lxx` have their own, from TVTMS's Latin and
+Greek sections. Each file lists TVTMS's own evidence (line and action) per relation,
+and any relation it couldn't express (`flagged_not_published`; for `org`, NEH 7:68,
+which most Hebrew manuscripts lack). The `data/vrs/tvtms-*-to-eng.derived.tsv` files
+in this repo are the single-verse rows only: use the published JSON.
+
 ## Deuterocanon rows in `rso` (added 2026-10-06)
 
 The `rso` map includes rows for 1 Esdras, Sirach, Tobit, Judith, Wisdom and
