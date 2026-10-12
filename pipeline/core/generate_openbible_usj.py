@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, EXPORT, CATALOG_DIR  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
+from usfm_pipes import protect, restore  # noqa: E402
 from edition_formats import META_FILE, write_meta  # noqa: E402
 
 TEXT_CACHE = API_CACHE / "openbible" / "text"
@@ -111,11 +112,11 @@ def main():
                 continue
             book = name.split("/")[-1].replace(".usfm", "")
             with tempfile.NamedTemporaryFile(mode="w", suffix=".usfm", delete=False, encoding="utf-8") as tf:
-                tf.write(z.read(name).decode("utf-8"))
+                tf.write(protect(z.read(name).decode("utf-8")))  # `|` used as text survives
                 tmp_path = tf.name
             try:
                 doc = usfmtc.readFile(tmp_path)
-                usj = doc.outUsj()
+                usj = restore(doc.outUsj())
                 fix_adjacent_w_spacing(usj)
             except Exception as e:
                 print(f"  WARNING: {abbr}/{book} USJ extraction failed: {e}")
