@@ -54,6 +54,9 @@ Mapping decisions:
     footnote/xref type distinction we've found, so all notes are treated
     as plain footnotes — a documented simplification, not silently
     dropped data).
+  - an acrostic letter, given inside the text between pipes ("|א| Мән...", uig_ara/
+    cyr/lat/pin, sometimes mid-fragment) -> a USJ char node, marker "qac" (USFM's
+    acrostic letter). Only a single Hebrew letter between pipes counts.
   - No table/figure equivalent found in the real schema — nothing to map,
     consistent with the other 3 sources' own known table/figure gaps.
 
@@ -65,6 +68,8 @@ require a separate merge step concatenating chapters, not something this
 module does.
 """
 from __future__ import annotations
+
+import re
 
 
 _POEM_MARKER = {1: "q1", 2: "q2", 3: "q3", 4: "q4"}
@@ -141,6 +146,31 @@ def _append_piece(content_list, piece):
     if _needs_space(_last_char_of(content_list), _first_char_of(piece)):
         piece = _prefix_space(piece)
     content_list.append(piece)
+
+
+# An acrostic letter between pipes; any other `|` stays text. Same as the JS ACROSTIC.
+_ACROSTIC = re.compile(r"\|([\u05D0-\u05EA])\|")
+
+
+def _append_text(content_list, text):
+    pieces = []
+    at = 0
+    for m in _ACROSTIC.finditer(text):
+        if m.start() > at:
+            pieces.append(text[at:m.start()])
+        pieces.append({"type": "char", "marker": "qac", "content": [m.group(1)]})
+        at = m.end()
+    if at < len(text):
+        pieces.append(text[at:])
+    for i, piece in enumerate(pieces):
+        if i > 0:  # within one fragment: as given
+            content_list.append(piece)
+        elif isinstance(piece, str):
+            _append_piece(content_list, piece)
+        else:
+            if _needs_space(_last_char_of(content_list), _first_char_of(piece)):
+                content_list.append(" ")
+            content_list.append(piece)
 
 
 def _flush_para(top_content, state):
@@ -227,7 +257,7 @@ def _walk_verse_content(item, top_content, state, footnotes_by_id):
     (opening/switching paragraphs as needed for poem-level changes)."""
     if isinstance(item, str):
         para = _ensure_para(top_content, state, _current_marker(state))
-        _append_piece(para["content"], item)
+        _append_text(para["content"], item)
         return
 
     if not isinstance(item, dict):
@@ -256,7 +286,7 @@ def _walk_verse_content(item, top_content, state, footnotes_by_id):
         if item.get("wordsOfJesus"):
             _append_piece(para["content"], {"type": "char", "marker": "wj", "content": [text]})
         else:
-            _append_piece(para["content"], text)
+            _append_text(para["content"], text)
         return
 
 

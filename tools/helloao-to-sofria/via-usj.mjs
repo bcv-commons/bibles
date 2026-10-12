@@ -16,6 +16,9 @@
 import { Proskomma } from 'proskomma-core';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { mergeBookUsj } from './helloao_to_usj.mjs';
+// The same importer workarounds the openbible/audiobiblia conversion uses (e.g. a `|` in
+// text would otherwise come out as `| default=""`; helloAO's eng_lsv and san_* have them).
+import { prepareUsj, restorePipes } from '../usj-to-sofria/prepare_usj.mjs';
 
 class BiblesPk extends Proskomma {
   constructor() {
@@ -55,11 +58,11 @@ function main() {
     writeFileSync(`${usjDir}/${book.id}.json`, usjText);
 
     const pk = new BiblesPk();
-    const doc = pk.importDocument({ lang: 'xx', abbr: book.id }, 'usj', usjText);
+    const doc = pk.importDocument({ lang: 'xx', abbr: book.id }, 'usj', JSON.stringify(prepareUsj(usj)));
     const bookSofriaDir = `${sofriaDir}/${book.id}`;
     mkdirSync(bookSofriaDir, { recursive: true });
     for (const chNum of collectChapterNumbers(usj)) {
-      writeFileSync(`${bookSofriaDir}/${chNum}.json`, doc.sofria(undefined, chNum));
+      writeFileSync(`${bookSofriaDir}/${chNum}.json`, restorePipes(doc.sofria(undefined, chNum)));
       chaptersWritten++;
     }
     booksOk++;

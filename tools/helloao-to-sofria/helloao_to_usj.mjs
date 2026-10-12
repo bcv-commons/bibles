@@ -104,6 +104,28 @@ function appendPiece(contentList, piece) {
   contentList.push(piece);
 }
 
+// An acrostic letter: helloAO gives it inside the text between pipes, "|א| Мән..."
+// (uig_ara/cyr/lat/pin, PSA 34, 119, LAM 1-4, ...; sometimes mid-fragment,
+// "...nurlandi; |ו|Yüzliri"). It becomes USFM's \qac, a label rather than a word. Only
+// a single Hebrew letter between pipes counts; any other `|` stays text.
+const ACROSTIC = /\|([\u05D0-\u05EA])\|/g;
+
+function appendText(contentList, text) {
+  const pieces = [];
+  let at = 0;
+  for (const m of text.matchAll(ACROSTIC)) {
+    if (m.index > at) pieces.push(text.slice(at, m.index));
+    pieces.push({ type: 'char', marker: 'qac', content: [m[1]] });
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) pieces.push(text.slice(at));
+  pieces.forEach((piece, i) => {
+    if (i > 0) { contentList.push(piece); return; } // within one fragment: as given
+    if (typeof piece !== 'string' && needsSpace(lastCharOf(contentList), firstCharOf(piece))) contentList.push(' ');
+    if (typeof piece === 'string') appendPiece(contentList, piece); else contentList.push(piece);
+  });
+}
+
 function flushPara(topContent, state) {
   if (state.para !== null && (state.para.content.length || state.para.marker === 'b')) {
     topContent.push(state.para);
@@ -188,7 +210,7 @@ function walkVerseContent(item, topContent, state, footnotesById) {
   // (opening/switching paragraphs as needed for poem-level changes).
   if (typeof item === 'string') {
     const para = ensurePara(topContent, state, state.paraMarker || state.lineMarker || 'p');
-    appendPiece(para.content, item);
+    appendText(para.content, item);
     return;
   }
   if (!item || typeof item !== 'object') return;
@@ -215,7 +237,7 @@ function walkVerseContent(item, topContent, state, footnotesById) {
     if (item.wordsOfJesus) {
       appendPiece(para.content, { type: 'char', marker: 'wj', content: [text] });
     } else {
-      appendPiece(para.content, text);
+      appendText(para.content, text);
     }
   }
 }
