@@ -729,8 +729,21 @@ def derive_vul(path: Path) -> tuple[list[tuple[str, str]], dict]:
     return sorted(rows), report
 
 
+# TVTMS's Latin column has a verse more than our vul.vrs (the Clementine text, lat_clv) at
+# the end of these Psalms and maps the pair to one English verse ("Concatenation",
+# "Psa.42:5-6" -> "Psa.43:5"), so the relation falls outside our shape and the verse had no
+# row at all. In vul.vrs the chapter's last verse holds the whole English verse (lat_clv
+# PSA 42:5 "Quare tristis es, anima mea?..."; 125:6 "Euntes ibant... Venientes autem...";
+# 135:26 holds TVTMS's 135:26-27). Text-checked 2026-10-12. Deuterocanon cases of the same
+# shape (SIR, 1ES, 2ES) stay flagged: not checked against text.
+VUL_CLIPPED = {("PSA 42:5", "PSA 43:5"): 12421, ("PSA 125:6", "PSA 126:6"): 17239,
+               ("PSA 135:26", "PSA 136:26"): 17525}
+
+
 def write_vul(path: Path) -> None:
     rows, report = derive_vul(path)
+    assert not {a for a, _ in rows} & {a for a, _ in VUL_CLIPPED}, "a clipped row now has a TVTMS row"
+    rows = sorted(set(rows) | set(VUL_CLIPPED), key=lambda r: (r[0].split()[0], r[0]))
     if report["collisions"] or report["sources_mapped_twice"]:
         raise SystemExit(f"[vul] not one-to-one: {report}; refusing to write")
     VUL_OUT.write_text(
@@ -870,7 +883,7 @@ def write_lxx(path: Path) -> None:
 
 
 def section_multiverse(path: Path, label_of, src_shape: dict, single_sources: set,
-                       to_scheme=lambda ref: ref) -> tuple[list[dict], list[dict]]:
+                       to_scheme=lambda ref: ref, single_pairs: frozenset = frozenset()) -> tuple[list[dict], list[dict]]:
     """Multi-verse relations from TVTMS's labelled sections: rows where the tradition
     side and the English side have different verse counts (several verses into one,
     or one into several), which a single-verse map can't hold.
@@ -905,6 +918,9 @@ def section_multiverse(path: Path, label_of, src_shape: dict, single_sources: se
             continue
         rec = {"tvtms_line": n, "tvtms_action": act, "source": src_raw, "english": eng_raw}
         if not all(_valid(x, src_shape) for x in src) or not all(_valid_target(t, eng) for t in tgt):
+            clipped = [x for x in src if _valid(x, src_shape)]
+            if len(clipped) == 1 and len(tgt) == 1 and (clipped[0], tgt[0]) in single_pairs:
+                continue  # published as a single-verse row (VUL_CLIPPED)
             flagged.append({**rec, "reason": "outside our shapes"})
         elif len(src) > 1 and len(tgt) > 1:
             flagged.append({**rec, "reason": "range-to-range (verse order differs; not expressed here)"})
@@ -925,7 +941,8 @@ def section_multiverse(path: Path, label_of, src_shape: dict, single_sources: se
 def write_section_multiverse(path: Path, scheme: str, rows: list, label_of, src_shape: dict,
                              to_scheme=lambda ref: ref) -> None:
     single_sources = {to_scheme(a) for a, _ in rows}
-    accepted, flagged = section_multiverse(path, label_of, src_shape, single_sources, to_scheme)
+    single_pairs = frozenset((to_scheme(a), b) for a, b in rows)
+    accepted, flagged = section_multiverse(path, label_of, src_shape, single_sources, to_scheme, single_pairs)
     out = REPO_ROOT / "export" / "_vrs" / "map" / f"{scheme}-to-eng.multiverse.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
@@ -946,7 +963,7 @@ def write_section_multiverse(path: Path, scheme: str, rows: list, label_of, src_
 
 def write_vul_lxx_multiverse(path: Path) -> None:
     vul_rows, _ = derive_vul(path)
-    write_section_multiverse(path, "vul", vul_rows, lambda ch: "Latin", _shape(VUL_VRS))
+    write_section_multiverse(path, "vul", list(vul_rows) + list(VUL_CLIPPED), lambda ch: "Latin", _shape(VUL_VRS))
     lxx_rows, _ = derive_lxx(path)
 
     def lxx_code(ref: str) -> str:

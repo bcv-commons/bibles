@@ -106,6 +106,36 @@ and any relation it couldn't express (`flagged_not_published`; for `org`, NEH 7:
 which most Hebrew manuscripts lack). The `data/vrs/tvtms-*-to-eng.derived.tsv` files
 in this repo are the single-verse rows only: use the published JSON.
 
+## Maps to the Hebrew numbering: `_vrs/map/<scheme>-to-org.json` (added 2026-10-12)
+
+`https://cdn.bibel.wiki/_vrs/map/<scheme>-to-org.json` and `.multiverse.json`, for
+`eng`, `orgw`, `catm`, `rso`, `vul` and `lxx`: a scheme's verse in the Hebrew (`org`)
+numbering, for a client whose reference text is the Hebrew Old Testament. Read them like
+the `-to-eng` maps: a `map` row where the number changes, identity elsewhere, merged and
+split verses in the multiverse file.
+
+```json
+{"s": "PSA 51:1", "t": "PSA 51:3"}            // eng-to-org: eng doesn't number the title
+{"s": "1SA 20:43", "t": "1SA 21:1"}           // orgw-to-org
+{"s": "PSA 13:5-6", "t": "PSA 13:6"}          // eng-to-org.multiverse
+```
+
+Two differences from the `-to-eng` maps:
+
+- `no_org_counterpart` lists the scheme's verses that have no Hebrew verse (the Greek
+  additions in Daniel and Esther, Psalm 151, eng NEH 7:68). Check it before taking a
+  missing row as identity.
+- Scope is the 39 books of the Hebrew Bible. Deuterocanonical books have no rows, and
+  the New Testament is in `nt-variants.json`. Where a scheme names a Hebrew book
+  differently (`lxx` DAG = Daniel, `lxx` EZR 11–23 = Nehemiah), every verse has a row.
+
+They're built from the published maps: X → eng, then eng → org with org's map inverted.
+Going through eng verse by verse would lose information where several verses meet in one
+English verse (a two-verse Psalm title is one eng "title"), so verses are matched in
+groups that share English verses, in order. `pipeline/core/generate_vrs_to_org.py`
+documents the rule. Each map carries its `-to-eng` map's checks and known gaps (see
+`doc/scheme-manifest.md`).
+
 ## Deuterocanon rows in `rso` (added 2026-10-06)
 
 The `rso` map includes rows for 1 Esdras, Sirach, Tobit, Judith, Wisdom and

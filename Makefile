@@ -83,7 +83,7 @@ dbt-metadata: ## Generate media.json + per-book timing + versification for CDN
 vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
 
-vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS) + nt-variants.json
+vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS), <scheme>-to-org maps + nt-variants.json
 	$(PYTHON) $(CORE)/generate_nt_variants.py
 	$(PYTHON) $(CORE)/generate_vrs_map.py --source-scheme lxx \
 	  --crosswalk data/vrs/crosswalk-lxx.toml \
@@ -114,6 +114,8 @@ vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS) + nt-v
 	  --mapping data/vrs/tvtms-catm-to-eng.derived.tsv \
 	  --compare-vrs org \
 	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
+	@# <scheme>-to-org: the maps above composed with org-to-eng inverted (needs them first).
+	$(PYTHON) $(CORE)/generate_vrs_to_org.py
 
 TVTMS_ORG_REV := 902681f77a4a2975b809555ff3c35ffe3c48a1d5
 

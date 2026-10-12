@@ -77,8 +77,16 @@ too. New Testament numbering varies on its own, so an edition can have an `nt` e
   missing from that edition. Information only: number them as `eng` does.
 
 Client rule: for a key with an `nt` entry, take New Testament rows from its variants
-(identity elsewhere) and ignore the New Testament rows of the `l` scheme's map. For a key
-without one, use the `l` map for both testaments, as before.
+(identity elsewhere) and ignore the New Testament rows of the `l` scheme's map. A key
+without one has an `eng` New Testament, or none we could test (an Old Testament-only text
+or an edition we couldn't probe).
+
+Since 2026-10-12 every edition whose New Testament differs from `eng` has an entry, even
+when its scheme's map already covers the difference (an `orgw` edition with the Greek
+numbering of 2CO 13 and ACT 19, e.g. `helloao:fra_lsg`, now has `"profile": "greek"`).
+Before, those editions had no entry and relied on the scheme map's New Testament rows,
+which was wrong for `vul` (its map has no New Testament rows) and incomplete for `rso`
+(no `ROM16-24`). So `nt` alone now gives an edition's New Testament numbering.
 
 How it's found: for PKF collections, from their `.vrs` files (every chapter); for DBT and
 helloAO editions, by probing the last verse of the 15 chapters TVTMS tests

@@ -48,14 +48,18 @@ class NtClassifier:
         return sorted(variants), sorted(unexplained)
 
     def entry(self, lengths: dict, label: str, swap: dict | None = None) -> dict | None:
-        """The `nt` entry for an edition labelled `label`, or None when its label's own
-        map already describes its New Testament. swap: {variant id: replacement} for a
-        variant refined by text (REV12-17 -> REV12-17esv)."""
+        """The `nt` entry for an edition labelled `label`, or None when its New Testament
+        is plain eng and its label's map has no New Testament rows either. An edition whose
+        variants equal what its label's map already covers (an orgw edition with the Greek
+        2CO 13 / ACT 19 numbering) still gets an entry, so a client can read New Testament
+        numbering from `nt` alone (2026-10-12; helloao:fra_lsg was reported as a gap).
+        swap: {variant id: replacement} for a variant refined by text (REV12-17 ->
+        REV12-17esv)."""
         variants, unexplained = self.variants_of(lengths)
         if swap:
             variants = sorted(swap.get(v, v) for v in variants)
         base = label if label in self.scheme_nt else "eng"
-        if variants == self.scheme_nt[base] and not unexplained:
+        if not variants and not unexplained and not self.scheme_nt[base]:
             return None
         out = {"variants": variants}
         if tuple(variants) in self.profiles:
