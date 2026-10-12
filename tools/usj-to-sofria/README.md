@@ -16,16 +16,22 @@ Known behaviour:
   word wrappers are kept. proskomma-core also writes the stray text
   `| marker="wj"` into those wrappers; the converter removes that text after
   output.
-- Before import, `prepare_usj.mjs` works around four importer behaviours, without
-  removing any text:
-  - each `\fig` is moved into a paragraph of its own (one in the introduction goes to
-    the end of the introduction); otherwise the text after a figure is nested inside it;
-  - USJ `table:row` / `table:cell` nodes are renamed `row` / `cell`, the names the
-    importer's handlers use; otherwise a book with a table fails to import at all;
-  - optional line breaks (USFM `//`, USJ `optbreak`) are removed; the importer would
-    write them into the text as a literal `//`;
-  - a `\cp` paragraph that only repeats its chapter's `pubnumber` is removed; the
-    importer would add it as loose text after the previous chapter's last verse.
+- Before import, `prepare_usj.mjs` works around the importer's behaviour, without
+  removing any text (each step is documented in the file):
+  - each `\fig` is moved into a paragraph of its own, right after its host paragraph
+    (one in the introduction goes to the end of the introduction); otherwise the text
+    after a figure is nested inside it;
+  - USJ `table:row` / `table:cell` become `row` / `cell`, the names the importer's
+    handlers use; a table with no text is removed;
+  - optional line breaks (`//`) are removed; a `\cp` paragraph that only repeats the
+    chapter's `pubnumber` is removed;
+  - a `|` in text is kept as text (the importer would turn it into `| default=""`);
+  - a heading paragraph holding a verse number is split there, so the verse keeps
+    its text;
+  - Paratext `\restore` metadata becomes a `\rem` remark.
+- Route parity: the verse text of every published book is the same from its USJ and
+  from its Sofria chapters (`tools/verse-text/js/parity.mjs`; 2026-10-12: all 128,136
+  openbible and 1,402 audiobiblia chapters identical).
 
 Checked: BLL John (`export/audiobiblia-usj/spa/BLL/JHN.json`) produces 21
 chapter files. Chapter 3 keeps 17 `usfm:wj` wrappers, has no stray text, and

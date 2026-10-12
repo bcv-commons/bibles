@@ -14,7 +14,7 @@ import { Proskomma } from 'proskomma-core';
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, dirname } from 'node:path';
 import { sofriaForChapterViaWholeBook } from './whole_book_fallback.mjs';
-import { prepareUsj } from './prepare_usj.mjs';
+import { prepareUsj, restorePipes } from './prepare_usj.mjs';
 
 // proskomma-core writes stray attribute text such as '| marker="wj"' or '| marker="ft"'
 // into node text. Remove it; wrappers are kept (see convert.mjs).
@@ -129,7 +129,7 @@ function main() {
 
     mkdirSync(outDir, { recursive: true });
     for (const [chNum, sofriaJson] of result.chapterJson) {
-      writeFileSync(join(outDir, `${chNum}.json`), stripWjLeak(sofriaJson));
+      writeFileSync(join(outDir, `${chNum}.json`), restorePipes(stripWjLeak(sofriaJson)));
       chaptersWritten++;
     }
     if (result.usedFallback) console.log('WHOLE-BOOK-FALLBACK', rel, bookCode);

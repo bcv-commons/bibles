@@ -11,7 +11,8 @@ fingerprint means the same text everywhere.
 | Part | Python | JS | Status |
 |---|---|---|---|
 | helloAO JSON → USJ | `python/helloao_to_usj.py` | `../helloao-to-sofria/helloao_to_usj.mjs` | done |
-| verse text from USJ and Sofria | — | (`../sofria-render/src/verses.js` today) | planned |
+| verse text from USJ and Sofria | — | `js/extract_usj.js`, `js/extract_sofria.js` (rule: `js/rule.js`) | JS done, Python planned |
+| route parity (USJ vs Sofria, every published book) | — | `js/parity.mjs` | done: all openbible/audiobiblia chapters identical |
 | tokenizer (lexeme-aligner's version 2, unchanged) | — | — | planned |
 | text fingerprint (verse, chapter, book) | — | — | planned |
 | conformance suite (all four routes give identical output) | — | — | planned |
