@@ -6,7 +6,7 @@
 // JSON->JSON mapping, not a USFM parse.
 //
 // This is a faithful JS port of this repo's own Python original,
-// pipeline/core/helloao_to_usj.py — same mapping decisions, same
+// tools/verse-text/python/helloao_to_usj.py — same mapping decisions, same
 // real-content-confirmed edge cases (poem-level state tracking, mid-verse
 // inline headings/lineBreaks, footnote refs resolved by id not position,
 // the join-space heuristic around footnotes described below). Kept

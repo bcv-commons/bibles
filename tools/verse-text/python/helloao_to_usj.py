@@ -295,3 +295,17 @@ def chapter_to_usj(chapter_json: dict, book_code: str) -> dict:
 
     _flush_para(top_content, state)
     return {"type": "USJ", "version": "3.0", "content": top_content}
+
+
+def merge_book_usj(book_code: str, chapters_json: list[dict]) -> dict:
+    """Concatenate a book's per-chapter USJ (each from chapter_to_usj()) into one
+    book-level USJ: the first chapter's "book" node, then every chapter's "chapter" and
+    content nodes. Same as the JS mergeBookUsj()."""
+    merged_content: list = []
+    for i, cj in enumerate(chapters_json):
+        nodes = chapter_to_usj(cj, book_code)["content"]
+        if i == 0:
+            merged_content.extend(nodes)
+        else:
+            merged_content.extend(n for n in nodes if n.get("type") != "book")
+    return {"type": "USJ", "version": "3.0", "content": merged_content}

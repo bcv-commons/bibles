@@ -11,7 +11,7 @@ the fetch to 1 request/translation instead of ~30-66.
 
 This is the helloAO side of the reduced publish scheme (USJ at book level,
 Sofria at chapter level) — helloAO is the one source with no native USFM
-(see helloao_to_usj.py's own module docstring), so this script is the only
+(see tools/verse-text/python/helloao_to_usj.py's module docstring), so this script is the only
 place USJ is DERIVED (not parsed) for this source.
 
 Raw complete.json responses are cached locally (resumable across runs,
@@ -31,8 +31,8 @@ from pathlib import Path
 
 import requests
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from helloao_to_usj import chapter_to_usj  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "verse-text" / "python"))
+from helloao_to_usj import merge_book_usj  # noqa: E402  (the client converter, tools/verse-text)
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, EXPORT, DOWNLOADS  # noqa: E402
 
@@ -58,22 +58,6 @@ def fetch_complete(tid: str) -> dict | None:
     COMPLETE_CACHE.mkdir(parents=True, exist_ok=True)
     dest.write_bytes(r.content)
     return json.loads(r.text)
-
-
-def merge_book_usj(book_code: str, chapters_json: list[dict]) -> dict:
-    """Concatenate this book's real per-chapter USJ docs (each produced by
-    chapter_to_usj()) into one book-level USJ — keep the first doc's "book"
-    node, then append every doc's "chapter"+content nodes after it (each
-    chapter doc already starts with its own "book" node we drop past)."""
-    merged_content: list = []
-    for i, cj in enumerate(chapters_json):
-        usj = chapter_to_usj(cj, book_code)
-        nodes = usj["content"]
-        if i == 0:
-            merged_content.extend(nodes)
-        else:
-            merged_content.extend(n for n in nodes if n.get("type") != "book")
-    return {"type": "USJ", "version": "3.0", "content": merged_content}
 
 
 def main():

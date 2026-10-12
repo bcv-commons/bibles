@@ -25,7 +25,7 @@
 // mapping below is a best-effort extrapolation of the one real char-node
 // pattern actually observed (footnote text as a "usfm:<marker>" wrapper)
 // — not independently confirmed against a live "wj" sample (see
-// pipeline/core/helloao_to_usj.py's own docstring: wordsOfJesus hasn't
+// tools/verse-text/python/helloao_to_usj.py's own docstring: wordsOfJesus hasn't
 // been seen in a real sample checked so far either).
 
 // s1 -> s, q1 -> q: real USFM/Proskomma convention, numbered-level-1

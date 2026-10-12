@@ -4,7 +4,7 @@ helloAO (`bible.helloao.org`) is the one source this repo tracks with no
 USFM available at all — every real translation reports
 `availableFormats: ["json"]` only. So getting from helloAO's own JSON to
 Sofria always starts with a bespoke JSON→JSON mapping
-(`helloao_to_usj.mjs`, a JS port of `pipeline/core/helloao_to_usj.py`,
+(`helloao_to_usj.mjs`, a JS port of `tools/verse-text/python/helloao_to_usj.py`,
 producing USJ — Unified Scripture JSON). This directory offers two
 different ways to take that USJ the rest of the way to Sofria:
 
