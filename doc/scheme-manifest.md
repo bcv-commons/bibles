@@ -46,12 +46,12 @@ Old Testament only.
 ## orgw (Hebrew numbering, English chapters)
 
 - Shape: `_vrs/orgw.vrs` `f272d18468275638c569cc7cdc19dd1b727486b64d245b080b4fb0bc48257950`
-- Map: `_vrs/map/orgw-to-eng.json` `1f20cd5fb0a5f79ea953db28a49c46d9086b129582ca5be5f5cd155ded4620b0` (1,395 rows)
+- Map: `_vrs/map/orgw-to-eng.json` `93cd9bbefd58cea9d24316cb0c11a547537bcb3d225ff532c3ac94966e60eeb9` (1,473 rows)
 - Multi-verse: `_vrs/map/orgw-to-eng.multiverse.json` `f05f1012050e47cfb4ac11746de5b8e425d52f192031291687fb808a58852679` (6 relations: 4 Old Testament, 2 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: no rows in books where the shape equals English; no Daniel rows; no Numbers 17 or 1 Kings 5 chapter-boundary rows. bcv-query's shape check: 67 defects against `orgw.vrs`, as predicted. Text evidence: Louis Segond (`fra/FRNTLS`) numbers Psalm 51's title as verses 1–2 and keeps English chapters (Malachi 4), checked 2026-10-08.
 - Fixed 2026-10-12: 70 rows removed from four chapters orgw numbers as English (EXO 22, 1SA 21, 2CH 2, HOS 14; org's renumbering doesn't apply there), checked against fra_lsg, swe_fol and nld_nbg. Old Testament multi-verse relations added: org's where orgw's shape and rows agree (1KI 22:43-44, PSA 13:6, ISA 63:19), plus 1SA 20:42-43 → 1SA 20:42 (orgw puts Hebrew 21:1 at 20:43; fra_lsg). Hosea 13–14 isn't uniform among orgw editions: swe_fol and nld_nbg use Hebrew chapters there (15/10), fra_lsg and `orgw.vrs` English ones (16/9).
-- Known gap (2026-10-12): Job 38–41 and Ecclesiastes 11–12 in `orgw.vrs` follow Louis Segond (Job 38/38/28/25 verses, Ecclesiastes 8/16), which is neither Hebrew nor English numbering; the map has no rows for this layout, so those chapters map as identity, which is wrong for them. fra_lsg, swe_fol and nld_nbg share the Job layout; in Ecclesiastes swe_fol and nld_nbg use English chapters (10/14). Not yet fixed.
+- Job 38–41 and Ecclesiastes 11–12 (fixed 2026-10-15): `orgw.vrs` follows Louis Segond there (Job 38/38/28/25 verses, Ecclesiastes 8/16), neither Hebrew nor English. org's Hebrew rows in those chapters (29, wrong for this layout) are replaced by the Segond layout's own rows, text-checked against fra_lsg at every boundary (e.g. LSG JOB 40:20, the crocodile/Leviathan, = eng 41:1; LSG ECC 12:3 = eng 12:1). swe_fol and nld_nbg share the Job layout but number Ecclesiastes 11–12 as English (10/14), and ces_bkr's Job differs again (41/35/28/25): for those, these chapters don't map correctly.
 
 ## catm (Catholic Masoretic)
 
@@ -97,7 +97,7 @@ known gaps.
 | Map | sha256 | Rows | Multi-verse | Flagged | No org counterpart |
 |---|---|---|---|---|---|
 | `eng-to-org.json` | `f90c427336e53c6415d93c441c3415bb183211e875c2cafeacd979465658769a` | 1,964 | 6 | 0 | 1 |
-| `orgw-to-org.json` | `bf69f6d4e1dc516a70bba78d95132ac24204ea175a52d2527df062c5a01eeee9` | 634 | 2 | 0 | 11 |
+| `orgw-to-org.json` | `a275eb6430fa681a928149cc7055be260f064e7bb15f5cbbcdd409e2ea3c714d` | 741 | 2 | 0 | 1 |
 | `catm-to-org.json` | `b16f5e2e1ed8bc16d5cb7d0cc0850eb940693665395a9af3c4d2808e4587ef4d` | 41 | 1 | 0 | 284 |
 | `rso-to-org.json` | `1350b0a84c04ece7882c411cb8ac9cee8b6df62de544d3693074cc5361083436` | 3,329 | 7 | 0 | 199 |
 | `vul-to-org.json` | `6735adc65f4b1b29554c181ce40eb41bff695fdd0d8fca6e6fec5f3cd54e098b` | 3,482 | 35 | 0 | 284 |
@@ -106,5 +106,4 @@ known gaps.
 Checks: `eng-to-org` is exactly `org-to-eng` inverted (PSA 13:6 as a multi-verse relation);
 no org verse is the target of two rows in any map. `lxx`'s 69 flagged groups are its known
 open passages (EXO 28 and 36–40, JER 25/30/32, LEV 7, 1KI 5/7, Daniel 4), where the Greek
-orders verses differently. `orgw`'s 11 unmatched verses come from the Job/Ecclesiastes gap
-in its entry above.
+orders verses differently. `orgw`'s one unmatched verse is NEH 7:68.

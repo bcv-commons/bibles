@@ -19,9 +19,13 @@ import re
 
 PLACEHOLDER = "\ue000"  # private use: never in a source text
 # \tag ... | ... \tag*  (also \+tag); a milestone's attributes: \tag-s |...\*
-_NESTED = r"(?:[^\\]|\\\+[a-z]+\d*\*?)"  # text, or a nested \+tag / \+tag* inside the span
+# Text without `|`, or a nested \+tag / \+tag*, up to the span's first `|`. Possessive
+# (Python 3.11+): the earlier lazy form could read a nested marker's letters as text too, so
+# a failed match backtracked exponentially (spabll MAT, 18,346 nested markers: minutes per
+# book). Same matches: checked identical on 1,909 openbible books, 2026-10-15.
+_NESTED = r"(?:[^\\|]++|\\\+[a-z]++\d*+\*?)*+"
 _KEEP = re.compile(
-    r"\\(\+?)([a-z]+\d*)\s" + _NESTED + r"*?\|[^\\]*?\\\1\2\*"   # \tag ... | ... \tag*
+    r"\\(\+?)([a-z]+\d*)\s" + _NESTED + r"\|[^\\]*?\\\1\2\*"     # \tag ... | ... \tag*
     r"|\\[a-z]+\d*-[se]\s*\|[^\\]*?\\\*"                          # \tag-s |...\*
     r"|\\(f|fe|x)\s.*?\\\3\*"                                     # notes
     r"|\\rem\b[^\n]*",                                              # remarks

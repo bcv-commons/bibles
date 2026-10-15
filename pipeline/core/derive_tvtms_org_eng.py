@@ -453,6 +453,26 @@ def _english_chapter(ref: str, shape: dict[str, dict[int, int]], eng: dict[str, 
     return n is not None and n == eng.get(b, {}).get(c) and n != org.get(b, {}).get(c)
 
 
+# orgw.vrs follows Louis Segond in Job 38-41 and Ecclesiastes 11-12, a layout that is
+# neither Hebrew nor English, so org's Hebrew rows there don't apply. These ranges map that
+# layout to English (orgw start, end, eng start), text-checked 2026-10-12 against fra_lsg at
+# every boundary: LSG JOB 39:1 "Chasses-tu la proie pour la lionne" = eng 38:39; 39:4 "les
+# chevres sauvages" = 39:1; 39:34 "L'Eternel, s'adressant a Job" = 40:1; 40:1 "du milieu de la
+# tempete" = 40:6; 40:20 "le crocodile a l'hamecon" = 41:1; 41:1 "Nul n'est assez hardi" =
+# 41:10; 41:25 = 41:34; ECC 12:1 "Jeune homme, rejouis-toi" = 11:9; 12:3 "souviens-toi de ton
+# createur" = 12:1. swe_fol and nld_nbg share the Job layout but number Ecclesiastes 11-12 as
+# English (10/14); ces_bkr's Job is different again (41/35/28/25).
+ORGW_LSG_CHAPTERS = {("JOB", 38), ("JOB", 39), ("JOB", 40), ("JOB", 41), ("ECC", 11), ("ECC", 12)}
+ORGW_LSG_RANGES = [("JOB", 39, 1, 3, 38, 39), ("JOB", 39, 4, 33, 39, 1), ("JOB", 39, 34, 38, 40, 1),
+                   ("JOB", 40, 1, 19, 40, 6), ("JOB", 40, 20, 28, 41, 1), ("JOB", 41, 1, 25, 41, 10),
+                   ("ECC", 12, 1, 2, 11, 9), ("ECC", 12, 3, 16, 12, 1)]
+
+
+def _orgw_lsg_rows() -> set[tuple[str, str]]:
+    return {(f"{b} {c}:{v}", f"{b} {ec}:{ev + (v - v1)}")
+            for b, c, v1, v2, ec, ev in ORGW_LSG_RANGES for v in range(v1, v2 + 1)}
+
+
 def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
     """orgw = org's Hebrew-column pairs restricted to refs valid in orgw.vrs and eng.vrs.
 
@@ -465,7 +485,9 @@ def derive_orgw(pairs: set[tuple[str, str]]) -> list[tuple[str, str]]:
     rows = {(a, b) for a, b in pairs
             if _valid(a, ow) and _valid_target(b, eng) and a not in ORGW_EXCLUDE_SOURCES
             and a.split()[0] not in identity_books and a.split()[0] != "DAN"
-            and not _orgw_chaptering_artifact(a) and not _english_chapter(a, ow, eng, org)}
+            and not _orgw_chaptering_artifact(a) and not _english_chapter(a, ow, eng, org)
+            and (a.split()[0], int(a.split()[1].split(":")[0])) not in ORGW_LSG_CHAPTERS}
+    rows |= _orgw_lsg_rows()
     return sorted((a, b) for a, b in rows if a != b)
 
 
