@@ -43,6 +43,13 @@ SCHEME_REF = {"eng": "eng_kjv", "org": "HBOMAS", "orgw": "fra_lsg",
 #   catm = catholic-masoretic: masoretic Psalms + deuterocanon + Greek additions
 #          to Daniel/Esther (distinct from vul, which uses LXX Psalm numbering).
 REGEN = {"lxx", "vul", "orgw", "catm"}
+# Chapters where the reference text is itself an exception within its scheme, overriding
+# the regenerated value with the layout most of the scheme's editions use (2026-10-16:
+# probing all 35 orgw editions; the other layouts are variants in
+# _vrs/map/ot-variants.json). fra_lsg numbers Ecclesiastes 11-12 as 8/16 and Hosea 13-14
+# as 16/9; most orgw editions have 10/14 and the Hebrew 15/10. (Job 38-41 stays as
+# fra_lsg's 38/38/28/25: that Segond layout is the majority there.)
+FAMILY_LAYOUT = {"orgw": {("ECC", 11): 10, ("ECC", 12): 14, ("HOS", 13): 15, ("HOS", 14): 10}}
 
 # Canonical book order for rendering.
 _OT = ("GEN EXO LEV NUM DEU JOS JDG RUT 1SA 2SA 1KI 2KI 1CH 2CH EZR NEH EST JOB "
@@ -157,6 +164,7 @@ def regen_from_footprint(scheme: str) -> bool:
     fp = build_footprint(ref)
     if not fp:
         return False
+    fp.update(FAMILY_LAYOUT.get(scheme, {}))
     (SRC_DIR / f"{scheme}.vrs").write_text(render(scheme, fp), encoding="utf-8")
     return True
 
@@ -181,6 +189,8 @@ def verify(scheme: str, baseline: dict, full: bool) -> list:
             lv = last_verse(ref, book, ch)
             cache[key] = lv
         checked += 1
+        if (book, ch) in FAMILY_LAYOUT.get(scheme, {}):
+            continue  # the reference text is the exception here, by design
         if lv is not None and lv != baseline[(book, ch)]:
             mismatches.append((book, ch, baseline[(book, ch)], lv))
     cache_path.parent.mkdir(parents=True, exist_ok=True)

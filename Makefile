@@ -116,6 +116,8 @@ vrs-map: ## Build cross-scheme verse maps (all derived from pinned TVTMS), <sche
 	  --tvtms-rev $(TVTMS_ORG_REV) $(ARGS)
 	@# <scheme>-to-org: the maps above composed with org-to-eng inverted (needs them first).
 	$(PYTHON) $(CORE)/generate_vrs_to_org.py
+	@# Old Testament layouts that vary within a scheme (needs eng-to-org.json, above).
+	$(PYTHON) $(CORE)/generate_ot_variants.py
 
 TVTMS_ORG_REV := 902681f77a4a2975b809555ff3c35ffe3c48a1d5
 

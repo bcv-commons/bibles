@@ -17,7 +17,8 @@ for that.
     {"d": "https://cdn.bibel.wiki/dbt/_catalog.json"},
     {"p": "https://cdn.bibel.wiki/pkf/manifest.json"},
     {"h": "https://bible.helloao.org/api/available_translations.json"},
-    {"o": "self-republished by bibles, wherever license permits and the original source isn't directly/bulk-usable — see each edition's own _meta.json"}
+    {"o": "self-republished by bibles, wherever license permits and the original source isn't directly/bulk-usable — see each edition's own _meta.json"},
+    {"e": "self-republished by bibles from eBible.org: editions helloAO doesn't carry, ... — see each edition's _meta.json"}
   ],
   "pending_openbible_coverage": 246,
   "pending_ebible_coverage": 7,
@@ -53,9 +54,11 @@ expect it to explain a gap in any other source.
 different gap: a real count of isos where DBT's own catalog points to real
 text at eBible.org (`t:ebible:<id>`) that isn't independently fetchable
 from DBT itself and isn't also a real helloAO translation (eBible content
-isn't always mirrored there). There's no dedicated "e" source row yet to
-represent these — this count exists so that absence reads as "known,
-counted, not yet built" rather than silently dropped. Found via a real
+isn't always mirrored there), and that no source row covers. Since 2026-10-15
+the `e` source covers the eBible editions we republish; this count is what's
+left (eBible text DBT points to that we don't republish, e.g. because of an ND
+licence), so that absence reads as "known, counted" rather than silently
+dropped. Found via a real
 client cross-check (2026-09-27): of 376 isos a client reported as entirely
 absent from `entries`, 369 were confirmed genuinely audio-only in DBT's
 own catalog (a real absence, not a bug — no code-mapping mismatch either,
@@ -73,7 +76,8 @@ fixable gap.
   `ot` — never a combined "full bible" flag. Testament coverage is always
   assessed independently.
 - **`source`** — single letter: `d` = DBT, `p` = PKF, `h` = helloAO, `o` =
-  self-republished (redefined 2026-10-02 — see [`sources.md`](sources.md)).
+  self-republished (redefined 2026-10-02 — see [`sources.md`](sources.md)), `e` =
+  self-republished from eBible.org (added 2026-10-15, see below).
   **`o`** means content `bibles` itself fetched, verified, and
   republishes, wherever the license permits AND the original source's own
   format isn't directly/bulk-usable — currently openbible/Biblica
@@ -90,13 +94,13 @@ fixable gap.
   away later costly; see `openbible-editions.json`'s doc). A project with
   no abbreviation yet is temporarily excluded here entirely, not shown
   under a hex id — see `pending_openbible_coverage` below for how many.
-  **Open question, deferred (2026-10-02):** a broader eBible.org sweep
-  (`generate_ebible_chapters.py`, up to ~1,295 redistributable+downloadable
-  editions — far more than openbible/audiobiblia) has been built but its
-  output is NOT yet wired into this index. Undecided whether it shares
-  `o` (eBible.org's own format is already clean/bulk-usable, unlike `o`'s
-  current "had to rescue it" definition — a real mismatch) or gets its
-  own letter. A `d`
+  **`e`** (added 2026-10-15; this settles the question left open on 2026-10-02 of
+  whether eBible shares `o`): eBible.org editions `bibles` republishes
+  (`generate_ebible_chapters.py`): editions helloAO doesn't already carry, whose
+  copyright page gives a public-domain or non-ND Creative Commons licence, and whose
+  text isn't already reachable from another source (compared before publishing,
+  never assumed). eBible's own format is clean and bulk-usable, unlike `o`'s "had to
+  rescue it" sources, so it has its own letter. A `d`
   row means DBT's catalog has
   **independently fetchable text of its own** for this `(iso, canon)` —
   not just a catalog entry. Some DBT rows are external-source *pointers*

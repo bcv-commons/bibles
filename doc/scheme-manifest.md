@@ -45,13 +45,13 @@ Old Testament only.
 
 ## orgw (Hebrew numbering, English chapters)
 
-- Shape: `_vrs/orgw.vrs` `f272d18468275638c569cc7cdc19dd1b727486b64d245b080b4fb0bc48257950`
-- Map: `_vrs/map/orgw-to-eng.json` `93cd9bbefd58cea9d24316cb0c11a547537bcb3d225ff532c3ac94966e60eeb9` (1,473 rows)
+- Shape: `_vrs/orgw.vrs` `1f00151de97901aae13f338f639fd590bc10f92b523ca4723ebc49dc764c9123`
+- Map: `_vrs/map/orgw-to-eng.json` `6c088abfb15aeea37fb99ae6fb7914132322043c8039cd9716178f0ba9ba558e` (1,467 rows)
 - Multi-verse: `_vrs/map/orgw-to-eng.multiverse.json` `f05f1012050e47cfb4ac11746de5b8e425d52f192031291687fb808a58852679` (6 relations: 4 Old Testament, 2 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: no rows in books where the shape equals English; no Daniel rows; no Numbers 17 or 1 Kings 5 chapter-boundary rows. bcv-query's shape check: 67 defects against `orgw.vrs`, as predicted. Text evidence: Louis Segond (`fra/FRNTLS`) numbers Psalm 51's title as verses 1–2 and keeps English chapters (Malachi 4), checked 2026-10-08.
 - Fixed 2026-10-12: 70 rows removed from four chapters orgw numbers as English (EXO 22, 1SA 21, 2CH 2, HOS 14; org's renumbering doesn't apply there), checked against fra_lsg, swe_fol and nld_nbg. Old Testament multi-verse relations added: org's where orgw's shape and rows agree (1KI 22:43-44, PSA 13:6, ISA 63:19), plus 1SA 20:42-43 → 1SA 20:42 (orgw puts Hebrew 21:1 at 20:43; fra_lsg). Hosea 13–14 isn't uniform among orgw editions: swe_fol and nld_nbg use Hebrew chapters there (15/10), fra_lsg and `orgw.vrs` English ones (16/9).
-- Job 38–41 and Ecclesiastes 11–12 (fixed 2026-10-15): `orgw.vrs` follows Louis Segond there (Job 38/38/28/25 verses, Ecclesiastes 8/16), neither Hebrew nor English. org's Hebrew rows in those chapters (29, wrong for this layout) are replaced by the Segond layout's own rows, text-checked against fra_lsg at every boundary (e.g. LSG JOB 40:20, the crocodile/Leviathan, = eng 41:1; LSG ECC 12:3 = eng 12:1). swe_fol and nld_nbg share the Job layout but number Ecclesiastes 11–12 as English (10/14), and ces_bkr's Job differs again (41/35/28/25): for those, these chapters don't map correctly.
+- Job 38–41, Ecclesiastes 11–12, Hosea 13–14 (2026-10-16): orgw editions disagree in these blocks (all 35 probed; lexeme-aligner's audit raised it): five Job layouts, two of Ecclesiastes, two of Hosea. `orgw.vrs` and the map follow the majority in each: Job the Louis Segond layout (38/38/28/25, 19 editions; rows text-checked against fra_lsg), Ecclesiastes English (10/14), Hosea Hebrew (15/10). Every other layout is a per-edition variant in `_vrs/map/ot-variants.json` `95dd7d89ca23f2dddb8e0ce1b90a67fb6f69737a9ac75186855fa2138278614a` (10 variants, each text-checked), listed in the index's `ot` entries; see `doc/vrs-index.md`. `generate_vrs.py` keeps these majority values when it regenerates `orgw.vrs` from fra_lsg (`FAMILY_LAYOUT`).
 
 ## catm (Catholic Masoretic)
 
@@ -97,7 +97,7 @@ known gaps.
 | Map | sha256 | Rows | Multi-verse | Flagged | No org counterpart |
 |---|---|---|---|---|---|
 | `eng-to-org.json` | `f90c427336e53c6415d93c441c3415bb183211e875c2cafeacd979465658769a` | 1,964 | 6 | 0 | 1 |
-| `orgw-to-org.json` | `a275eb6430fa681a928149cc7055be260f064e7bb15f5cbbcdd409e2ea3c714d` | 741 | 2 | 0 | 1 |
+| `orgw-to-org.json` | `24e3ec7e23645e33c0a591198bd23aebc01163585841e43eb4d9577f5a4c5f79` | 715 | 2 | 0 | 1 |
 | `catm-to-org.json` | `b16f5e2e1ed8bc16d5cb7d0cc0850eb940693665395a9af3c4d2808e4587ef4d` | 41 | 1 | 0 | 284 |
 | `rso-to-org.json` | `1350b0a84c04ece7882c411cb8ac9cee8b6df62de544d3693074cc5361083436` | 3,329 | 7 | 0 | 199 |
 | `vul-to-org.json` | `6735adc65f4b1b29554c181ce40eb41bff695fdd0d8fca6e6fec5f3cd54e098b` | 3,482 | 35 | 0 | 284 |

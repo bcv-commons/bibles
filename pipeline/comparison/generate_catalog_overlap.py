@@ -93,7 +93,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR, API_CACHE  # noqa: E402
 
-SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p", "openbible": "o"}
+SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p", "openbible": "o", "ebible": "e"}
 
 
 def shorten(sid: str) -> str:
@@ -303,7 +303,7 @@ def main():
         "schema_version": 2,
         "generated_at": None,  # stamped at publish time, not by this generator
         "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
-        "priority": ["pkf", "helloao", "dbt", "openbible"],
+        "priority": ["pkf", "helloao", "dbt", "openbible", "ebible"],
         "audio_source": "dbt",
         # Same real, deliberate gap catalog-index.json's own field
         # documents — openbible clusters only ever contain a project with

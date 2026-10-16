@@ -692,7 +692,7 @@ def main():
     # their New Testament variants (pkf_versification.py, nt-variants.json).
     import pkf_versification as pv
     import derive_tvtms_org_eng as tv
-    nt_index, pkf_diag = {}, {}
+    nt_index, pkf_diag, ot_index = {}, {}, {}
     pkf_manifest = API_CACHE / "pkf-manifest.json"
     nt_variants_file = EXPORT / "_vrs" / "map" / "nt-variants.json"
     if pkf_manifest.is_file() and nt_variants_file.is_file():
@@ -708,6 +708,17 @@ def main():
         print(f"[v11n] DBT/helloAO: {len(probed)} with New Testament variants (from nt_probes.py's cache)")
         index.update(pkf_labels)
         ASSUMED.update(pkf_assumed)
+        # Old Testament layout variants (ot-variants.json): DBT/helloAO from ot_probes.py's
+        # cache, PKF from their .vrs files. Only blocks that differ from the edition's own
+        # scheme are listed (ot_versification.py).
+        ot_variants_file = EXPORT / "_vrs" / "map" / "ot-variants.json"
+        if ot_variants_file.is_file():
+            import ot_probes
+            from ot_versification import OtClassifier, pkf_ot_entries
+            otc = OtClassifier(schemes, json.loads(ot_variants_file.read_text()))
+            ot_index = ot_probes.ot_entries(dict(index), otc)
+            ot_index.update(pkf_ot_entries(json.loads(pkf_manifest.read_text())["languages"], index, API_CACHE / "pkf-vrs", otc))
+            print(f"[v11n] {len(ot_index)} editions with Old Testament variants (ot_probes.py cache + PKF .vrs)")
         print(f"[v11n] PKF: {len(pkf_labels)} collections {dict(Counter(pkf_labels.values()))}; "
               f"{len(nt_index)} editions in all with New Testament variants")
     else:
@@ -758,6 +769,8 @@ def main():
         # {key: {variants, profile?, unexplained?}}. Take NT rows from those variants in
         # map_base + nt_variants (identity elsewhere), not from the `l` map.
         "nt_variants": "nt-variants.json",
+        "ot_variants": "ot-variants.json",
+        "ot": dict(sorted(ot_index.items())),
         "nt": dict(sorted(nt_index.items())),
     }
     (pub_dir / "index.json").write_text(

@@ -25,7 +25,7 @@ MAPS=(org-to-eng.json orgw-to-eng.json catm-to-eng.json rso-to-eng.json vul-to-e
       orgw-to-eng.multiverse.json catm-to-eng.multiverse.json vul-to-eng.multiverse.json lxx-to-eng.multiverse.json
       eng-to-org.json orgw-to-org.json catm-to-org.json rso-to-org.json vul-to-org.json lxx-to-org.json
       eng-to-org.multiverse.json orgw-to-org.multiverse.json catm-to-org.multiverse.json rso-to-org.multiverse.json
-      vul-to-org.multiverse.json lxx-to-org.multiverse.json)
+      vul-to-org.multiverse.json lxx-to-org.multiverse.json ot-variants.json)
 
 if [ -f .env ]; then
     # shellcheck disable=SC1091

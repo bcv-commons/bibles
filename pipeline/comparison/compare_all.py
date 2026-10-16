@@ -55,7 +55,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_pkf_dbt import compare  # noqa: E402
-from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, rclone_env  # noqa: E402
+from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, ebible_text, EBIBLE_USJ, rclone_env  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -163,9 +163,30 @@ def openbible_candidates(openbible_by_iso: dict, openbible_abbr: dict, iso: str)
     return out
 
 
+NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL", "1TH", "2TH",
+            "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
+
+
+def ebible_by_iso(canon: str) -> dict:
+    """iso -> eBible translation ids we republish (export/ebible-usj/<iso>/<id>, added
+    2026-10-15 as the fifth source, `ebible:` / `e:`) that have at least one book of this
+    canon, from their _meta.json `books`. Without that filter an edition with no Old
+    Testament would be listed as a failed fetch (r: false, "unreachable") for `ot`."""
+    out = defaultdict(list)
+    if EBIBLE_USJ.is_dir():
+        for d in sorted(EBIBLE_USJ.glob("*/*")):
+            meta = d / "_meta.json"
+            if not (d.is_dir() and meta.exists()):
+                continue
+            books = set(json.loads(meta.read_text(encoding="utf-8")).get("books", []))
+            if (books & NT_BOOKS) if canon == "nt" else (books - NT_BOOKS):
+                out[d.parent.name].append(d.name)
+    return out
+
+
 def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
-                    openbible_by_iso: dict, openbible_abbr: dict, canon: str) -> dict:
-    """iso -> (dbt_ids, hao_ids, pkf_files, ob_ids), restricted to isos with
+                    openbible_by_iso: dict, openbible_abbr: dict, canon: str, eb_by_iso: dict) -> dict:
+    """iso -> (dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids), restricted to isos with
     >=1 total candidate id for this canon. The threshold is deliberately
     >=1, not >=2: even a single known id (e.g. niy:ot, which has only a PKF
     collection and no DBT/helloAO OT content) still gets a placeholder row
@@ -178,6 +199,7 @@ def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
     isos |= set(helloao_by_iso.keys())
     isos |= set(pkf_manifest.keys())
     isos |= set(openbible_by_iso.keys())
+    isos |= set(eb_by_iso.keys())
 
     out = {}
     for iso in sorted(isos):
@@ -185,13 +207,14 @@ def all_candidates(catalog: dict, helloao_by_iso: dict, pkf_manifest: dict,
         hao_ids = helloao_by_iso.get(iso, [])
         pkf_files = pkf_candidates(pkf_manifest, iso, canon)
         ob_ids = openbible_candidates(openbible_by_iso, openbible_abbr, iso)
-        n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
+        eb_ids = eb_by_iso.get(iso, [])
+        n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids) + len(eb_ids)
         if n >= 1:
-            out[iso] = (dbt_ids, hao_ids, pkf_files, ob_ids)
+            out[iso] = (dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids)
     return out
 
 
-def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list) -> str:
+def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list, eb_ids: list) -> str:
     """The single source-prefixed id for an (iso,canon) with exactly one
     total candidate — nothing to compare against, so no fetch is needed at
     all; the published row is the same bare placeholder regardless of
@@ -204,11 +227,13 @@ def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list, o
         return f"helloao:{hao_ids[0]}"
     if pkf_files:
         return f"pkf:{iso.upper()}PKF"
-    return f"openbible:{ob_ids[0][1]}"
+    if ob_ids:
+        return f"openbible:{ob_ids[0][1]}"
+    return f"ebible:{eb_ids[0]}"
 
 
 def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list,
-                      book: str, chapter: int, env: dict, bucket: str, tmpdir: Path) -> dict:
+                      eb_ids: list, book: str, chapter: int, env: dict, bucket: str, tmpdir: Path) -> dict:
     texts = {}
     failed = []
 
@@ -223,6 +248,10 @@ def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_fil
     for project_id, abbr in ob_ids:
         t = openbible_text(iso, project_id, book, chapter, tmpdir)
         (texts.__setitem__(f"openbible:{abbr}", t) if t else failed.append(f"openbible:{abbr}"))
+
+    for tid in eb_ids:
+        t = ebible_text(iso, tid, book, chapter)
+        (texts.__setitem__(f"ebible:{tid}", t) if t else failed.append(f"ebible:{tid}"))
 
     pkf_source_ref = None
     if pkf_files:
@@ -298,7 +327,8 @@ def main():
         if OPENBIBLE_EDITIONS_FILE.exists() else {}
     )
 
-    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon)
+    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon,
+                                ebible_by_iso(canon))
     if iso_filter:
         candidates = {iso: v for iso, v in candidates.items() if iso in iso_filter}
 
@@ -322,8 +352,8 @@ def main():
     # today's real candidate count exceeds what was actually attempted
     # (fetched + failed) last time.
     def total_candidate_count(iso):
-        dbt_ids, hao_ids, pkf_files, ob_ids = candidates[iso]
-        return len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
+        dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids = candidates[iso]
+        return len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids) + len(eb_ids)
 
     growing_candidates = [
         iso for iso in candidates
@@ -344,26 +374,26 @@ def main():
     tmpdir = Path(tempfile.mkdtemp(prefix="compare_all_"))
     try:
         for i, iso in enumerate(todo, 1):
-            dbt_ids, hao_ids, pkf_files, ob_ids = candidates[iso]
-            n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids)
+            dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids = candidates[iso]
+            n = len(dbt_ids) + len(hao_ids) + (1 if pkf_files else 0) + len(ob_ids) + len(eb_ids)
             if n < 2:
                 # Nothing to compare against — skip the fetch entirely
                 # (the published row is the same bare placeholder either
                 # way). This is the majority case (roughly half the full
                 # population): most languages have exactly one DBT version
                 # and no PKF/helloAO/openbible coverage at all.
-                entry = {"status": "single_source", "ids_fetched": [sole_candidate_id(iso, dbt_ids, hao_ids, pkf_files, ob_ids)],
+                entry = {"status": "single_source", "ids_fetched": [sole_candidate_id(iso, dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids)],
                          "ids_failed": [], "scores": {}}
                 results[key(iso)] = {**entry, "iso": iso, "canon": canon}
                 print(f"  [{i}/{len(todo)}] {key(iso)}: single_source (no fetch needed)")
                 continue
             try:
-                entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, book, chapter, env, bucket, tmpdir)
+                entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids, book, chapter, env, bucket, tmpdir)
                 if entry.get("ids_failed"):
                     for fb_book, fb_chapter in FALLBACK_PROBES.get(canon, []):
                         if (fb_book, fb_chapter) == (book, chapter):
                             continue
-                        fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, fb_book, fb_chapter, env, bucket, tmpdir)
+                        fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids, fb_book, fb_chapter, env, bucket, tmpdir)
                         if len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
                             fb_entry["probe"] = f"{fb_book}{fb_chapter}"
                             entry = fb_entry

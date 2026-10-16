@@ -97,6 +97,49 @@ chapters (a partial New Testament) gets none; 53 DBT editions couldn't be probed
 (44 refused with 403, 9 failing on a chapter). Chapters outside the 15 tested ones aren't probed
 for DBT and helloAO, so their `unexplained` lists are from those chapters only.
 
+## Old Testament: `ot` and `ot-variants.json` (added 2026-10-16)
+
+A scheme's map holds one layout per chapter, but in a few blocks the editions sharing a
+scheme disagree, so any single choice is wrong for some of them. Probing all 35 `orgw`
+editions found five layouts of Job 38-41, two of Ecclesiastes 11-12 and two of Hosea
+13-14. These are variants in `_vrs/map/ot-variants.json` (`map_base` + `ot_variants`), the
+way `nt-variants.json` works for the New Testament:
+
+```json
+"ot": { "helloao:ces_bkr": { "variants": ["JOB-ces"] },
+        "ace/ACEIBS": { "variants": ["JOB-eng"] },
+        "helloao:fra_lsg": { "variants": ["ECC-lsg", "HOS-eng"] } },
+"ot_variants": "ot-variants.json"
+```
+
+| Variant | Block | Layout (last verses) | Editions (examples, text-checked) |
+|---|---|---|---|
+| `JOB-lsg` | JOB 38-41 | 38/38/28/25 (Louis Segond) | fra_lsg, swe_fol, nld_nbg, dan_det, ... (orgw base) |
+| `JOB-eng` | JOB 38-41 | 41/30/24/34 (English) | ACEIBS, DTPBSM, GORLAI, MADIBS, MINLAI, TIHBSM, ZLMTMV |
+| `JOB-heb` | JOB 38-41 | 41/30/32/26 (Hebrew) | org |
+| `JOB-ces` | JOB 38-41 | 41/35/28/25 | ces_bkr, CESK13 |
+| `JOB-bel` | JOB 38-41 | 41/35/27/26 | bel_jfc, RMLNEW, RMLNVC |
+| `JOB-hun` | JOB 38-41 | 38/38/19/34 | HUNK90 |
+| `ECC-eng` / `ECC-lsg` | ECC 11-12 | 10/14 / 8/16 | most orgw / fra_lsg, FRNTLS, BAMLSB, SAGBIV, HUNK90 |
+| `HOS-heb` / `HOS-eng` | HOS 13-14 | 15/10 / 16/9 | most orgw / fra_lsg, FRNTLS, BAMLSB, SAGBIV, ces_bkr, CESK13 |
+
+Each variant lists its block's chapter lengths (`chapters`, used to detect it), and rows for
+the whole block: `s` the edition's verse, `t` the eng verse(s), `o` the org (Hebrew) verse;
+a verse with no row keeps its number in both.
+
+Unlike `nt`, an `ot` entry lists a variant only where the edition **differs from its own
+`l` scheme's shape** (the scheme maps already cover the rest). A block that differs but
+matches no variant is listed under `unexplained`, e.g. `"JOB 38-41: 41/33/24/34"`.
+
+Client rule: for a key with an `ot` entry, take each listed variant's block from the variant
+(rows to eng, or to org); everywhere else use the `l` scheme's map. For a key without one,
+the scheme map is right as far as we know.
+
+How it's found: DBT and helloAO editions by probing the last verse of each block chapter
+(`pipeline/core/ot_probes.py`); PKF collections from their `.vrs` files. `orgw`'s own map
+and `orgw.vrs` follow the majority layout in each block (Job: Segond; Ecclesiastes:
+English; Hosea: Hebrew).
+
 ## DBT New-Testament-only editions (added 2026-10-09)
 
 DBT editions without Psalms used to be left out of `l`. The 1,480 with a New Testament

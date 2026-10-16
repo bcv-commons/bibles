@@ -60,12 +60,20 @@ make help             # full target list
 `pipeline/`.)
 
 The `catalog-index.json`/`catalog-overlap.json` generators aren't wired
-into `make dbt-metadata` yet — run them directly:
+into `make dbt-metadata` yet — run them directly, in this order (the comparison
+steps are resumable and only redo what's new or failed):
 
 ```bash
+.venv/bin/python pipeline/comparison/compare_all.py                         # nt (REV 15)
+.venv/bin/python pipeline/comparison/compare_all.py --book PSA --chapter 117 # ot
+.venv/bin/python pipeline/comparison/confirm_identical.py  # re-check every 1.0 pair on more chapters
+.venv/bin/python pipeline/research/diagnose_all.py
 .venv/bin/python pipeline/comparison/generate_catalog_index.py
 .venv/bin/python pipeline/comparison/generate_catalog_overlap.py
 ```
+
+`confirm_identical.py` must run after any `compare_all.py` run: a recompared group loses
+its confirmations, and an unconfirmed 1.0 would be clustered as identical on one chapter.
 
 ## Configuration
 

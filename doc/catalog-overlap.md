@@ -48,7 +48,7 @@ relationship to `SPNR02` (see the example below).
   "schema_version": 2,
   "generated_at": "...",
   "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
-  "priority": ["pkf", "helloao", "dbt", "openbible"],
+  "priority": ["pkf", "helloao", "dbt", "openbible", "ebible"],
   "audio_source": "dbt",
   "pending_openbible_coverage": 246,
   "entries": {
@@ -96,7 +96,8 @@ doesn't repeat the same two strings on every row.
   in the index against this file's plain `nt`/`ot` key.
 - **`cluster.ids`** — every id in this cluster, always source-prefixed with
   a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF), `o:`
-  (openbible/Biblica, added 2026-09-16) — matching `catalog-index.json`'s
+  (openbible/Biblica, added 2026-09-16), `e:` (eBible.org editions we republish,
+  the eBible translation id, e.g. `e:engoebus`; added 2026-10-15) — matching `catalog-index.json`'s
   own source-code convention, never a bare id. **`o:` is the yaapi.bible
   edition abbreviation (e.g. `o:MGJ`), not Biblica's own raw project id**
   (changed 2026-09-19 — publishing the hex project id directly was judged
@@ -316,8 +317,26 @@ still separately preserved — see `generate_catalog_overlap.py`'s
 - **`audio_source`** — currently always `"dbt"` (see
   [`sources.md`](sources.md)).
 
+## Identical means identical on more than one chapter (added 2026-10-16)
+
+A cluster (score 1.0) used to rest on one probe chapter per testament. One chapter isn't
+enough: the Open English Bible's US and Commonwealth spelling editions are identical on
+Jonah 1 but differ in 180 Old Testament verses (savor/savour, plow/plough); the KJV
+printings ENGKJV / eng_kjv / eng_cpb were identical on Revelation 15 but differ on Mark 1.
+So every pair scoring 1.0 is now compared on further chapters both editions have
+(`pipeline/comparison/confirm_identical.py`: GEN 1, PSA 51, RUT 1 / MRK 1, JHN 3, REV 15)
+and stays a cluster only if all are identical too; otherwise it gets the lowest score and is
+diagnosed on the chapter where it differs. In the 2026-10-16 run: 1,527 pairs confirmed,
+269 not identical after all (177 published clusters split), 94 with no further chapter in
+common (kept, since nothing contradicts them).
+
+Known mislabel: the Open English Bible's two editions in the Old Testament are labelled
+`phonemic_distinction`. Their probe chapter (Jonah 1) differs only in quote style ("…"
+vs ‘…’), and a single quote can't be told from an apostrophe letter. They are correctly
+separate entries; the label should read `orthography_convention`, as in the New Testament.
+
 ## Format notes
 
 The published file is minified (no whitespace) — pretty-print it yourself
 if reading by hand. Source prefixes in `ids`/`closest` are single letters
-(`d`/`h`/`p`), not the full source name — see "Row format" above.
+(`d`/`h`/`p`/`o`/`e`), not the full source name — see "Row format" above.

@@ -237,6 +237,30 @@ def audiobiblia_rows():
     return counts
 
 
+def ebible_rows():
+    """NT/OT/Portions rows for the eBible.org editions this repo republishes
+    (`generate_ebible_chapters.py`, export/ebible-usj), from each edition's own `_meta.json`
+    `books`. Source letter `"e"` (decided 2026-10-15): unlike `"o"`, eBible's own format is
+    already clean and bulk-usable, so it gets its own letter rather than sharing the "had to
+    rescue it" one."""
+    counts = defaultdict(int)
+    ebible_dir = EXPORT / "ebible-usj"
+    if not ebible_dir.exists():
+        return counts
+    for meta_file in ebible_dir.glob("*/*/_meta.json"):
+        iso = meta_file.parent.parent.name
+        books = set(json.loads(meta_file.read_text()).get("books", []))
+        if NT_BOOKS.issubset(books):
+            counts[(iso, "nt", "e")] += 1
+        elif books & NT_BOOKS:
+            counts[(iso, "ntp", "e")] += 1
+        if OT_BOOKS.issubset(books):
+            counts[(iso, "ot", "e")] += 1
+        elif books & OT_BOOKS:
+            counts[(iso, "otp", "e")] += 1
+    return counts
+
+
 def main():
     args = sys.argv[1:]
     out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "index.json"
@@ -262,7 +286,7 @@ def main():
     hao_path.write_text(json.dumps(hao_raw, indent=2), encoding="utf-8")
 
     all_counts = defaultdict(int)
-    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows()):
+    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows(), ebible_rows()):
         for k, v in counts.items():
             all_counts[k] += v
 
@@ -294,15 +318,11 @@ def main():
     # DBT), but if that same iso also isn't a real helloAO translation
     # (eBible content isn't always mirrored into helloAO), there is
     # currently no source row (d/p/h/o) that can represent it at all — a
-    # silent, total absence, not a "listed but unreachable" state. No "e"
-    # source exists yet to fix this properly (a real eBible.org fetch
-    # integration, out of scope here) — so, matching the exact same
-    # pattern already established for `pending_openbible_coverage` above,
-    # this is made machine-detectable instead of silently dropped: a real
-    # count of isos in this exact state, confirmed empirically 369/376 of
-    # this client's specific list were genuinely audio-only in DBT's own
-    # catalog (a real absence, not a bug), with only these 7 as the real,
-    # currently-unaddressed gap.
+    # silent, total absence, not a "listed but unreachable" state. Since
+    # 2026-10-15 the "e" source covers the eBible editions we republish
+    # (ebible_rows()); this count is what remains: isos DBT points to eBible
+    # for that no source row covers (an eBible edition we don't republish:
+    # ND licence, or on helloAO under another language code, ...).
     isos_with_any_row = {iso for (iso, canon, source) in all_counts}
     pending_ebible = set()
     for row in json.loads((API_CACHE / "dbt-catalog.json").read_text())["versions"]:
@@ -321,7 +341,10 @@ def main():
                     {"o": "self-republished by bibles, wherever license permits and the "
                           "original source isn't directly/bulk-usable (currently: openbible/"
                           "Biblica, audiobiblia.org — see each edition's own _meta.json for "
-                          "real provenance, not a single URL)"}],
+                          "real provenance, not a single URL)"},
+                    {"e": "self-republished by bibles from eBible.org: editions helloAO doesn't carry, "
+                          "with a public-domain or non-ND Creative Commons licence and text not "
+                          "already reachable from another source — see each edition's _meta.json"}],
         "pending_openbible_coverage": pending_openbible,
         "pending_ebible_coverage": len(pending_ebible),
         "entries": entries,

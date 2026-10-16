@@ -62,6 +62,7 @@ before.
 """
 import io
 import json
+import re
 import subprocess
 import sys
 import time
@@ -76,7 +77,9 @@ import download_language_content as dl  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_pkf_dbt import normalize_chars, extract_pkf_chapter  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, TEXT_DIR  # noqa: E402
+from paths import API_CACHE, EXPORT, REPO_ROOT, TEXT_DIR  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "verse-text" / "python"))
+from verse_text import extract_usj  # noqa: E402
 
 SAMPLE_DIR = TEXT_DIR / "BB"
 HELLOAO_API = "https://bible.helloao.org/api"
@@ -173,7 +176,10 @@ def pkf_text(iso: str, pkf_file: str, book: str, chapter: int, env: dict, bucket
         if result.returncode != 0 or not pkf_path.exists():
             continue
         subprocess.run(
-            ["node", "tools/pkf-decode/decode.mjs", str(pkf_path), "--out", str(out_dir), "--book", book],
+            # Anchored to the repo root (fixed 2026-10-16): a relative path made every PKF
+            # fetch fail silently unless the caller ran from the repo root, as
+            # compare_all.py / diagnose_all.py usually do from their own directories.
+            ["node", str(REPO_ROOT / "tools" / "pkf-decode" / "decode.mjs"), str(pkf_path), "--out", str(out_dir), "--book", book],
             capture_output=True, text=True,
         )
         matches = list(out_dir.glob(f"*-{book}.usfm")) if out_dir.is_dir() else []
@@ -237,6 +243,25 @@ def openbible_text(iso: str, project_id: str, book: str, chapter: int, tmpdir: P
         if out_dir.is_dir():
             import shutil
             shutil.rmtree(out_dir, ignore_errors=True)
+
+
+EBIBLE_USJ = EXPORT / "ebible-usj"
+
+
+def ebible_text(iso: str, translation_id: str, book: str, chapter: int) -> str | None:
+    """One chapter of an eBible.org edition we republish, from its published book USJ
+    (export/ebible-usj, generate_ebible_chapters.py), as verse text by the shared verse-text
+    rule (tools/verse-text: headings and notes excluded, as in the other extractors), then
+    normalize_chars() like every other source. Read from the USJ rather than the USFM: eBible
+    editions carry \\w attributes (strong="G1234") that a plain USFM tag strip leaves in the
+    text, and the USJ already has them as separate fields."""
+    f = EBIBLE_USJ / iso / translation_id / f"{book}.json"
+    if not f.exists():
+        return None
+    verses = extract_usj(json.loads(f.read_text(encoding="utf-8"))).get(str(chapter))
+    if not verses:
+        return None
+    return normalize_chars(" ".join(v["text"] for v in verses)) or None
 
 
 def rclone_env():

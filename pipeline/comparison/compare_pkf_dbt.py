@@ -57,7 +57,9 @@ SAMPLE_DIR = TEXT_DIR / "BB" / "nt"
 # 111:2, Amos 3:13") found via wrs — same category as \x/\f, just a
 # different USFM marker; caused the same "extra content only on the PKF
 # side" symptom as the earlier \s-heading bug.
-_DROP_BLOCK_RE = re.compile(r"\\x\b.*?\\x\*|\\f\b.*?\\f\*|\\rq\b.*?\\rq\*", re.DOTALL)
+# \fig ... \fig* added 2026-10-16: a figure's caption and attributes ("src=fishing.jpg
+# size=col ref=...") leaked into openbible's poy MRK 1.
+_DROP_BLOCK_RE = re.compile(r"\\x\b.*?\\x\*|\\f\b.*?\\f\*|\\rq\b.*?\\rq\*|\\fig\b.*?\\fig\*", re.DOTALL)
 _TAG_RE = re.compile(r"\\[A-Za-z0-9]+\*?")
 
 # See module docstring point 2(a) — canonicalize known Unicode homoglyph
@@ -167,7 +169,25 @@ def normalize_chars(text: str) -> str:
 # batch — found via lin: a single long inserted phrase on the Biblica
 # side, traced to "\ms1 Bakopo sambo ya kanda ya Nzambe" sitting between
 # v3 and v7 in the raw USFM.
-_SECTION_HEADING_RE = re.compile(r"\\s\d?\b|\\ms\d?\b|\\cl\b|\\r\b")
+# Also skipped (2026-10-16, found when chapter-1 probes were used: Mark 1, Genesis 1):
+# - introduction lines (\is \ip \io \iot \imt ...): the PKF decoder writes a book's
+#   introduction after `\c 1`, so it read as chapter 1 text (prf, aai, xnn, lww MRK 1).
+#   The introduction markers are listed: `\it` (italic) can open a line of verse text
+#   (plu REV 15:4);
+# - \sr \mr \sp and an \xt line: a parallel-passage reference under a heading,
+#   "\r" then "\xt (Mt. 3:1-12; Lk. 3:1-9 ...)" on its own line (zty MRK 1).
+_SECTION_HEADING_RE = re.compile(r"\\s\d?\b|\\ms\d?\b|\\cl\b|\\r\b|\\sr\b|\\mr\b|\\sp\b|\\xt\b|\\(?:imte|imt|imq|imi|im|ipi|ipq|ipr|ip|is|iq|ib|ili|iot|io|iex|ie)\d*\b")
+
+
+# A Psalm title (\\d) without a verse number isn't verse text (the shared verse-text rule;
+# helloAO drops it as hebrew_subtitle): PKF's yon PSA 51 kept "Yook ambo bi ye karub yeman.
+# Dewid..." (2026-10-16). A \\d holding a verse number (Hebrew-numbered titles) stays.
+_D_TITLE_RE = re.compile(r"\\d\b")
+
+# A heading/introduction skip ends at a marker that starts verse text (paragraph, poetry,
+# list, verse), not at any backslash: an introduction line can open with a character
+# marker ("\\bk En Maganda a Bareta...\\bk*", prf MRK 1), which isn't verse text.
+_TEXT_START_RE = re.compile(r"\\(v|p|m|mi|nb|pc|pi\d?|pm[a-z]*|ph\d?|q\d?|qr|qc|qm\d?|li\d?|lim\d?|b|tr)\b")
 
 
 def extract_pkf_chapter(usfm_path: Path, chapter: int) -> str:
@@ -189,10 +209,10 @@ def extract_pkf_chapter(usfm_path: Path, chapter: int) -> str:
             continue
         if not in_chapter:
             continue
-        if _SECTION_HEADING_RE.match(line):
+        if _SECTION_HEADING_RE.match(line) or (line.startswith("\\d") and _D_TITLE_RE.match(line) and "\\v " not in line):
             skip_heading = True
             continue
-        if line.startswith("\\"):
+        if _TEXT_START_RE.match(line):
             skip_heading = False
         if skip_heading:
             continue

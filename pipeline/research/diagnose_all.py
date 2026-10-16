@@ -31,6 +31,7 @@ Usage:
     python3 diagnose_all.py [--limit N]
 """
 import json
+import re
 import shutil
 import sys
 import tempfile
@@ -38,9 +39,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "comparison"))
 from compare_pkf_dbt import compare  # noqa: E402
-from fetch_sources import dbt_text, helloao_text, pkf_text, rclone_env  # noqa: E402
+from fetch_sources import dbt_text, helloao_text, pkf_text, ebible_text, openbible_text, rclone_env  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
+from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from diagnose_taxonomy import classify  # noqa: E402
@@ -91,7 +92,25 @@ def fetch_for_id(sid: str, iso: str, canon: str, book: str, chapter: int,
         return helloao_text(mid, book, chapter)
     if source == "pkf":
         return pkf_text(iso, pkf_source_ref, book, chapter, env, bucket, tmpdir) if pkf_source_ref else None
+    if source == "ebible":
+        return ebible_text(iso, mid, book, chapter)
+    if source == "openbible":
+        pid = _openbible_project(mid)
+        return openbible_text(iso, pid, book, chapter, tmpdir) if pid else None
     return None
+
+
+_OB_PROJECTS: dict | None = None
+
+
+def _openbible_project(abbr: str) -> str | None:
+    """Biblica project id for a published openbible abbreviation (openbible-editions.json)."""
+    global _OB_PROJECTS
+    if _OB_PROJECTS is None:
+        f = CATALOG_DIR / "openbible-editions.json"
+        entries = json.loads(f.read_text())["entries"] if f.exists() else {}
+        _OB_PROJECTS = {e["abbr"]: pid for pid, e in entries.items()}
+    return _OB_PROJECTS.get(abbr)
 
 
 BOOK_FOR_CANON = {"nt": ("REV", 15), "ot": ("PSA", 117)}
@@ -132,10 +151,16 @@ def main():
     # compared fine (found 2026-07-28: 7 pairs incorrectly came back
     # "no_text" here despite real scores on record, because this always
     # defaulted to PSA117 regardless of what compare_all.py actually used).
-    probe_by_group = {
-        f"{v['iso']}:{v['canon']}": OT_FALLBACK if v.get("probe") == "PSA51" else BOOK_FOR_CANON[v["canon"]]
-        for v in comparisons.values()
-    }
+    # Fixed 2026-10-16: every fallback probe, not just PSA51. compare_all.py's
+    # FALLBACK_PROBES also include RUT1/JON1 (ot) and MRK1/LUK1/JHN1/MAT1/ACT1/JAS1 (nt);
+    # those groups were re-fetched on the default chapter, which the edition often doesn't
+    # have (no_text/error) or which differs from the scored one (122 diagnoses, e.g. the
+    # Open English Bible's ot pair, compared on JON1, diagnosed on PSA117).
+    def probe_of(v):
+        m = re.fullmatch(r"([0-9A-Z]{3})(\d+)", v.get("probe") or "")
+        return (m.group(1), int(m.group(2))) if m else BOOK_FOR_CANON[v["canon"]]
+
+    probe_by_group = {f"{v['iso']}:{v['canon']}": probe_of(v) for v in comparisons.values()}
     catalog = json.loads((API_CACHE / "dbt-catalog.json").read_text())
 
     candidates = best_match_pairs()
@@ -158,6 +183,10 @@ def main():
             a, b = pair
             pkf_source_ref = pkf_refs.get(f"{iso}:{canon}")
             book, chapter = probe_by_group.get(f"{iso}:{canon}", BOOK_FOR_CANON[canon])
+            check = (comparisons.get(f"{iso}:{canon}", {}).get("confirmations") or {}).get("|".join(pair))
+            if check and check.get("differs_on"):  # confirm_identical.py: diagnose where it differs
+                m = re.fullmatch(r"([0-9A-Z]{3})(\d+)", check["differs_on"])
+                book, chapter = m.group(1), int(m.group(2))
             try:
                 entry = process_one(iso, canon, a, b, candidates[(iso, canon, pair)], book, chapter,
                                      catalog, pkf_source_ref, env, bucket, tmpdir)

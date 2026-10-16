@@ -129,6 +129,29 @@ same underlying catalog).
   fixed via this comparison (`\cl`, `\r`, `\ms`/`\ms1`/`\ms2` — see that
   script's history for detail).
 
+## eBible.org (editions `bibles` republishes, `e`)
+
+Added 2026-10-15. eBible.org publishes clean USFM zips per translation
+(`https://eBible.org/Scriptures/<translationId>_usfm.zip`), most of which helloAO
+already carries. `generate_ebible_chapters.py` republishes the rest, as book USJ under
+`export/ebible-usj/<iso>/<translationId>/`, when all three hold:
+
+- helloAO doesn't carry it (helloAO links its eBible sources as
+  `details.php?id=<translationId>`; a few, such as BSB, link elsewhere and are listed in
+  the script);
+- the edition's copyright page gives Public Domain, CC0 or a Creative Commons licence
+  without No Derivatives (eBible's own `Redistributable` flag alone also lets through ND
+  and "All rights reserved" editions);
+- its text isn't already reachable from another source: compared before publishing
+  (letters-only similarity of sample chapters, 0.95 or more = same text), never assumed.
+  The first run (2026-10-15) found 11 such duplicates, e.g. hltmcsb = helloAO
+  `hlt_mcs`, eka = openbible EKA, spabll = audiobiblia BLL.
+
+That gave 12 editions. In the catalogs they're the `e` source; their relationships to the
+other sources (e.g. the Open English Bible's two spelling editions, `e:engoebus` and
+`e:engoebcw`, `orthography_convention` of each other) come from the same text comparison
+as every other source's.
+
 ## Priority (when more than one source has the same content)
 
 ```
@@ -136,6 +159,7 @@ same underlying catalog).
 2. helloao
 3. dbt
 4. openbible
+5. ebible
 ```
 
 `openbible` placed last, deliberately conservative — it's the newest
@@ -143,7 +167,9 @@ source here, with real but mixed licensing (unlike the other three, which
 are either fully open or already well-understood), so it defaults to
 last pick rather than displacing an existing preference. Revisit this
 ordering once more real-world use has confirmed there's no reason to
-prefer it lower.
+prefer it lower. `ebible` (added 2026-10-15) comes after it: its editions are, by
+construction, ones no other source has, so the order only matters if a later comparison
+finds an overlap.
 
 This is the **default** `catalog-index.json`/`catalog-overlap.json` point
 to when sources overlap — not a filter. Every source that has content for
