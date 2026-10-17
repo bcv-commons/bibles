@@ -1,17 +1,29 @@
 """Language parity, Python side: the same lines as ../js/dump.mjs, from verse_text.py.
 
-Usage: python dump.py <usj-root> <sofria-root> > py.tsv
+With --fp, each line also carries the chapter's text fingerprint (tokenizer v2) and content
+fingerprint (verses with a plain number only; a chapter with none gets "-").
+
+Usage: python dump.py <usj-root> <sofria-root> [--fp] > py.tsv
 """
 import hashlib
 import json
 import os
 import sys
 
+from bcv_tokenize import fingerprints
+from content_fingerprint import content_fingerprints
 from verse_text import extract_sofria, extract_usj
+
+FP = "--fp" in sys.argv
 
 
 def digest(verses):
-    return hashlib.sha256("".join(f"{v['verse']}\t{v['text']}\n" for v in verses).encode()).hexdigest()
+    d = hashlib.sha256("".join(f"{v['verse']}\t{v['text']}\n" for v in verses).encode()).hexdigest()
+    if not FP:
+        return d
+    m = {(1, int(v["verse"])): v["text"] for v in verses if v["verse"].isascii() and v["verse"].isdigit()}
+    t, c = fingerprints(m)[1].get(1, "-"), content_fingerprints(m)[1].get(1, "-")
+    return f"{d}\t{t}\t{c}"
 
 
 def main(usj_root, sof_root):

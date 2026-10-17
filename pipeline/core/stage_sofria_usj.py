@@ -15,8 +15,11 @@ edition_formats.py) is staged too, so clients can find the Sofria and USJ files.
 convert_batch.mjs writes a book's chapters only once the whole book has converted, so
 a book is staged whole or not at all; its USJ is staged only alongside its Sofria.
 
+With --usj-only (no Sofria published for the source, e.g. eBible) every book's USJ is
+staged, and <sofria-dir> is ignored.
+
 Usage:
-    python3 pipeline/core/stage_sofria_usj.py <usj-dir> <sofria-dir> <stage-dir>
+    python3 pipeline/core/stage_sofria_usj.py <usj-dir> <sofria-dir> <stage-dir> [--usj-only]
 """
 import os
 import shutil
@@ -29,6 +32,7 @@ from edition_formats import META_FILE  # noqa: E402
 
 def main() -> None:
     usj_dir, sofria_dir, stage = (Path(a) for a in sys.argv[1:4])
+    usj_only = "--usj-only" in sys.argv
     if stage.exists():
         shutil.rmtree(stage)
     books = chapters = 0
@@ -36,6 +40,11 @@ def main() -> None:
     for usj in sorted(p for p in usj_dir.rglob("*.json") if p.name != META_FILE):
         rel = usj.relative_to(usj_dir).with_suffix("")  # <iso>/<abbr>/<BOOK>
         src = sofria_dir / rel
+        if usj_only:
+            (stage / rel).parent.mkdir(parents=True, exist_ok=True)
+            os.link(usj, (stage / rel).parent / f"{rel.name}.usj.json")
+            books += 1
+            continue
         if not src.is_dir() or not any(src.glob("*.json")):
             skipped.append(str(rel))
             continue

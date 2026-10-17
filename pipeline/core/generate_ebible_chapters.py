@@ -59,7 +59,7 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
 from usfm_pipes import protect, restore  # noqa: E402
-from edition_formats import META_FILE, write_meta  # noqa: E402
+from edition_formats import META_FILE, USJ_ONLY, write_meta  # noqa: E402
 import usfmtc  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "verse-text" / "python"))
 from helloao_to_usj import chapter_to_usj  # noqa: E402  (the client converter, tools/verse-text)
@@ -319,7 +319,7 @@ def process_translation(row: dict, force: bool, outcome: collections.Counter, re
         return 0
     if edition_dir.exists() and not force:
         if not (edition_dir / META_FILE).exists():
-            write_meta(edition_dir, edition_meta(row, lic))
+            write_meta(edition_dir, edition_meta(row, lic), USJ_ONLY)
         outcome["already present"] += 1
         return 0
 
@@ -360,7 +360,7 @@ def process_translation(row: dict, force: bool, outcome: collections.Counter, re
                 json.dumps(usj, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
             books += 1
     if books:
-        write_meta(edition_dir, edition_meta(row, lic))
+        write_meta(edition_dir, edition_meta(row, lic), USJ_ONLY)
         outcome["written"] += 1
     else:
         outcome["no USFM"] += 1

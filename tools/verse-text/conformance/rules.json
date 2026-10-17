@@ -1,0 +1,328 @@
+{
+ "clean": [
+  {
+   "why": "proskomma attribute restored",
+   "in": "likhati| default=\"lemma\" next",
+   "out": "likhati|lemma next"
+  },
+  {
+   "why": "proskomma attribute, closing quote lost (truncated at 255 bytes)",
+   "in": "word| default=\"abc",
+   "out": "word|abc"
+  },
+  {
+   "why": "two proskomma attributes, the first unclosed",
+   "in": "a| default=\"Make His\"| default=\"r k",
+   "out": "a|Make His k"
+  },
+  {
+   "why": "empty proskomma attribute",
+   "in": "likhati| default=\"\"",
+   "out": "likhati|"
+  },
+  {
+   "why": "legacy italic open/close",
+   "in": "|iMoro alfa, moro omega|r enapa",
+   "out": "Moro alfa, moro omega enapa"
+  },
+  {
+   "why": "legacy open after a dash, close before punctuation",
+   "in": "he said —|iEli, Eli?|r and",
+   "out": "he said —Eli, Eli? and"
+  },
+  {
+   "why": "legacy small caps",
+   "in": "the |scLORD|r said",
+   "out": "the LORD said"
+  },
+  {
+   "why": "legacy close |d at the end",
+   "in": "it is ended|d",
+   "out": "it is ended"
+  },
+  {
+   "why": "legacy open before a quote mark",
+   "in": "he wrote: |i“Peace”|r",
+   "out": "he wrote: “Peace”"
+  },
+  {
+   "why": "danda followed by lowercase is text",
+   "in": "cAvarA|isrAyelIya",
+   "out": "cAvarA|isrAyelIya"
+  },
+  {
+   "why": "mid-word |u is text",
+   "in": "ab|ucd",
+   "out": "ab|ucd"
+  },
+  {
+   "why": "|r inside a word is text",
+   "in": "ab|rcd",
+   "out": "ab|rcd"
+  },
+  {
+   "why": "whitespace collapsed and trimmed",
+   "in": "  a \n\t b  ",
+   "out": "a b"
+  }
+ ],
+ "plain": [
+  {
+   "why": "~ is a no-break space",
+   "in": [
+    {
+     "verse_start": 1,
+     "verse_end": 1,
+     "verse_text": "Mr.~Smith said"
+    }
+   ],
+   "out": [
+    {
+     "verse": "1",
+     "text": "Mr. Smith said"
+    }
+   ]
+  },
+  {
+   "why": "// is an optional line break",
+   "in": [
+    {
+     "verse_start": 1,
+     "verse_end": 1,
+     "verse_text": "first line//second line"
+    }
+   ],
+   "out": [
+    {
+     "verse": "1",
+     "text": "first line second line"
+    }
+   ]
+  },
+  {
+   "why": "bridged verse under its first number",
+   "in": [
+    {
+     "verse_start": 4,
+     "verse_end": 5,
+     "verse_text": "four and five"
+    },
+    {
+     "verse_start": 6,
+     "verse_end": 6,
+     "verse_text": "six"
+    }
+   ],
+   "out": [
+    {
+     "verse": "4",
+     "text": "four and five"
+    },
+    {
+     "verse": "6",
+     "text": "six"
+    }
+   ]
+  },
+  {
+   "why": "items with the same first number joined",
+   "in": [
+    {
+     "verse_start": 2,
+     "verse_end": 2,
+     "verse_text": "poetic line one"
+    },
+    {
+     "verse_start": 2,
+     "verse_end": 2,
+     "verse_text": "line two"
+    }
+   ],
+   "out": [
+    {
+     "verse": "2",
+     "text": "poetic line one line two"
+    }
+   ]
+  },
+  {
+   "why": "empty verse left out",
+   "in": [
+    {
+     "verse_start": 1,
+     "verse_end": 1,
+     "verse_text": "one"
+    },
+    {
+     "verse_start": 2,
+     "verse_end": 2,
+     "verse_text": "  "
+    }
+   ],
+   "out": [
+    {
+     "verse": "1",
+     "text": "one"
+    }
+   ]
+  },
+  {
+   "why": "legacy codes in plain text",
+   "in": [
+    {
+     "verse_start": 1,
+     "verse_end": 1,
+     "verse_text": "|scYESU|r said|d"
+    }
+   ],
+   "out": [
+    {
+     "verse": "1",
+     "text": "YESU said"
+    }
+   ]
+  }
+ ],
+ "usj": [
+  {
+   "why": "\\w attribute: only the word before | is text",
+   "in": {
+    "type": "USJ",
+    "version": "3.0",
+    "content": [
+     {
+      "type": "book",
+      "marker": "id",
+      "code": "TST"
+     },
+     {
+      "type": "chapter",
+      "marker": "c",
+      "number": "1"
+     },
+     {
+      "type": "para",
+      "marker": "p",
+      "content": [
+       {
+        "type": "verse",
+        "marker": "v",
+        "number": "1"
+       },
+       "In the ",
+       {
+        "type": "char",
+        "marker": "w",
+        "content": [
+         "beginning|lemma=\"x\""
+        ]
+       },
+       " was"
+      ]
+     }
+    ]
+   },
+   "out": {
+    "1": [
+     {
+      "verse": "1",
+      "text": "In the beginning was"
+     }
+    ]
+   }
+  },
+  {
+   "why": "\\rq reference dropped",
+   "in": {
+    "type": "USJ",
+    "version": "3.0",
+    "content": [
+     {
+      "type": "book",
+      "marker": "id",
+      "code": "TST"
+     },
+     {
+      "type": "chapter",
+      "marker": "c",
+      "number": "1"
+     },
+     {
+      "type": "para",
+      "marker": "p",
+      "content": [
+       {
+        "type": "verse",
+        "marker": "v",
+        "number": "1"
+       },
+       "As it is written. ",
+       {
+        "type": "char",
+        "marker": "rq",
+        "content": [
+         "Isa 40:3"
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   "out": {
+    "1": [
+     {
+      "verse": "1",
+      "text": "As it is written."
+     }
+    ]
+   }
+  }
+ ],
+ "content": [
+  {
+   "why": "case, punctuation, digits and spaces dropped",
+   "in": "In the Beginning, 1 God!",
+   "out": "inthebeginninggod"
+  },
+  {
+   "why": "apostrophe forms are one letter",
+   "in": "tsa'be",
+   "out": "tsaʼbe"
+  },
+  {
+   "why": "apostrophe forms are one letter",
+   "in": "tsaꞌbe",
+   "out": "tsaʼbe"
+  },
+  {
+   "why": "capital saltillo",
+   "in": "Ꞌa",
+   "out": "ʼa"
+  },
+  {
+   "why": "word joins don't matter",
+   "in": "yo Korbaan",
+   "out": "yokorbaan"
+  },
+  {
+   "why": "word joins don't matter",
+   "in": "yoKorbaan",
+   "out": "yokorbaan"
+  },
+  {
+   "why": "final sigma",
+   "in": "ΛΟΓΟΣ λόγος",
+   "out": "λογοσλόγοσ"
+  },
+  {
+   "why": "NFC",
+   "in": "é",
+   "out": "é"
+  },
+  {
+   "why": "marks kept",
+   "in": "kuaju̶",
+   "out": "kuaju̶"
+  }
+ ]
+}

@@ -1,0 +1,284 @@
+{
+ "about": "DBT cases for tools/verse-text, referenced by fileset id only: DBT text can't be republished. Per route, the chapter's text fingerprint (tokenizer v2, text fingerprint v1) and content fingerprint v1, over verses with a plain number. Fetch the chapter yourself (DBT API key needed: python/conformance.py --dbt) and compare. Computed 2026-10-17.",
+ "cases": [
+  {
+   "edition": "CARBSS",
+   "book": "REV",
+   "chapter": 1,
+   "canonical_route": "usx",
+   "why": "DBT's Sofria and plain text truncate long italic (|i) passages; the USX has them. Canonical: USX.",
+   "routes": {
+    "sofria": {
+     "id": "CARBSSN_ET-json",
+     "verses": 20,
+     "text_fp": "accc23ffce2bd3d632de8cdece577c6d72ca09631661b0dd632cb067d788c4cc",
+     "content_fp": "3258335704c0f71132e099bb3159a8744173dfdff63fce0837e33a96b87f6358"
+    },
+    "usx": {
+     "id": "CARBSSN_ET-usx",
+     "verses": 20,
+     "text_fp": "4ad14776b831f4f4162b568e1facc59b6ae65bb6a10ae88dcc219c3aea77d851",
+     "content_fp": "00003940d4a6d2a3aa08bf75188d19e7d1b1b62deb2db5bd4a0af4806c591d94"
+    },
+    "plain": {
+     "id": "CARBSSN_ET",
+     "verses": 20,
+     "text_fp": "accc23ffce2bd3d632de8cdece577c6d72ca09631661b0dd632cb067d788c4cc",
+     "content_fp": "3258335704c0f71132e099bb3159a8744173dfdff63fce0837e33a96b87f6358"
+    }
+   }
+  },
+  {
+   "edition": "RELBTL",
+   "book": "ACT",
+   "chapter": 13,
+   "canonical_route": "usx",
+   "why": "DBT's Sofria and plain text drop a verse containing a literal //. Canonical: USX.",
+   "routes": {
+    "sofria": {
+     "id": "RELBTLN_ET-json",
+     "verses": 51,
+     "text_fp": "1a87a9069d28d0d84b30d07ef73dccadd7756a6a7e5e24ec02de98b871567e10",
+     "content_fp": "8aa4c7002b8417b3183ef4d9b1c42e5f97b6ed2015313ca82fbd453c1d3a42a3"
+    },
+    "usx": {
+     "id": "RELBTLN_ET-usx",
+     "verses": 52,
+     "text_fp": "e20befad500a286a90308308093be7c2f6d5dbd92b2cb50255848c43375713c8",
+     "content_fp": "9406426311a5c55492717d6cb79660a170258e27bf561f9660a325dd5043dfd5"
+    },
+    "plain": {
+     "id": "RELBTLN_ET",
+     "verses": 51,
+     "text_fp": "1a87a9069d28d0d84b30d07ef73dccadd7756a6a7e5e24ec02de98b871567e10",
+     "content_fp": "8aa4c7002b8417b3183ef4d9b1c42e5f97b6ed2015313ca82fbd453c1d3a42a3"
+    }
+   }
+  },
+  {
+   "edition": "BGTNEW",
+   "book": "HEB",
+   "chapter": 8,
+   "canonical_route": "usx",
+   "why": "DBT's Sofria and plain text drop HEB 8:6 (a literal //). Canonical: USX.",
+   "routes": {
+    "sofria": {
+     "id": "BGTWYIN_ET-json",
+     "verses": 12,
+     "text_fp": "7ae2313cc395011f558f01b24d9d7ce3117f6119887afdcafe85a22b7aba9131",
+     "content_fp": "e1f205ad35f975f5a6acae90ba41df894a7f35c13174023c7e42893033995c4f"
+    },
+    "usx": {
+     "id": "BGTWYIN_ET-usx",
+     "verses": 13,
+     "text_fp": "593e825d1daf1ad07b3165b82c671278866a93adf49124ced69911f412d68d75",
+     "content_fp": "a04994a5a096c199f3973ff3697fda0af6bc91e22df3fba870f9cb27ec0b5f09"
+    },
+    "plain": {
+     "id": "BGTWYIN_ET",
+     "verses": 12,
+     "text_fp": "7ae2313cc395011f558f01b24d9d7ce3117f6119887afdcafe85a22b7aba9131",
+     "content_fp": "e1f205ad35f975f5a6acae90ba41df894a7f35c13174023c7e42893033995c4f"
+    }
+   }
+  },
+  {
+   "edition": "FFMWBT",
+   "book": "MRK",
+   "chapter": 7,
+   "canonical_route": "usx",
+   "why": "A space lost before a legacy |i code joins two words in Sofria and plain: text fingerprints differ, content fingerprints are equal. Canonical: USX.",
+   "routes": {
+    "sofria": {
+     "id": "FFMTBLN_ET-json",
+     "verses": 36,
+     "text_fp": "b8951e3be0fd0193759ecfc83ec7b40936359c26a1f551b3ceb68ebb98624315",
+     "content_fp": "005df25a02e2b3913238fded7913f2e0b7460077e4e50cbb9a33da700a5d92e4"
+    },
+    "usx": {
+     "id": "FFMTBLN_ET-usx",
+     "verses": 36,
+     "text_fp": "e88708bf45ba97bb85a1136959e5de155ac838f037aa06b39537d84b861d36c4",
+     "content_fp": "005df25a02e2b3913238fded7913f2e0b7460077e4e50cbb9a33da700a5d92e4"
+    },
+    "plain": {
+     "id": "FFMTBLN_ET",
+     "verses": 36,
+     "text_fp": "b8951e3be0fd0193759ecfc83ec7b40936359c26a1f551b3ceb68ebb98624315",
+     "content_fp": "005df25a02e2b3913238fded7913f2e0b7460077e4e50cbb9a33da700a5d92e4"
+    }
+   }
+  },
+  {
+   "edition": "MZWNVS",
+   "book": "REV",
+   "chapter": 17,
+   "canonical_route": "usx",
+   "why": "As FFMWBT, with |sc. Canonical: USX.",
+   "routes": {
+    "sofria": {
+     "id": "MZWNVSN_ET-json",
+     "verses": 18,
+     "text_fp": "4b0e8a6d51ae7115f30425fde668df02190a3797ffdb0f31c84a54554a2b385e",
+     "content_fp": "ca33b145b1e7e88e011365000aae2ecbb1cd850d3c7c77892a0473900362e865"
+    },
+    "usx": {
+     "id": "MZWNVSN_ET-usx",
+     "verses": 18,
+     "text_fp": "c0bb8f7055a9276ade3825fbd7fff608b1de8b9c32874a6d1f606fafdb69d77d",
+     "content_fp": "ca33b145b1e7e88e011365000aae2ecbb1cd850d3c7c77892a0473900362e865"
+    },
+    "plain": {
+     "id": "MZWNVSN_ET",
+     "verses": 18,
+     "text_fp": "4b0e8a6d51ae7115f30425fde668df02190a3797ffdb0f31c84a54554a2b385e",
+     "content_fp": "ca33b145b1e7e88e011365000aae2ecbb1cd850d3c7c77892a0473900362e865"
+    }
+   }
+  },
+  {
+   "edition": "COEWBT",
+   "book": "MAT",
+   "chapter": 27,
+   "canonical_route": "sofria",
+   "why": "Sofria differs from USX only by a space lost before punctuation: identical tokens, all routes give the same text fingerprint. Canonical: Sofria.",
+   "routes": {
+    "sofria": {
+     "id": "COEWBTN_ET-json",
+     "verses": 62,
+     "text_fp": "60d43e82a9b3df9976f55fee4f1ebd056b4890c21fc63d1b81f2508c4b8554fd",
+     "content_fp": "9e58f45ef6331f878a290d81f72796bd239d832b9fdcb8079fd2fec917005248"
+    },
+    "usx": {
+     "id": "COEWBTN_ET-usx",
+     "verses": 62,
+     "text_fp": "60d43e82a9b3df9976f55fee4f1ebd056b4890c21fc63d1b81f2508c4b8554fd",
+     "content_fp": "9e58f45ef6331f878a290d81f72796bd239d832b9fdcb8079fd2fec917005248"
+    },
+    "plain": {
+     "id": "COEWBTN_ET",
+     "verses": 62,
+     "text_fp": "60d43e82a9b3df9976f55fee4f1ebd056b4890c21fc63d1b81f2508c4b8554fd",
+     "content_fp": "9e58f45ef6331f878a290d81f72796bd239d832b9fdcb8079fd2fec917005248"
+    }
+   }
+  },
+  {
+   "edition": "BVZYSS",
+   "book": "LUK",
+   "chapter": 18,
+   "canonical_route": "sofria",
+   "why": "Plain text keeps a \\rq reference (one verse) that the structured routes drop. Sofria = USX.",
+   "routes": {
+    "sofria": {
+     "id": "BVZYSSN_ET-json",
+     "verses": 40,
+     "text_fp": "be9a09fef5720991990284f95191dbbe4d8ca6ee16eb9fe4f4e117f77dc294d2",
+     "content_fp": "8dc76d40413082fe0710d937e66c4c105a912b8ffb1f7308f278e6beb1944c49"
+    },
+    "usx": {
+     "id": "BVZYSSN_ET-usx",
+     "verses": 40,
+     "text_fp": "be9a09fef5720991990284f95191dbbe4d8ca6ee16eb9fe4f4e117f77dc294d2",
+     "content_fp": "8dc76d40413082fe0710d937e66c4c105a912b8ffb1f7308f278e6beb1944c49"
+    },
+    "plain": {
+     "id": "BVZYSS",
+     "verses": 40,
+     "text_fp": "7b11eee2770b24bd62263957189a4083f7dcc8bd6220a6ef599a0f1a6096cfec",
+     "content_fp": "be37ea1e21acdb59ead40edbf8afb549bb46e47e66fc1a2522d4b9da3e6bceb4"
+    }
+   }
+  },
+  {
+   "edition": "BIVWBT",
+   "book": "ACT",
+   "chapter": 13,
+   "canonical_route": "sofria",
+   "why": "Plain text keeps \\rq references (5 verses). Sofria = USX.",
+   "routes": {
+    "sofria": {
+     "id": "BIVWBTN_ET-json",
+     "verses": 52,
+     "text_fp": "2a7c99224ff252f5fc7dfc057d683c6e8e367d497047d2c0510059796144b1c1",
+     "content_fp": "fa4364d646191f5ee42845ca4a566792067b3fe0ee2729a28175556221dcd6b6"
+    },
+    "usx": {
+     "id": "BIVWBTN_ET-usx",
+     "verses": 52,
+     "text_fp": "2a7c99224ff252f5fc7dfc057d683c6e8e367d497047d2c0510059796144b1c1",
+     "content_fp": "fa4364d646191f5ee42845ca4a566792067b3fe0ee2729a28175556221dcd6b6"
+    },
+    "plain": {
+     "id": "BIVWBTN_ET",
+     "verses": 52,
+     "text_fp": "ea5b054ea4045f3f468e1d7175c31ac1c8c81596d5f57ac88f8e00be509bbf80",
+     "content_fp": "963e5ff8fcb93c66f1e35ca96796a476bb3e8a7f525eea0dcd0f22a47ab658c4"
+    }
+   }
+  },
+  {
+   "edition": "HLBMSS",
+   "book": "MAT",
+   "chapter": 2,
+   "canonical_route": "usx",
+   "why": "USX \\w word|lemma: the structured route keeps the word only; plain text keeps the lemma as text. No Sofria; canonical: USX.",
+   "routes": {
+    "usx": {
+     "id": "HLBMSSN_ET-usx",
+     "verses": 23,
+     "text_fp": "ae928811f4992e8aa607161c9657ecbe56b85dc07b1dfebf423d94286d106bd2",
+     "content_fp": "dfd4154d559088642e4417655bda4e91a5e9228f0c0e968c78ef8dc2beddc171"
+    },
+    "plain": {
+     "id": "HLBMSS",
+     "verses": 23,
+     "text_fp": "f9ff590ca11b7cbe83a3a79d16dfc96e70ac13a00f05b8638e525ffd91fc232e",
+     "content_fp": "d0a876580c202c5785f80efe82051cdb6dfa02465f4e87dbdc591c7556a24279"
+    }
+   }
+  },
+  {
+   "edition": "YBBCAB",
+   "book": "MAT",
+   "chapter": 3,
+   "canonical_route": "usx",
+   "why": "As HLBMSS.",
+   "routes": {
+    "usx": {
+     "id": "YBBCABN_ET-usx",
+     "verses": 17,
+     "text_fp": "c85e9af7b3f0d00bd9f2e4ded5cc11b04157033c1b1f85f1067a571412c0e310",
+     "content_fp": "4ca52313f457dbd6a31a69652fb46b92b77b1f7c9bf492408404362c4011e8f0"
+    },
+    "plain": {
+     "id": "YBBCAB",
+     "verses": 17,
+     "text_fp": "4c971a64fecf56fbf651563839845418993c8ae982ee41db3b21e64dd4644a39",
+     "content_fp": "32fb780f0ebba12785ec7da0a21dd05d9ec1a7a486317bdc299eb30d7a7b4b8a"
+    }
+   }
+  },
+  {
+   "edition": "KIAWBT",
+   "book": "MAT",
+   "chapter": 12,
+   "canonical_route": "usx",
+   "why": "As HLBMSS.",
+   "routes": {
+    "usx": {
+     "id": "KIAWBTN_ET-usx",
+     "verses": 50,
+     "text_fp": "575e6becfe66d9bdf904959b9c8e80a6c402c9bfe51972bf69ed8ebc3fdb93cc",
+     "content_fp": "7f65c4884455cfa1790f61080e24405e1d05d04768b16e654b22cc3f4ce24689"
+    },
+    "plain": {
+     "id": "KIAWBT",
+     "verses": 50,
+     "text_fp": "610a2041548cf7ee9674842cbacbaa79d86da05b7d6ebd02cc65a8a46fdecb98",
+     "content_fp": "2252d01f49c6138b1be28f5c941915a180aaed27efae33029013141bb7d19a69"
+    }
+   }
+  }
+ ]
+}

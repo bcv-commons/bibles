@@ -1,0 +1,222 @@
+{
+ "source": {
+  "provider": "bible.helloao.org",
+  "translation": "fra_lsg",
+  "book": "PSA",
+  "chapter": 3,
+  "input_sha256": "3234f6abcd7e3d56aa2c1ad1d58109cfa950c63ca8c6b44cb872489f5cb83ab3",
+  "script": "Latin",
+  "licence": "public domain",
+  "verse_text": "bibles' helloAO converter (chapter_to_usj) + extract_usj, tools/verse-text, as vendored by lexeme-aligner at 34cb423a"
+ },
+ "tokenizer_version": 2,
+ "text_fp_version": 1,
+ "verses": [
+  {
+   "verse": 1,
+   "text": "Psaume de David. A l’occasion de sa fuite devant Absalom, son fils.",
+   "tokens": [
+    "Psaume",
+    "de",
+    "David",
+    "A",
+    "l",
+    "occasion",
+    "de",
+    "sa",
+    "fuite",
+    "devant",
+    "Absalom",
+    "son",
+    "fils"
+   ],
+   "line": "1:Psaume de David A l occasion de sa fuite devant Absalom son fils"
+  },
+  {
+   "verse": 2,
+   "text": "O Éternel, que mes ennemis sont nombreux! Quelle multitude se lève contre moi!",
+   "tokens": [
+    "O",
+    "Éternel",
+    "que",
+    "mes",
+    "ennemis",
+    "sont",
+    "nombreux",
+    "Quelle",
+    "multitude",
+    "se",
+    "lève",
+    "contre",
+    "moi"
+   ],
+   "line": "2:O Éternel que mes ennemis sont nombreux Quelle multitude se lève contre moi"
+  },
+  {
+   "verse": 3,
+   "text": "Combien qui disent à mon sujet: Plus de salut pour lui auprès de Dieu! — Pause.",
+   "tokens": [
+    "Combien",
+    "qui",
+    "disent",
+    "à",
+    "mon",
+    "sujet",
+    "Plus",
+    "de",
+    "salut",
+    "pour",
+    "lui",
+    "auprès",
+    "de",
+    "Dieu",
+    "Pause"
+   ],
+   "line": "3:Combien qui disent à mon sujet Plus de salut pour lui auprès de Dieu Pause"
+  },
+  {
+   "verse": 4,
+   "text": "Mais toi, ô Éternel! Tu es mon bouclier, Tu es ma gloire, et tu relèves ma tête.",
+   "tokens": [
+    "Mais",
+    "toi",
+    "ô",
+    "Éternel",
+    "Tu",
+    "es",
+    "mon",
+    "bouclier",
+    "Tu",
+    "es",
+    "ma",
+    "gloire",
+    "et",
+    "tu",
+    "relèves",
+    "ma",
+    "tête"
+   ],
+   "line": "4:Mais toi ô Éternel Tu es mon bouclier Tu es ma gloire et tu relèves ma tête"
+  },
+  {
+   "verse": 5,
+   "text": "De ma voix je crie à l’Éternel, Et il me répond de sa montagne sainte. — Pause.",
+   "tokens": [
+    "De",
+    "ma",
+    "voix",
+    "je",
+    "crie",
+    "à",
+    "l",
+    "Éternel",
+    "Et",
+    "il",
+    "me",
+    "répond",
+    "de",
+    "sa",
+    "montagne",
+    "sainte",
+    "Pause"
+   ],
+   "line": "5:De ma voix je crie à l Éternel Et il me répond de sa montagne sainte Pause"
+  },
+  {
+   "verse": 6,
+   "text": "Je me couche, et je m’endors; Je me réveille, car l’Éternel est mon soutien.",
+   "tokens": [
+    "Je",
+    "me",
+    "couche",
+    "et",
+    "je",
+    "m",
+    "endors",
+    "Je",
+    "me",
+    "réveille",
+    "car",
+    "l",
+    "Éternel",
+    "est",
+    "mon",
+    "soutien"
+   ],
+   "line": "6:Je me couche et je m endors Je me réveille car l Éternel est mon soutien"
+  },
+  {
+   "verse": 7,
+   "text": "Je ne crains pas les myriades de peuples Qui m’assiègent de toutes parts.",
+   "tokens": [
+    "Je",
+    "ne",
+    "crains",
+    "pas",
+    "les",
+    "myriades",
+    "de",
+    "peuples",
+    "Qui",
+    "m",
+    "assiègent",
+    "de",
+    "toutes",
+    "parts"
+   ],
+   "line": "7:Je ne crains pas les myriades de peuples Qui m assiègent de toutes parts"
+  },
+  {
+   "verse": 8,
+   "text": "Lève-toi, Éternel! Sauve-moi, mon Dieu! Car tu frappes à la joue tous mes ennemis, Tu brises les dents des méchants.",
+   "tokens": [
+    "Lève",
+    "toi",
+    "Éternel",
+    "Sauve",
+    "moi",
+    "mon",
+    "Dieu",
+    "Car",
+    "tu",
+    "frappes",
+    "à",
+    "la",
+    "joue",
+    "tous",
+    "mes",
+    "ennemis",
+    "Tu",
+    "brises",
+    "les",
+    "dents",
+    "des",
+    "méchants"
+   ],
+   "line": "8:Lève toi Éternel Sauve moi mon Dieu Car tu frappes à la joue tous mes ennemis Tu brises les dents des méchants"
+  },
+  {
+   "verse": 9,
+   "text": "Le salut est auprès de l’Éternel: Que ta bénédiction soit sur ton peuple! — Pause.",
+   "tokens": [
+    "Le",
+    "salut",
+    "est",
+    "auprès",
+    "de",
+    "l",
+    "Éternel",
+    "Que",
+    "ta",
+    "bénédiction",
+    "soit",
+    "sur",
+    "ton",
+    "peuple",
+    "Pause"
+   ],
+   "line": "9:Le salut est auprès de l Éternel Que ta bénédiction soit sur ton peuple Pause"
+  }
+ ],
+ "chapter_fp": "730f32ad11010ce859735b062bd0ef9b79cee58c071d12d5f7e45b1d746db72e"
+}

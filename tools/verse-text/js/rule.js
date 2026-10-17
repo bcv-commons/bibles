@@ -13,7 +13,13 @@
 //   \w, text from a `|` on is an attribute the source failed to parse (USX
 //   <char style="w">word|lemma</char>, DBT HLBMSS / YBBCAB): it is dropped.
 // - `| default="X"` (proskomma's rendering of a `|` in text, found in DBT's own Sofria,
-//   CARBSS) reads as `|X`, the source text. Any other `|` is text (a Sanskrit danda, LSV).
+//   CARBSS) reads as `|X`, the source text.
+// - Legacy formatting codes are dropped: `|i` / `|sc` (italic, small caps on) where followed
+//   by an uppercase letter, a space or opening punctuation, and `|r` / `|d` (back to normal)
+//   where followed by a space, punctuation or the end ("|iEli, Eli ...?|r", "|scJESUS ...|d";
+//   DBT CARBSS, COEWBT, FFMWBT, LAMABT, MDAWBT, MZWNVS, MYKWBT, KABCEB). A Sanskrit danda
+//   before a lowercase word ("cAvarA|isrAyel") matches neither.
+// - Any other `|` is text (a Sanskrit danda, LSV).
 // - A bridged verse 4-5 is one verse, under its first number (4).
 // - A verse number given twice: both texts, in document order, joined by one space.
 // - A verse with no text of its own is skipped.
@@ -24,8 +30,12 @@ export const SKIP_CHAR = new Set(['rq', 'qac', 'fm', 'vp', 'va', 'ca', 'fig']);
 export const SKIP_PARA = /^(rem|restore|cp|ide|h\d*|toc\d*|toca\d*|i\w+)$/;
 
 export const firstNumber = (v) => String(v).trim().split(/[-,‐-―]/)[0].trim();
-export const PROSKOMMA_PIPE = /\| default="([^"]*)"/g;
-export const clean = (s) => s.replace(PROSKOMMA_PIPE, '|$1').replace(/\s+/g, ' ').trim();
+// closing quote optional: proskomma truncates long values at 255 bytes, quote included
+export const PROSKOMMA_PIPE = /\| default="?([^"|]*)"?/g;
+export const LEGACY_OPEN = /\|(?:sc|i)(?=[\s\p{Lu}«“"‘'<&¿¡(\[—-])/gu;
+export const LEGACY_CLOSE = /\|[rd](?=\s|\p{P}|$)/gu;
+export const clean = (s) => s.replace(PROSKOMMA_PIPE, '|$1').replace(LEGACY_OPEN, '').replace(LEGACY_CLOSE, '')
+    .replace(/\s+/g, ' ').trim();
 
 /** A \w's content up to its first `|` (the rest is an unparsed attribute). */
 export function wordBeforePipe(items) {

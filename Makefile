@@ -3,7 +3,7 @@ CORE := pipeline/core
 
 .PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
-        publish-catalog publish-catalog-dry \
+        publish-catalog publish-catalog-dry stage-ebible publish-ebible publish-ebible-dry text-route \
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
@@ -23,6 +23,7 @@ help: ## Show available targets
 	@echo "  make versification    Fingerprint versification schemes"
 	@echo "  make version-info     Generate version-info artifact"
 	@echo "  make dbt-catalog      Generate catalog-text.json / catalog-audio.json"
+	@echo "  make text-route       Generate catalog/text-route.json (canonical text + reading route per edition)"
 	@echo "  make catalog-books    Generate per-language /catalog/<iso[0]>/<iso>/books.json"
 	@echo ""
 	@echo "  CDN publishing"
@@ -184,9 +185,21 @@ sofria-openbible: ## Convert openbible USJ to per-chapter Sofria
 sofria-audiobiblia: ## Convert audiobiblia USJ to per-chapter Sofria
 	node tools/usj-to-sofria/convert_batch.mjs export/audiobiblia-usj $(SOFRIA_OUT)/audiobiblia
 
+stage-ebible: ## Stage eBible USJ (<BOOK>.usj.json) and _meta.json as hard links (USJ only, no Sofria)
+	$(PYTHON) $(CORE)/stage_sofria_usj.py export/ebible-usj - $(SOFRIA_STAGE)/ebible --usj-only
+
+publish-ebible: ## Upload the staged eBible USJ + _meta.json (make stage-ebible) to cdn.bibel.wiki/ebible/
+	bash $(CORE)/publish-ebible.sh
+
+publish-ebible-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-ebible.sh
+
 stage-sofria: ## Stage USJ (<BOOK>.usj.json), Sofria (<BOOK>/<ch>.sofria.json) and _meta.json as hard links
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/openbible-usj $(SOFRIA_OUT)/openbible $(SOFRIA_STAGE)/openbible
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/audiobiblia-usj $(SOFRIA_OUT)/audiobiblia $(SOFRIA_STAGE)/audiobiblia
+
+text-route: ## Generate catalog/text-route.json: each edition's canonical text and reading route (after the catalog + stage steps)
+	$(PYTHON) pipeline/comparison/generate_text_route.py $(ARGS)
 
 openbible-editions: ## Add published/books/canon/licenses/path to catalog/openbible-editions.json (after stage-sofria)
 	$(PYTHON) $(CORE)/enrich_openbible_editions.py

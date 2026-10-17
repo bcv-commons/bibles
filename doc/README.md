@@ -56,6 +56,14 @@ that turns a `.pkf` file (the format PKF publishes) into plain USFM text.
 `examples/fetch_pkf.js`/`.py` only download the file; this is the actual
 decode step.
 
+## Reading verse text: which text, through which route
+
+**[`text-route.json`](catalog-text-route.md)** — for every edition in
+`catalog-overlap.json`, the one canonical text to read (Sofria, USJ, USX,
+helloAO JSON, plain text or PKF) and where it is. Read it through
+[`tools/verse-text`](../tools/verse-text/), and every client gets the same
+verse text, tokens and fingerprint for the same edition.
+
 ## DBT's own text/audio fileset routing
 
 If you already know you want DBT specifically (not comparing across

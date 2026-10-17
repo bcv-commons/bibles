@@ -1,0 +1,37 @@
+# Editions whose canonical text is NOT the source's preferred format, with the evidence.
+# Read by pipeline/comparison/generate_text_route.py (catalog/text-route.json).
+#
+# DBT builds its Sofria (text_json, the -json filesets) with proskomma, which mangles a `|`
+# in text (writes `| default="..."`, truncates values at 255 bytes, drops the space before)
+# and drops whole verses that contain a literal `//`. Where that changes the tokens of a
+# verse, DBT's Sofria can't be the canonical text, and its USX (text_usx) is. Found
+# 2026-10-17: each edition's Sofria compared with its USX, verse by verse, through
+# tools/verse-text and tokenizer v2.
+#
+# Checked and kept on Sofria: COEWBT, LAMABT, MDAWBT (4-5 verses differ only by a space
+# lost before punctuation; the tokens are identical).
+
+[dbt.CARBSS]
+route = "usx"
+why = "sofria_damaged"
+evidence = "NT: 81 verses differ, 14 in tokens; long italic passages truncated (REV 1:20: USX 426 chars, Sofria 243)"
+
+[dbt.RELBTL]
+route = "usx"
+why = "sofria_damaged"
+evidence = "15 verses missing from Sofria, every verse with a literal // (ACT 13:5: USX 160 chars, Sofria 0)"
+
+[dbt.BGTNEW]
+route = "usx"
+why = "sofria_damaged"
+evidence = "HEB 8:6 missing from Sofria (USX 483 chars): the verse has a literal //"
+
+[dbt.FFMWBT]
+route = "usx"
+why = "sofria_damaged"
+evidence = "MRK 7:11: lost space before a legacy |i code joins two words (yo Korbaan -> yoKorbaan)"
+
+[dbt.MZWNVS]
+route = "usx"
+why = "sofria_damaged"
+evidence = "REV 17:5, 19:16: lost space before a legacy |sc code joins two words (laanee BABILÔNJEN -> laaneeBABILÔNJEN)"

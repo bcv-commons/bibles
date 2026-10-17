@@ -30,8 +30,12 @@ def usj_books(edition_dir: Path) -> list[str]:
     return books
 
 
-def write_meta(edition_dir: Path, meta: dict) -> None:
-    """Write _meta.json: the edition's own fields, then `books` and `formats`."""
-    out = {**meta, "books": usj_books(edition_dir), "formats": FORMATS}
+USJ_ONLY = {"usj": FORMATS["usj"]}
+
+
+def write_meta(edition_dir: Path, meta: dict, formats: dict = FORMATS) -> None:
+    """Write _meta.json: the edition's own fields, then `books` and `formats` (the formats
+    actually published for it: eBible editions are USJ only, see USJ_ONLY)."""
+    out = {**meta, "books": usj_books(edition_dir), "formats": formats}
     (edition_dir / META_FILE).write_text(
         json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
