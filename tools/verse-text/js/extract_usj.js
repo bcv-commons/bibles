@@ -1,6 +1,6 @@
 // Verse text from a book's USJ, by the rule in rule.js.
 //   extractUsj(usj) -> { "<chapter>": [{ verse, text }, ...], ... }
-import { HEADING, SKIP_CHAR, SKIP_PARA, collector } from './rule.js';
+import { HEADING, SKIP_CHAR, SKIP_PARA, collector, wordBeforePipe } from './rule.js';
 
 export function extractUsj(usj) {
     const chapters = {};
@@ -34,7 +34,7 @@ export function extractUsj(usj) {
                 case 'optbreak':
                     break;
                 case 'char':
-                    if (!SKIP_CHAR.has(it.marker)) inline(it.content, ctx);
+                    if (!SKIP_CHAR.has(it.marker)) inline(it.marker === 'w' ? wordBeforePipe(it.content) : it.content, ctx);
                     break;
                 default:
                     inline(it.content, ctx);

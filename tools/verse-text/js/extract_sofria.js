@@ -1,6 +1,6 @@
 // Verse text from one Sofria chapter document, by the rule in rule.js.
 //   extractSofria(doc) -> [{ verse, text }, ...]
-import { HEADING, SKIP_CHAR, SKIP_PARA, collector } from './rule.js';
+import { HEADING, SKIP_CHAR, SKIP_PARA, collector, wordBeforePipe } from './rule.js';
 
 const usfm = (subtype) => (subtype && subtype.startsWith('usfm:') ? subtype.slice(5) : subtype || '');
 const one = (v) => (Array.isArray(v) ? v[0] : v);
@@ -47,7 +47,7 @@ export function extractSofria(doc) {
                 // cell, the importer leaves that cell's wrapper empty and puts its text
                 // beside it, so only the next cell's start marks the boundary)
                 if (it.subtype === 'cell') out.add(st.verse, ' ');
-                inline(it.content, ctx);
+                inline(it.subtype === 'usfm:w' ? wordBeforePipe(it.content) : it.content, ctx);
                 if (it.subtype === 'cell') out.add(st.verse, ' ');
             }
         }

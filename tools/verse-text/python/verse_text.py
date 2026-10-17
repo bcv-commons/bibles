@@ -14,7 +14,11 @@ The rule (agreed with lexeme-aligner, 2026-10-12; see ../js/rule.js):
   that number is the verse's text; introductions; figures; remarks (\\rem, and
   Paratext's \\restore metadata); \\rq (quotation source); \\qac (acrostic letter); \\fm
   (footnote mark); \\vp and \\va/\\ca (published or alternative numbers).
-- Word-level markup (\\w, \\wj, \\nd, ...) contributes its text, never attributes.
+- Word-level markup (\\w, \\wj, \\nd, ...) contributes its text, never attributes. Inside
+  \\w, text from a `|` on is an attribute the source failed to parse (USX
+  <char style="w">word|lemma</char>, DBT HLBMSS / YBBCAB): it is dropped.
+- `| default="X"` (proskomma's rendering of a `|` in text, found in DBT's own Sofria,
+  CARBSS) reads as `|X`, the source text. Any other `|` is text (a Sanskrit danda, LSV).
 - A bridged verse 4-5 is one verse, under its first number (4).
 - A verse number given twice: both texts, in document order, joined by one space.
 - A verse with no text of its own is skipped.
@@ -48,8 +52,22 @@ def first_number(v) -> str:
     return _trim(re.split("[-,‐-―]", _trim(str(v)))[0])
 
 
+PROSKOMMA_PIPE = re.compile(r'\| default="([^"]*)"')
+
+
 def clean(s: str) -> str:
-    return _trim(_WS_RUN.sub(" ", s))
+    return _trim(_WS_RUN.sub(" ", PROSKOMMA_PIPE.sub(r"|\1", s)))
+
+
+def word_before_pipe(items) -> list:
+    """A \\w's content up to its first `|` (the rest is an unparsed attribute)."""
+    out = []
+    for it in items or []:
+        if isinstance(it, str) and "|" in it:
+            out.append(it[: it.index("|")])
+            break
+        out.append(it)
+    return out
 
 
 def _first(key: str) -> str:
@@ -118,7 +136,8 @@ def extract_usj(usj: dict[str, Any]) -> dict[str, Verses]:
                 pass
             elif t == "char":
                 if it.get("marker") not in SKIP_CHAR:
-                    inline(it.get("content"), ctx)
+                    content = it.get("content")
+                    inline(word_before_pipe(content) if it.get("marker") == "w" else content, ctx)
             else:
                 inline(it.get("content"), ctx)
 
@@ -217,7 +236,7 @@ def extract_sofria(doc: dict[str, Any]) -> Verses:
                 # a table cell is a word boundary on both sides
                 if sub == "cell":
                     out.add(st["verse"], " ")
-                inline(it.get("content"), ctx)
+                inline(word_before_pipe(it.get("content")) if sub == "usfm:w" else it.get("content"), ctx)
                 if sub == "cell":
                     out.add(st["verse"], " ")
 

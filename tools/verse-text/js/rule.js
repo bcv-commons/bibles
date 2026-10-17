@@ -9,7 +9,11 @@
 //   the paragraph marker after a heading, bcv LUK 9:51); introductions; figures;
 //   remarks (\rem, and Paratext's \restore metadata); \rq (quotation source); \qac (acrostic letter); \fm (footnote
 //   mark); \vp and \va/\ca (published or alternative numbers).
-// - Word-level markup (\w, \wj, \nd, ...) contributes its text, never attributes.
+// - Word-level markup (\w, \wj, \nd, ...) contributes its text, never attributes. Inside
+//   \w, text from a `|` on is an attribute the source failed to parse (USX
+//   <char style="w">word|lemma</char>, DBT HLBMSS / YBBCAB): it is dropped.
+// - `| default="X"` (proskomma's rendering of a `|` in text, found in DBT's own Sofria,
+//   CARBSS) reads as `|X`, the source text. Any other `|` is text (a Sanskrit danda, LSV).
 // - A bridged verse 4-5 is one verse, under its first number (4).
 // - A verse number given twice: both texts, in document order, joined by one space.
 // - A verse with no text of its own is skipped.
@@ -20,7 +24,21 @@ export const SKIP_CHAR = new Set(['rq', 'qac', 'fm', 'vp', 'va', 'ca', 'fig']);
 export const SKIP_PARA = /^(rem|restore|cp|ide|h\d*|toc\d*|toca\d*|i\w+)$/;
 
 export const firstNumber = (v) => String(v).trim().split(/[-,‐-―]/)[0].trim();
-export const clean = (s) => s.replace(/\s+/g, ' ').trim();
+export const PROSKOMMA_PIPE = /\| default="([^"]*)"/g;
+export const clean = (s) => s.replace(PROSKOMMA_PIPE, '|$1').replace(/\s+/g, ' ').trim();
+
+/** A \w's content up to its first `|` (the rest is an unparsed attribute). */
+export function wordBeforePipe(items) {
+    const out = [];
+    for (const it of items || []) {
+        if (typeof it === 'string' && it.includes('|')) {
+            out.push(it.slice(0, it.indexOf('|')));
+            break;
+        }
+        out.push(it);
+    }
+    return out;
+}
 
 /** Collects text per verse: add(verse, text); result() -> [{verse, text}] in order. */
 export function collector() {
