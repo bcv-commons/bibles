@@ -6,10 +6,10 @@ is computed over this text only, so two clients reading the same edition get the
     entries["<iso>:<canon>"]["<source id>"] = {"route": ..., "id" | "path": ..., "why"?: ...}
 
 Source ids are catalog/overlap.json's (d: DBT, h: helloAO, p: PKF, o: openbible /
-audiobiblia, e: eBible). Routes, in order of preference (agreed with lexeme-aligner 2026-10-17):
+audiobiblia, e: eBible, c: CrossWire). Routes, in order of preference (agreed with lexeme-aligner 2026-10-17):
 
 - sofria: the source's own Sofria. DBT: its text_json fileset (`id`, the -json fileset).
-  Ours (openbible, audiobiblia): `path` on cdn.bibel.wiki, <BOOK>/<chapter>.sofria.json
+  Ours (openbible, audiobiblia, CrossWire): `path` on cdn.bibel.wiki, <BOOK>/<chapter>.sofria.json
   (the same text is also there as <BOOK>.usj.json; route parity holds).
 - usj: our USJ, where that is the only form we publish (eBible): `path`, <BOOK>.usj.json.
 - usx: the source's USX, read with tools/verse-text (usx_to_usj.py, usx_to_sofria.mjs). Only
@@ -94,7 +94,7 @@ def from_overlap(entries: dict) -> None:
     """catalog/overlap.json can file an edition under another (iso, canon) than its own
     files suggest (an iso it was matched under, or a testament helloAO's completeness file
     doesn't flag): give those rows the same route, so every reachable id there has one."""
-    ours = {i: r for v in entries.values() for i, r in v.items() if i[0] in "oe"}
+    ours = {i: r for v in entries.values() for i, r in v.items() if i[0] in "oec"}
     overlap = json.loads((CATALOG_DIR / "overlap.json").read_text())["entries"]
     for key, clusters in overlap.items():
         for c in clusters:
@@ -142,6 +142,7 @@ def main():
     own(entries, "openbible", "o", "sofria")
     own(entries, "audiobiblia", "o", "sofria")
     own(entries, "ebible", "e", "usj")
+    own(entries, "crosswire", "c", "sofria")
     pkf(entries)
     from_overlap(entries)
     doc = {"schema_version": 1, "generated_at": date.today().isoformat(), "base": "https://cdn.bibel.wiki/", "routes": ROUTES,

@@ -237,27 +237,28 @@ def audiobiblia_rows():
     return counts
 
 
-def ebible_rows():
+def ebible_rows(folder: str = "ebible-usj", letter: str = "e"):
     """NT/OT/Portions rows for the eBible.org editions this repo republishes
     (`generate_ebible_chapters.py`, export/ebible-usj), from each edition's own `_meta.json`
     `books`. Source letter `"e"` (decided 2026-10-15): unlike `"o"`, eBible's own format is
     already clean and bulk-usable, so it gets its own letter rather than sharing the "had to
-    rescue it" one."""
+    rescue it" one. CrossWire (`generate_crosswire_usj.py`, export/crosswire-usj) is read the
+    same way, as `"c"` (2026-10-21)."""
     counts = defaultdict(int)
-    ebible_dir = EXPORT / "ebible-usj"
+    ebible_dir = EXPORT / folder
     if not ebible_dir.exists():
         return counts
     for meta_file in ebible_dir.glob("*/*/_meta.json"):
         iso = meta_file.parent.parent.name
         books = set(json.loads(meta_file.read_text()).get("books", []))
         if NT_BOOKS.issubset(books):
-            counts[(iso, "nt", "e")] += 1
+            counts[(iso, "nt", letter)] += 1
         elif books & NT_BOOKS:
-            counts[(iso, "ntp", "e")] += 1
+            counts[(iso, "ntp", letter)] += 1
         if OT_BOOKS.issubset(books):
-            counts[(iso, "ot", "e")] += 1
+            counts[(iso, "ot", letter)] += 1
         elif books & OT_BOOKS:
-            counts[(iso, "otp", "e")] += 1
+            counts[(iso, "otp", letter)] += 1
     return counts
 
 
@@ -286,7 +287,8 @@ def main():
     hao_path.write_text(json.dumps(hao_raw, indent=2), encoding="utf-8")
 
     all_counts = defaultdict(int)
-    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows(), ebible_rows()):
+    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows(), ebible_rows(),
+                   ebible_rows("crosswire-usj", "c")):
         for k, v in counts.items():
             all_counts[k] += v
 
@@ -344,7 +346,10 @@ def main():
                           "real provenance, not a single URL)"},
                     {"e": "self-republished by bibles from eBible.org: editions helloAO doesn't carry, "
                           "with a public-domain or non-ND Creative Commons licence and text not "
-                          "already reachable from another source — see each edition's _meta.json"}],
+                          "already reachable from another source — see each edition's _meta.json"},
+                    {"c": "self-republished by bibles from CrossWire SWORD modules: a public-domain or "
+                          "non-NC/ND Creative Commons licence, plain text, and text not already "
+                          "reachable from another source — see each edition's _meta.json"}],
         "pending_openbible_coverage": pending_openbible,
         "pending_ebible_coverage": len(pending_ebible),
         "entries": entries,

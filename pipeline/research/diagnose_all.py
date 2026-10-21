@@ -39,7 +39,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "comparison"))
 from compare_pkf_dbt import compare  # noqa: E402
-from fetch_sources import dbt_text, helloao_text, pkf_text, ebible_text, openbible_text, rclone_env  # noqa: E402
+from fetch_sources import dbt_text, helloao_text, pkf_text, ebible_text, own_usj_text, openbible_text, rclone_env  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR  # noqa: E402
 
@@ -92,8 +92,8 @@ def fetch_for_id(sid: str, iso: str, canon: str, book: str, chapter: int,
         return helloao_text(mid, book, chapter)
     if source == "pkf":
         return pkf_text(iso, pkf_source_ref, book, chapter, env, bucket, tmpdir) if pkf_source_ref else None
-    if source == "ebible":
-        return ebible_text(iso, mid, book, chapter)
+    if source in ("ebible", "crosswire"):
+        return own_usj_text(source, iso, mid, book, chapter)
     if source == "openbible":
         pid = _openbible_project(mid)
         return openbible_text(iso, pid, book, chapter, tmpdir) if pid else None

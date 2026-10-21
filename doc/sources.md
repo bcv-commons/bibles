@@ -152,6 +152,33 @@ other sources (e.g. the Open English Bible's two spelling editions, `e:engoebus`
 `e:engoebcw`, `orthography_convention` of each other) come from the same text comparison
 as every other source's.
 
+## CrossWire (SWORD modules `bibles` republishes, `c`)
+
+Added 2026-10-21. CrossWire's main module repository
+(`https://www.crosswire.org/sword/modules/`) has 276 Bible texts, as SWORD modules: a
+`.conf` per module (in `mods.d.tar.gz`) and a zip of the module data. Read with `pysword`
+(pure Python). `generate_crosswire_usj.py` republishes a module, as book USJ under
+`export/crosswire-usj/<iso>/<module>/` and per-chapter Sofria, on `cdn.bibel.wiki/crosswire/`,
+when all of these hold:
+
+- its conf's `DistributionLicense` is Public Domain or a Creative Commons licence without
+  NC or ND. "Permission to distribute granted to CrossWire" and non-commercial licences
+  are not republishable (most of the rest);
+- its text is plain (no OSIS/ThML/GBF markup in any verse). Modules with notes, Strong's
+  numbers or headings need a markup-aware reader, not written yet;
+- its text isn't already reachable from another source: sample chapters compared,
+  letters only, with every edition in the language from helloAO, DBT and our own
+  openbible / audiobiblia / eBible USJ (0.95 or more = same text, skipped and recorded).
+
+The modules are listed in the script with the iso we catalog them under, since a conf's
+`Lang` is a BCP 47 tag that is sometimes a macrolanguage or plain wrong (`el` -> ell;
+`mlf` for Malayalam). The text has no paragraph structure: each chapter is one paragraph.
+
+The first edition is `c:GreVamvas`, Neophytos Vamvas's modern Greek (katharevousa)
+Bible of 1850, public domain: 66 books, 31,102 verses, KJV versification. Before it, the
+only modern Greek text we reached was DBT's ELLELL (Spyros Filos, 1994, plain text only);
+the two are distinct translations (0.71 on REV 15, 0.63 on PSA 117).
+
 ## Priority (when more than one source has the same content)
 
 ```
@@ -160,6 +187,7 @@ as every other source's.
 3. dbt
 4. openbible
 5. ebible
+6. crosswire
 ```
 
 `openbible` placed last, deliberately conservative — it's the newest
@@ -169,7 +197,7 @@ last pick rather than displacing an existing preference. Revisit this
 ordering once more real-world use has confirmed there's no reason to
 prefer it lower. `ebible` (added 2026-10-15) comes after it: its editions are, by
 construction, ones no other source has, so the order only matters if a later comparison
-finds an overlap.
+finds an overlap. `crosswire` (added 2026-10-21) comes last for the same reason.
 
 This is the **default** `catalog-index.json`/`catalog-overlap.json` point
 to when sources overlap — not a filter. Every source that has content for

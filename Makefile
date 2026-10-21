@@ -4,6 +4,7 @@ CORE := pipeline/core
 .PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry stage-ebible publish-ebible publish-ebible-dry text-route \
+        crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
@@ -184,6 +185,21 @@ sofria-openbible: ## Convert openbible USJ to per-chapter Sofria
 
 sofria-audiobiblia: ## Convert audiobiblia USJ to per-chapter Sofria
 	node tools/usj-to-sofria/convert_batch.mjs export/audiobiblia-usj $(SOFRIA_OUT)/audiobiblia
+
+crosswire-usj: ## Generate export/crosswire-usj/ (USJ + _meta.json) from CrossWire SWORD modules (generate_crosswire_usj.py)
+	$(PYTHON) $(CORE)/generate_crosswire_usj.py $(ARGS)
+
+sofria-crosswire: ## Convert CrossWire USJ to per-chapter Sofria
+	node tools/usj-to-sofria/convert_batch.mjs export/crosswire-usj $(SOFRIA_OUT)/crosswire
+
+stage-crosswire: ## Stage CrossWire USJ, Sofria and _meta.json as hard links
+	$(PYTHON) $(CORE)/stage_sofria_usj.py export/crosswire-usj $(SOFRIA_OUT)/crosswire $(SOFRIA_STAGE)/crosswire
+
+publish-crosswire: ## Upload the staged CrossWire Sofria + USJ + _meta.json (make stage-crosswire) to cdn.bibel.wiki/crosswire/
+	bash $(CORE)/publish-crosswire.sh
+
+publish-crosswire-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-crosswire.sh
 
 stage-ebible: ## Stage eBible USJ (<BOOK>.usj.json) and _meta.json as hard links (USJ only, no Sofria)
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/ebible-usj - $(SOFRIA_STAGE)/ebible --usj-only

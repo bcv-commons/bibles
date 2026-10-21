@@ -246,6 +246,21 @@ def openbible_text(iso: str, project_id: str, book: str, chapter: int, tmpdir: P
 
 
 EBIBLE_USJ = EXPORT / "ebible-usj"
+# Sources we republish from our own book USJ: eBible (generate_ebible_chapters.py) and
+# CrossWire (generate_crosswire_usj.py, added 2026-10-21). Read the same way.
+OWN_USJ_SOURCES = {"ebible": EBIBLE_USJ, "crosswire": EXPORT / "crosswire-usj"}
+
+
+def own_usj_text(source: str, iso: str, edition: str, book: str, chapter: int) -> str | None:
+    """One chapter of an edition we republish from book USJ (OWN_USJ_SOURCES), as verse text
+    by the shared rule, then normalize_chars(). See ebible_text."""
+    f = OWN_USJ_SOURCES[source] / iso / edition / f"{book}.json"
+    if not f.exists():
+        return None
+    verses = extract_usj(json.loads(f.read_text(encoding="utf-8"))).get(str(chapter))
+    if not verses:
+        return None
+    return normalize_chars(" ".join(v["text"] for v in verses)) or None
 
 
 def ebible_text(iso: str, translation_id: str, book: str, chapter: int) -> str | None:

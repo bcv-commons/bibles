@@ -55,7 +55,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_pkf_dbt import compare  # noqa: E402
-from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, ebible_text, EBIBLE_USJ, rclone_env  # noqa: E402
+from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, own_usj_text, OWN_USJ_SOURCES, rclone_env  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -167,20 +167,23 @@ NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH"
             "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
 
 
-def ebible_by_iso(canon: str) -> dict:
-    """iso -> eBible translation ids we republish (export/ebible-usj/<iso>/<id>, added
-    2026-10-15 as the fifth source, `ebible:` / `e:`) that have at least one book of this
-    canon, from their _meta.json `books`. Without that filter an edition with no Old
-    Testament would be listed as a failed fetch (r: false, "unreachable") for `ot`."""
+def own_usj_by_iso(canon: str) -> dict:
+    """iso -> [(source, edition id)] for the editions we republish from our own book USJ
+    (OWN_USJ_SOURCES: eBible, `ebible:` / `e:`, added 2026-10-15; CrossWire, `crosswire:` /
+    `c:`, added 2026-10-21) that have at least one book of this canon, from their _meta.json
+    `books`. Without that filter an edition with no Old Testament would be listed as a failed
+    fetch (r: false, "unreachable") for `ot`."""
     out = defaultdict(list)
-    if EBIBLE_USJ.is_dir():
-        for d in sorted(EBIBLE_USJ.glob("*/*")):
+    for source, root in OWN_USJ_SOURCES.items():
+        if not root.is_dir():
+            continue
+        for d in sorted(root.glob("*/*")):
             meta = d / "_meta.json"
             if not (d.is_dir() and meta.exists()):
                 continue
             books = set(json.loads(meta.read_text(encoding="utf-8")).get("books", []))
             if (books & NT_BOOKS) if canon == "nt" else (books - NT_BOOKS):
-                out[d.parent.name].append(d.name)
+                out[d.parent.name].append((source, d.name))
     return out
 
 
@@ -229,7 +232,7 @@ def sole_candidate_id(iso: str, dbt_ids: dict, hao_ids: list, pkf_files: list, o
         return f"pkf:{iso.upper()}PKF"
     if ob_ids:
         return f"openbible:{ob_ids[0][1]}"
-    return f"ebible:{eb_ids[0]}"
+    return f"{eb_ids[0][0]}:{eb_ids[0][1]}"
 
 
 def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_files: list, ob_ids: list,
@@ -249,9 +252,9 @@ def process_language(iso: str, canon: str, dbt_ids: dict, hao_ids: list, pkf_fil
         t = openbible_text(iso, project_id, book, chapter, tmpdir)
         (texts.__setitem__(f"openbible:{abbr}", t) if t else failed.append(f"openbible:{abbr}"))
 
-    for tid in eb_ids:
-        t = ebible_text(iso, tid, book, chapter)
-        (texts.__setitem__(f"ebible:{tid}", t) if t else failed.append(f"ebible:{tid}"))
+    for source, tid in eb_ids:
+        t = own_usj_text(source, iso, tid, book, chapter)
+        (texts.__setitem__(f"{source}:{tid}", t) if t else failed.append(f"{source}:{tid}"))
 
     pkf_source_ref = None
     if pkf_files:
@@ -328,7 +331,7 @@ def main():
     )
 
     candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon,
-                                ebible_by_iso(canon))
+                                own_usj_by_iso(canon))
     if iso_filter:
         candidates = {iso: v for iso, v in candidates.items() if iso in iso_filter}
 

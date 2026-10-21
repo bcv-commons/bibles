@@ -97,7 +97,8 @@ doesn't repeat the same two strings on every row.
 - **`cluster.ids`** — every id in this cluster, always source-prefixed with
   a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF), `o:`
   (openbible/Biblica, added 2026-09-16), `e:` (eBible.org editions we republish,
-  the eBible translation id, e.g. `e:engoebus`; added 2026-10-15) — matching `catalog-index.json`'s
+  the eBible translation id, e.g. `e:engoebus`; added 2026-10-15), `c:` (CrossWire modules we republish, the
+  module name, e.g. `c:GreVamvas`; added 2026-10-21) — matching `catalog-index.json`'s
   own source-code convention, never a bare id. **`o:` is the yaapi.bible
   edition abbreviation (e.g. `o:MGJ`), not Biblica's own raw project id**
   (changed 2026-09-19 — publishing the hex project id directly was judged
@@ -339,4 +340,4 @@ separate entries; the label should read `orthography_convention`, as in the New 
 
 The published file is minified (no whitespace) — pretty-print it yourself
 if reading by hand. Source prefixes in `ids`/`closest` are single letters
-(`d`/`h`/`p`/`o`/`e`), not the full source name — see "Row format" above.
+(`d`/`h`/`p`/`o`/`e`/`c`), not the full source name — see "Row format" above.

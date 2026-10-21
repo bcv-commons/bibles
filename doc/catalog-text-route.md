@@ -10,7 +10,7 @@ that text, so they match too.
 
 Source ids are the ones [`catalog-overlap.json`](catalog-overlap.md) and
 [`catalog-index.json`](catalog-index.md) use (`d:` DBT, `h:` helloAO, `p:` PKF,
-`o:` openbible / audiobiblia, `e:` eBible).
+`o:` openbible / audiobiblia, `e:` eBible, `c:` CrossWire).
 
 ## Shape
 
@@ -42,7 +42,7 @@ source supports:
 
 | route | what | read with |
 |---|---|---|
-| `sofria` | DBT: the `text_json` fileset (Sofria, per chapter). Ours (openbible, audiobiblia): `<BOOK>/<ch>.sofria.json` under `path` (the same text is also there as `<BOOK>.usj.json`) | `extract_sofria` |
+| `sofria` | DBT: the `text_json` fileset (Sofria, per chapter). Ours (openbible, audiobiblia, CrossWire): `<BOOK>/<ch>.sofria.json` under `path` (the same text is also there as `<BOOK>.usj.json`) | `extract_sofria` |
 | `usj` | our USJ, where it's the only form we publish (eBible): `<BOOK>.usj.json` under `path` | `extract_usj` |
 | `usx` | DBT's `text_usx` fileset (per book; fetch with chapter 1) | `usx_to_usj.py` (Python) / `usx_to_sofria.mjs` (JS), then the extractor |
 | `helloao` | helloAO's chapter JSON | tools/verse-text's helloAO converter, then `extract_usj` |
