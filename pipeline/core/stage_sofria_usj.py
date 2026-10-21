@@ -16,11 +16,13 @@ convert_batch.mjs writes a book's chapters only once the whole book has converte
 a book is staged whole or not at all; its USJ is staged only alongside its Sofria.
 
 With --usj-only (no Sofria published for the source, e.g. eBible) every book's USJ is
-staged, and <sofria-dir> is ignored.
+staged, and <sofria-dir> is ignored. An edition whose _meta.json lists no `sofria` format
+(e.g. CrossWire's KswSKMB) is staged the same way, USJ only.
 
 Usage:
     python3 pipeline/core/stage_sofria_usj.py <usj-dir> <sofria-dir> <stage-dir> [--usj-only]
 """
+import json
 import os
 import shutil
 import sys
@@ -40,7 +42,9 @@ def main() -> None:
     for usj in sorted(p for p in usj_dir.rglob("*.json") if p.name != META_FILE):
         rel = usj.relative_to(usj_dir).with_suffix("")  # <iso>/<abbr>/<BOOK>
         src = sofria_dir / rel
-        if usj_only:
+        meta = usj.parent / META_FILE
+        no_sofria = meta.exists() and "sofria" not in json.loads(meta.read_text(encoding="utf-8")).get("formats", {})
+        if usj_only or no_sofria:
             (stage / rel).parent.mkdir(parents=True, exist_ok=True)
             os.link(usj, (stage / rel).parent / f"{rel.name}.usj.json")
             books += 1

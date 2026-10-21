@@ -164,20 +164,53 @@ when all of these hold:
 - its conf's `DistributionLicense` is Public Domain or a Creative Commons licence without
   NC or ND. "Permission to distribute granted to CrossWire" and non-commercial licences
   are not republishable (most of the rest);
-- its text is plain (no OSIS/ThML/GBF markup in any verse). Modules with notes, Strong's
-  numbers or headings need a markup-aware reader, not written yet;
+- its text is plain, or OSIS with only the elements the script maps to USFM (paragraphs,
+  poetry lines, Psalm titles, acrostic headings, footnotes and cross-references, added words,
+  words of Jesus). Anything else stops the module, so nothing leaks into verse text;
 - its text isn't already reachable from another source: sample chapters compared,
   letters only, with every edition in the language from helloAO, DBT and our own
-  openbible / audiobiblia / eBible USJ (0.95 or more = same text, skipped and recorded).
+  openbible / audiobiblia / eBible USJ (0.95 or more = same text, skipped and recorded),
+  unless the module has more books than the edition it matches. Then it is published with
+  the match in its `_meta.json` (`same_text_as`).
 
 The modules are listed in the script with the iso we catalog them under, since a conf's
 `Lang` is a BCP 47 tag that is sometimes a macrolanguage or plain wrong (`el` -> ell;
-`mlf` for Malayalam). The text has no paragraph structure: each chapter is one paragraph.
+`mlf` for Malayalam). Every verse is checked against an independent reading of the OSIS
+(notes, titles and colophons removed), and USJ against Sofria (route parity).
 
-The first edition is `c:GreVamvas`, Neophytos Vamvas's modern Greek (katharevousa)
-Bible of 1850, public domain: 66 books, 31,102 verses, KJV versification. Before it, the
-only modern Greek text we reached was DBT's ELLELL (Spyros Filos, 1994, plain text only);
-the two are distinct translations (0.71 on REV 15, 0.63 on PSA 117).
+Published (2026-10-21), 15 editions:
+
+| edition | language | what | books |
+|---|---|---|---|
+| `c:GreVamvas` | ell, modern Greek | Vamvas, 1850 | 66 |
+| `c:ArmEastern` | hye, Eastern Armenian | Eastern Armenian Bible | 6 |
+| `c:ArmWestern` | hyw, Western Armenian | NT, 1853 | 27 |
+| `c:LvGluck8` | lvs, Latvian | Glück, 8th edition | 66 |
+| `c:SloStritar` | slv, Slovenian | Stritar NT and Psalms, 1882 | 28 |
+| `c:KswSKMB` | ksw, S'gaw Karen | Mason Bible, 1853 (USJ only, see below) | 66 |
+| `c:Peshitta` | syc, Classical Syriac | Peshitta NT | 27 |
+| `c:CSlElizabeth` | chu, Church Slavonic | Elizabeth Bible, 1757 | 76 |
+| `c:Wycliffe` | eng (Middle English) | Wycliffe, c.1395 | 76 |
+| `c:ScotsGaelic` | gla, Scottish Gaelic | Mark | 1 |
+| `c:ManxGaelic` | glv, Manx | portions | 5 |
+| `c:PotLykins` | pot, Potawatomi | Matthew and Acts, 1833 | 2 |
+| `c:Calo` | rmq, Caló | Luke | 1 |
+| `c:vlsJoNT` | vls, West Flemish | De Jonge NT | 27 |
+| `c:KLV` | tlh, Klingon | from the World English Bible | 66 |
+
+- **GreVamvas**: before it, the only modern Greek text we reached was DBT's ELLELL (Spyros
+  Filos, 1994, plain text only); the two are distinct translations (0.71 on REV 15, 0.63 on
+  PSA 117).
+- **Wycliffe** is Middle English, filed under `eng` next to helloAO's `eng_w88`: the same
+  text (1.0 on Genesis 1 and Matthew 1), but helloAO has only 9 of its 76 books.
+- **KswSKMB** is USJ only. S'gaw Karen writes phrases without spaces, and proskomma (which
+  builds our Sofria) cuts a "word" at 255 bytes, so 491 chapters lost letters in Sofria.
+- **Wulfila** (Gothic) is not published: its verses hold several manuscript readings side
+  by side (`seg type=rdg`) and editorial `<...>` brackets in the text, so there is no single
+  text without choosing a manuscript.
+- Left out of verse text: colophons (SloStritar, 14), a testament heading (SloStritar
+  "Nova zaveza") and CSlElizabeth's LXX sub-verse numbers. Extra verses in an edition's own
+  numbering (vlsJoNT John 1:52) are kept as their own verses.
 
 ## Priority (when more than one source has the same content)
 

@@ -115,10 +115,12 @@ def helloao(entries: dict) -> None:
 def own(entries: dict, source: str, prefix: str, route: str) -> None:
     for meta in sorted((EXPORT / f"{source}-usj").glob("*/*/_meta.json")):
         iso, ed = meta.parent.parent.name, meta.parent.name
-        books = set(json.loads(meta.read_text()).get("books", []))
+        m = json.loads(meta.read_text())
+        books = set(m.get("books", []))
+        r = route if route != "sofria" or "sofria" in m.get("formats", {"sofria": 1}) else "usj"
         for canon, has in (("nt", books & NT), ("ot", books - NT)):
             if has:
-                entries.setdefault(f"{iso}:{canon}", {})[f"{prefix}:{ed}"] = {"route": route, "path": f"{source}/{iso}/{ed}/"}
+                entries.setdefault(f"{iso}:{canon}", {})[f"{prefix}:{ed}"] = {"route": r, "path": f"{source}/{iso}/{ed}/"}
 
 
 def pkf(entries: dict) -> None:
