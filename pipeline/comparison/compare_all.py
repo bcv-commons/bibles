@@ -100,6 +100,25 @@ OUT_PATH = COMPARISON_RESULTS_DIR / "all-comparisons.json"
 # a literacy-first translation project most commonly adds books, stopping
 # as soon as a probe leaves nothing unfetched. Same whole-group-retry rule
 # as OT: never mix probe books within one (iso,canon) comparison.
+#
+# Per-pair rescue added 2026-10-22 (Door43's partial editions: hi_glt has no
+# PSA117/PSA51, kn_glt no REV15, and the whole-group fallback kept the probe
+# where most ids fetched, so they stayed r:false although they have the
+# fallback chapters). An id still unfetched after the fallback loop is scored
+# on the first probe it has (the group's own first, then FALLBACK_PROBES),
+# against every id that also has that chapter. Both sides of a pair are
+# still always compared on the same chapter; the chapter is recorded per
+# pair in `pair_probes` (diagnose_all.py and confirm_identical.py read it).
+# With the rescue, a group keeps its own probe whenever at least two ids have
+# it: the whole-group switch to a fallback happens only when fewer do. Before,
+# any fallback that fetched more ids won, so adding one partial edition (most
+# of Door43's have no Revelation) moved a whole group to MRK1 and re-scored
+# every pair in it.
+# Probes used only to rescue a single id (rescue_failed), never as a group's probe: one
+# edition with only these books must not move the whole group off its probe.
+# TIT 2026-10-22: Door43 es-419_glt has only Titus.
+RESCUE_ONLY_PROBES = {"ot": [], "nt": [("TIT", 1)]}
+
 FALLBACK_PROBES = {
     # RUT/JON added 2026-10-07 alongside the NT fix: kprpkf/ztppkf's real
     # OT coverage (confirmed via PKF's own manifest) is Ruth and Jonah
@@ -167,10 +186,34 @@ NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH"
             "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
 
 
+def rescue_failed(entry: dict, tried: list) -> None:
+    """Score each id `entry` couldn't fetch on the first probe in `tried` that has it, against the
+    ids fetched (or rescued) so far that have that chapter too; record the chapter per pair in
+    entry["pair_probes"]. See the per-pair rescue note above FALLBACK_PROBES."""
+    for fid in list(entry.get("ids_failed", [])):
+        for probe, fb in tried:
+            if fb is entry or fid not in fb.get("ids_fetched", []):
+                continue
+            pairs = {}
+            for other in entry["ids_fetched"]:
+                pair = "|".join(sorted((fid, other)))
+                if pair in fb.get("scores", {}):
+                    pairs[pair] = fb["scores"][pair]
+            if not pairs:
+                continue
+            entry["scores"].update(pairs)
+            entry.setdefault("pair_probes", {}).update({p: probe for p in pairs})
+            entry["ids_fetched"] = sorted(entry["ids_fetched"] + [fid])
+            entry["ids_failed"].remove(fid)
+            break
+    if entry.get("scores"):
+        entry["status"] = "compared"
+
+
 def own_usj_by_iso(canon: str) -> dict:
     """iso -> [(source, edition id)] for the editions we republish from our own book USJ
     (OWN_USJ_SOURCES: eBible, `ebible:` / `e:`, added 2026-10-15; CrossWire, `crosswire:` /
-    `c:`, added 2026-10-21) that have at least one book of this canon, from their _meta.json
+    `c:`, added 2026-10-21; Door43, `door43:` / `g:`, added 2026-10-22) that have at least one book of this canon, from their _meta.json
     `books`. Without that filter an edition with no Old Testament would be listed as a failed
     fetch (r: false, "unreachable") for `ot`."""
     out = defaultdict(list)
@@ -392,16 +435,23 @@ def main():
                 continue
             try:
                 entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids, book, chapter, env, bucket, tmpdir)
+                tried = [(f"{book}{chapter}", entry)]
                 if entry.get("ids_failed"):
                     for fb_book, fb_chapter in FALLBACK_PROBES.get(canon, []):
                         if (fb_book, fb_chapter) == (book, chapter):
                             continue
                         fb_entry = process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids, fb_book, fb_chapter, env, bucket, tmpdir)
-                        if len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
+                        tried.append((f"{fb_book}{fb_chapter}", fb_entry))
+                        if len(entry.get("ids_fetched", [])) < 2 and \
+                                len(fb_entry.get("ids_fetched", [])) > len(entry.get("ids_fetched", [])):
                             fb_entry["probe"] = f"{fb_book}{fb_chapter}"
                             entry = fb_entry
                         if not entry.get("ids_failed"):
                             break
+                if entry.get("ids_failed"):
+                    for rb, rc in RESCUE_ONLY_PROBES.get(canon, []):
+                        tried.append((f"{rb}{rc}", process_language(iso, canon, dbt_ids, hao_ids, pkf_files, ob_ids, eb_ids, rb, rc, env, bucket, tmpdir)))
+                rescue_failed(entry, tried)
             except Exception as e:
                 entry = {"status": "error", "error": str(e)[:200]}
             entry.update({"iso": iso, "canon": canon})

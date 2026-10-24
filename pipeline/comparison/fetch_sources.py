@@ -247,8 +247,9 @@ def openbible_text(iso: str, project_id: str, book: str, chapter: int, tmpdir: P
 
 EBIBLE_USJ = EXPORT / "ebible-usj"
 # Sources we republish from our own book USJ: eBible (generate_ebible_chapters.py) and
-# CrossWire (generate_crosswire_usj.py, added 2026-10-21). Read the same way.
-OWN_USJ_SOURCES = {"ebible": EBIBLE_USJ, "crosswire": EXPORT / "crosswire-usj"}
+# CrossWire (generate_crosswire_usj.py, added 2026-10-21) and Door43 (generate_door43_usj.py,
+# added 2026-10-22). Read the same way.
+OWN_USJ_SOURCES = {"ebible": EBIBLE_USJ, "crosswire": EXPORT / "crosswire-usj", "door43": EXPORT / "door43-usj"}
 
 
 def own_usj_text(source: str, iso: str, edition: str, book: str, chapter: int) -> str | None:

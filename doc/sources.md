@@ -212,6 +212,44 @@ Published (2026-10-21), 15 editions:
   "Nova zaveza") and CSlElizabeth's LXX sub-verse numbers. Extra verses in an edition's own
   numbering (vlsJoNT John 1:52) are kept as their own verses.
 
+## Door43 (aligned Bibles `bibles` republishes, `g`)
+
+Added 2026-10-22. lexeme-aligner's `full-alignments-manual-sa` dataset publishes the word
+alignments Door43's translators made in nine Gateway Language texts. Its files are named by
+the text fingerprint of each book's verse text, so a client needs exactly that text to use
+them. `generate_door43_usj.py` republishes those texts as book USJ under
+`export/door43-usj/<iso>/<repo>/` and per-chapter Sofria, on `cdn.bibel.wiki/door43/`, each
+pinned to the commit that was aligned (`_meta.json` `door43.commit`). CC BY-SA 4.0
+(each repo's `LICENSE.md`).
+
+| edition | language | Door43 repo | books |
+|---|---|---|---|
+| `g:hi_glt` | hin, Hindi | Door43-Catalog/hi_glt | 27 |
+| `g:bn_gst` | ben, Bengali | Door43-Catalog/bn_gst | 15 |
+| `g:gu_glt` | guj, Gujarati | Door43-Catalog/gu_glt | 21 |
+| `g:kn_glt` | kan, Kannada | Door43-Catalog/kn_glt | 23 |
+| `g:mr_glt` | mar, Marathi | Door43-Catalog/mr_glt | 23 |
+| `g:ne_glt` | npi, Nepali | Door43-Catalog/ne_glt | 29 |
+| `g:or_glt` | ory, Odia | Door43-Catalog/or_glt | 23 |
+| `g:te_glt` | tel, Telugu | Door43-Catalog/te_glt | 23 |
+| `g:es-419_glt` | spa (Latin American Spanish) | Door43-Catalog/es-419_glt | 1 |
+
+- **Conversion:** the alignment markup (`\zaln-s`/`\zaln-e` milestones, `\w` attributes)
+  is dropped, keeping the words, and so are translationStudio leftovers: `\ts\*` and empty
+  `\s5` lines. usfmtc put the verse after an empty `\s5` inside the heading, which removed
+  1,317 Nepali verses from verse text.
+- **Checked:** every verse against an independent reading of the USFM (39,605 verses; the 6
+  differences are the check's own: a note inside a word, headings mid-line, an empty last
+  verse), USJ against Sofria, and JS against Python.
+- **Not duplicates**, but related: DBT's `NPIDPIN_ET`, `HINDPIO_ET`, `MARDPIO_ET` and
+  `ORYDPIN_ET` score 0.85-0.97 on some chapters and 0.45-0.6 on others, i.e. other revisions;
+  `g:ne_glt` is a revision of helloAO's Nepali ULB (`npi_ulb`: 0.97-0.98 in the Gospels and
+  Revelation, 0.37-0.88 elsewhere). openbible's `o:HLT` ("Hindi GLT", 3 John and Titus only)
+  is the same text as `g:hi_glt` on Titus 1, the one chapter they share.
+- **Alignment files:** 96 of the 181 aligned books match our text fingerprint. In the others,
+  lexeme-aligner's own reading of the USFM dropped zero-width joiners (U+200D/U+200C) and
+  kept footnote and heading text in verses; their layers need rebuilding on this text.
+
 ## Priority (when more than one source has the same content)
 
 ```
@@ -221,6 +259,7 @@ Published (2026-10-21), 15 editions:
 4. openbible
 5. ebible
 6. crosswire
+7. door43
 ```
 
 `openbible` placed last, deliberately conservative — it's the newest
@@ -230,7 +269,7 @@ last pick rather than displacing an existing preference. Revisit this
 ordering once more real-world use has confirmed there's no reason to
 prefer it lower. `ebible` (added 2026-10-15) comes after it: its editions are, by
 construction, ones no other source has, so the order only matters if a later comparison
-finds an overlap. `crosswire` (added 2026-10-21) comes last for the same reason.
+finds an overlap. `crosswire` (added 2026-10-21) and `door43` (2026-10-22) come last for the same reason.
 
 This is the **default** `catalog-index.json`/`catalog-overlap.json` point
 to when sources overlap — not a filter. Every source that has content for

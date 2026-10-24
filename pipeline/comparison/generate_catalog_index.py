@@ -243,7 +243,8 @@ def ebible_rows(folder: str = "ebible-usj", letter: str = "e"):
     `books`. Source letter `"e"` (decided 2026-10-15): unlike `"o"`, eBible's own format is
     already clean and bulk-usable, so it gets its own letter rather than sharing the "had to
     rescue it" one. CrossWire (`generate_crosswire_usj.py`, export/crosswire-usj) is read the
-    same way, as `"c"` (2026-10-21)."""
+    same way, as `"c"` (2026-10-21), and Door43 (`generate_door43_usj.py`, export/door43-usj)
+    as `"g"` (2026-10-22)."""
     counts = defaultdict(int)
     ebible_dir = EXPORT / folder
     if not ebible_dir.exists():
@@ -288,7 +289,7 @@ def main():
 
     all_counts = defaultdict(int)
     for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows(), ebible_rows(),
-                   ebible_rows("crosswire-usj", "c")):
+                   ebible_rows("crosswire-usj", "c"), ebible_rows("door43-usj", "g")):
         for k, v in counts.items():
             all_counts[k] += v
 
@@ -349,7 +350,10 @@ def main():
                           "already reachable from another source — see each edition's _meta.json"},
                     {"c": "self-republished by bibles from CrossWire SWORD modules: a public-domain or "
                           "non-NC/ND Creative Commons licence, plain text, and text not already "
-                          "reachable from another source — see each edition's _meta.json"}],
+                          "reachable from another source — see each edition's _meta.json"},
+                    {"g": "self-republished by bibles from Door43 (git.door43.org) aligned Bibles at a pinned "
+                          "commit: the texts lexeme-aligner's Door43 word alignments refer to, CC BY-SA 4.0 — "
+                          "see each edition's _meta.json"}],
         "pending_openbible_coverage": pending_openbible,
         "pending_ebible_coverage": len(pending_ebible),
         "entries": entries,

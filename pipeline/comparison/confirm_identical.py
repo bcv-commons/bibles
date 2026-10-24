@@ -70,8 +70,9 @@ def confirm_group(entry: dict, catalog: dict, env: dict, bucket: str) -> dict:
         for pair in pairs:
             a, b = pair.split("|")
             checked, worst = [], None
+            scored_on = (entry.get("pair_probes") or {}).get(pair, probe)  # compare_all.py's per-pair rescue
             for book, chapter in CONFIRM[canon]:
-                if f"{book}{chapter}" == probe:
+                if f"{book}{chapter}" == scored_on:
                     continue
                 ta, tb = text(a, book, chapter), text(b, book, chapter)
                 if not ta or not tb:

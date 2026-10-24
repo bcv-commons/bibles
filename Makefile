@@ -5,6 +5,7 @@ CORE := pipeline/core
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry stage-ebible publish-ebible publish-ebible-dry text-route \
         crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
+        door43-usj sofria-door43 stage-door43 publish-door43 publish-door43-dry \
         publish-openbible publish-openbible-dry \
         publish-audiobiblia publish-audiobiblia-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
@@ -200,6 +201,21 @@ publish-crosswire: ## Upload the staged CrossWire Sofria + USJ + _meta.json (mak
 
 publish-crosswire-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-crosswire.sh
+
+door43-usj: ## Generate export/door43-usj/ (USJ + _meta.json) from Door43 aligned Bibles at pinned commits (generate_door43_usj.py)
+	$(PYTHON) $(CORE)/generate_door43_usj.py $(ARGS)
+
+sofria-door43: ## Convert Door43 USJ to per-chapter Sofria
+	node tools/usj-to-sofria/convert_batch.mjs export/door43-usj $(SOFRIA_OUT)/door43
+
+stage-door43: ## Stage Door43 USJ, Sofria and _meta.json as hard links
+	$(PYTHON) $(CORE)/stage_sofria_usj.py export/door43-usj $(SOFRIA_OUT)/door43 $(SOFRIA_STAGE)/door43
+
+publish-door43: ## Upload the staged Door43 Sofria + USJ + _meta.json (make stage-door43) to cdn.bibel.wiki/door43/
+	bash $(CORE)/publish-door43.sh
+
+publish-door43-dry: ## Dry-run CDN upload (no writes)
+	DRY_RUN=1 bash $(CORE)/publish-door43.sh
 
 stage-ebible: ## Stage eBible USJ (<BOOK>.usj.json) and _meta.json as hard links (USJ only, no Sofria)
 	$(PYTHON) $(CORE)/stage_sofria_usj.py export/ebible-usj - $(SOFRIA_STAGE)/ebible --usj-only

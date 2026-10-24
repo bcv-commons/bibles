@@ -98,7 +98,8 @@ doesn't repeat the same two strings on every row.
   a single letter — `d:` (DBT), `h:` (helloAO), `p:` (PKF), `o:`
   (openbible/Biblica, added 2026-09-16), `e:` (eBible.org editions we republish,
   the eBible translation id, e.g. `e:engoebus`; added 2026-10-15), `c:` (CrossWire modules we republish, the
-  module name, e.g. `c:GreVamvas`; added 2026-10-21) — matching `catalog-index.json`'s
+  module name, e.g. `c:GreVamvas`; added 2026-10-21), `g:` (Door43 repos we republish, the repo
+  name, e.g. `g:hi_glt`; added 2026-10-22) — matching `catalog-index.json`'s
   own source-code convention, never a bare id. **`o:` is the yaapi.bible
   edition abbreviation (e.g. `o:MGJ`), not Biblica's own raw project id**
   (changed 2026-09-19 — publishing the hex project id directly was judged
@@ -293,6 +294,15 @@ PSA 51 text would be meaningless. This generalizes what was previously a
 narrow, 4-language-only refinement (`pkf-dbt-comparison-ot-psa51.json`,
 still separately preserved — see `generate_catalog_overlap.py`'s
 `apply_psa51_refinement()`) to the whole pipeline.
+
+**Changed 2026-10-22:** a group now keeps its own probe (REV 15 / PSA 117) whenever at
+least two of its ids have that chapter, and moves to a fallback only when fewer do. An id
+that still has no text is compared on the first fallback chapter it has (then TIT 1 for the
+NT), against every id that has that chapter too; both sides of a pair are always compared on
+the same chapter. Before, any fallback that fetched more ids won, so adding one partial
+edition (most of Door43's `g:` editions have no Revelation) moved a whole group to MRK 1 and
+re-scored every pair in it. Groups already compared keep their recorded probe until they are
+compared again.
 
 ## Top-level fields
 

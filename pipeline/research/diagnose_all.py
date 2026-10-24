@@ -92,7 +92,7 @@ def fetch_for_id(sid: str, iso: str, canon: str, book: str, chapter: int,
         return helloao_text(mid, book, chapter)
     if source == "pkf":
         return pkf_text(iso, pkf_source_ref, book, chapter, env, bucket, tmpdir) if pkf_source_ref else None
-    if source in ("ebible", "crosswire"):
+    if source in ("ebible", "crosswire", "door43"):
         return own_usj_text(source, iso, mid, book, chapter)
     if source == "openbible":
         pid = _openbible_project(mid)
@@ -183,6 +183,11 @@ def main():
             a, b = pair
             pkf_source_ref = pkf_refs.get(f"{iso}:{canon}")
             book, chapter = probe_by_group.get(f"{iso}:{canon}", BOOK_FOR_CANON[canon])
+            # compare_all.py's per-pair rescue (2026-10-22): this pair was scored on its own chapter
+            pair_probe = (comparisons.get(f"{iso}:{canon}", {}).get("pair_probes") or {}).get("|".join(sorted(pair)))
+            if pair_probe:
+                m = re.fullmatch(r"([0-9A-Z]{3})(\d+)", pair_probe)
+                book, chapter = m.group(1), int(m.group(2))
             check = (comparisons.get(f"{iso}:{canon}", {}).get("confirmations") or {}).get("|".join(pair))
             if check and check.get("differs_on"):  # confirm_identical.py: diagnose where it differs
                 m = re.fullmatch(r"([0-9A-Z]{3})(\d+)", check["differs_on"])

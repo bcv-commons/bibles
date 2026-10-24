@@ -107,7 +107,10 @@ fixable gap.
   (`generate_crosswire_usj.py`), on the same three conditions as `e`: a public-domain or
   non-NC/ND Creative Commons licence (the module's own `DistributionLicense`), plain text,
   and text not already reachable from another source. The first is the Vamvas modern Greek
-  Bible (`c:GreVamvas`). A `d`
+  Bible (`c:GreVamvas`).
+  **`g`** (added 2026-10-22): Door43 aligned Bibles `bibles` republishes
+  (`generate_door43_usj.py`), each at a pinned commit: the nine Gateway Language texts
+  lexeme-aligner's Door43 word alignments refer to, CC BY-SA 4.0. A `d`
   row means DBT's catalog has
   **independently fetchable text of its own** for this `(iso, canon)` —
   not just a catalog entry. Some DBT rows are external-source *pointers*

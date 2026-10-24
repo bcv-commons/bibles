@@ -145,6 +145,7 @@ def main():
     own(entries, "audiobiblia", "o", "sofria")
     own(entries, "ebible", "e", "usj")
     own(entries, "crosswire", "c", "sofria")
+    own(entries, "door43", "g", "sofria")
     pkf(entries)
     from_overlap(entries)
     doc = {"schema_version": 1, "generated_at": date.today().isoformat(), "base": "https://cdn.bibel.wiki/", "routes": ROUTES,
