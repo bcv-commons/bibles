@@ -90,12 +90,17 @@ PKF_FETCH_RETRIES = 3
 
 def dbt_text(iso: str, canon: str, distinct_id: str, fileset_id: str, book: str, chapter: int) -> str | None:
     """Local sample cache first, live DBT API fallback. canon is the plain
-    "nt"/"ot" directory name (not the ntp/otp catalog tag)."""
+    "nt"/"ot" directory name (not the ntp/otp catalog tag).
+
+    One sample file only: a version can have samples of several filesets for the same chapter
+    (MPXPNG and MPXPNG_ET), and joining them compared the text twice over. fileset_id's own
+    sample is preferred; otherwise the first by name."""
     base = SAMPLE_DIR / canon / iso / distinct_id
     probe = f"{book}_{chapter:03d}_"
-    local_files = list(base.rglob(f"{probe}*.txt")) if base.is_dir() else []
+    local_files = sorted(base.rglob(f"{probe}*.txt")) if base.is_dir() else []
     if local_files:
-        return "".join(normalize_chars(f.read_text(encoding="utf-8")) for f in local_files) or None
+        own = [f for f in local_files if f.stem[len(probe):] == fileset_id]
+        return normalize_chars((own or local_files)[0].read_text(encoding="utf-8")) or None
 
     result = dl.get_text_content(fileset_id, book, chapter)
     time.sleep(0.1)
