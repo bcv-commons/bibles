@@ -16,9 +16,9 @@ and in what format(s)." Companion file: [`catalog-audio.md`](catalog-audio.md)
 This is DBT-only, single-source — it does **not** tell you whether two
 different sources have the same text (that's
 [`catalog-overlap.json`](catalog-overlap.md)), and it does **not** confirm
-the text actually fetches successfully today (that's
-[`text-availability.json`](catalog-overlap.md), a separate, narrower
-confirmation pass over a specific language subset).
+the text actually fetches successfully today (an edition whose text can't
+be fetched is marked `r: false` in [`catalog-overlap.json`](catalog-overlap.md),
+and [`text-route.json`](catalog-text-route.md) names the one fileset to read).
 
 Built entirely from DBT's own raw paginated catalog listing — no other
 DBT input. In particular, this file **never** claims a DBT id has
