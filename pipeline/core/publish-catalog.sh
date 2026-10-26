@@ -3,11 +3,11 @@
 # Publish export/catalog/ to cdn.bibel.wiki/catalog/ via rclone (Cloudflare R2).
 #
 # Separate from publish-dbt.sh on purpose: the four files here
-# (index.json/overlap.json/text.json/audio.json) are genuinely multi-source
+# (index.json/overlap.json/text.json/audio.json, and per language
+# <iso[0]>/<iso>/{books,edition-struct}.json) are genuinely multi-source
 # (DBT+PKF+helloAO), so they publish under their own /catalog/ namespace
 # instead of /dbt/ — see pipeline/paths.py's CATALOG_DIR comment for the
-# 2026-08-11 migration this completes. Small, flat file set (a handful of
-# files, no per-language sharding here) — no delta/state-tracking machinery
+# 2026-08-11 migration this completes. No delta/state-tracking machinery
 # needed; rclone's own checksum comparison already skips unchanged files.
 #
 # Credentials from .env (gitignored):
@@ -73,5 +73,14 @@ rclone copy "$SOURCE_DIR" "$REMOTE" \
     --transfers 8 \
     $DRY_FLAG \
     -v
+
+# Files we no longer publish, removed from the CDN (rclone copy never deletes).
+# edition-struct.json: all languages in one 1.3 MB file, replaced 2026-10-26 by
+# <iso[0]>/<iso>/edition-struct.json per language.
+RETIRED=("edition-struct.json")
+for f in "${RETIRED[@]}"; do
+    echo "── Removing retired ${REMOTE}/${f} (if present)..."
+    rclone deletefile "${REMOTE}/${f}" $DRY_FLAG -v 2>&1 | grep -v "object not found" || true
+done
 
 echo "── Done."

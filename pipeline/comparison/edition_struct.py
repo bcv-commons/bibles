@@ -29,7 +29,9 @@ import edition_script  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR, EXPORT  # noqa: E402
 
-OUT_PATH = CATALOG_DIR / "edition-struct.json"  # the one file we actually publish
+# All editions in one file: internal only (1.3 MB). What we publish is one file per language,
+# catalog/<iso[0]>/<iso>/edition-struct.json (2026-10-26: clients work with one to a few languages).
+OUT_PATH = COMPARISON_RESULTS_DIR / "edition-struct.json"
 BIBLE_DETAILS_DIR = API_CACHE / "bibles" / "bible_details"
 OPENBIBLE_TEXT_CACHE = API_CACHE / "openbible" / "text"
 # Internal build artifact, not published on its own — see its own module
@@ -147,6 +149,9 @@ def main() -> None:
         elif src == "h":
             add(edition_id, helloao_record(eid, iso, helloao_translations), f"{iso}:helloao:{eid}")
 
+    retired = CATALOG_DIR / "edition-struct.json"  # published there until 2026-10-26
+    if retired.exists():
+        retired.unlink()
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps({
         "note": "iso/name/license merged from our own cached source catalogs (DBT bible_details, "
@@ -162,6 +167,18 @@ def main() -> None:
         "editions": dict(sorted(editions.items())),
     }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"[edition-struct] {len(editions)} editions -> {OUT_PATH}")
+
+    # The same records per language, for clients that work with one or a few languages:
+    # catalog/<iso[0]>/<iso>/edition-struct.json, next to that language's books.json.
+    by_iso: dict[str, dict] = defaultdict(dict)
+    for edition_id, record in sorted(editions.items()):
+        by_iso[record["iso"]][edition_id] = {k: v for k, v in record.items() if k != "iso"}
+    for iso, eds in by_iso.items():
+        f = CATALOG_DIR / iso[0] / iso / "edition-struct.json"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text(json.dumps({"iso": iso, "editions": eds}, ensure_ascii=False, separators=(",", ":")) + "\n",
+                     encoding="utf-8")
+    print(f"[edition-struct] {len(by_iso)} languages -> {CATALOG_DIR}/<iso[0]>/<iso>/edition-struct.json")
 
 
 if __name__ == "__main__":

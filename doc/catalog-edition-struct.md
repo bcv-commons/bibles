@@ -1,6 +1,14 @@
 # `edition-struct.json`
 
-`https://cdn.bibel.wiki/catalog/edition-struct.json`
+Per language: `https://cdn.bibel.wiki/catalog/<iso[0]>/<iso>/edition-struct.json`
+(e.g. `catalog/a/aai/edition-struct.json`, next to that language's
+[`books.json`](catalog-books.md)). Usually under 1 KB; English, the largest, is 23 KB.
+
+Shape: `{"iso": "aai", "editions": {…}}`. Until 2026-10-26 all languages were in one file,
+`catalog/edition-struct.json` (1.3 MB); clients work with one to a few languages, so it is
+now per language only, and the combined file is no longer published. A language has a file if it
+has at least one edition here; an edition is filed under the iso the catalog files it
+under (Door43's `es-419_glt` under `spa`).
 
 One record per edition, keyed by the source ids of
 [`catalog-overlap.json`](catalog-overlap.md) and [`text-route.json`](catalog-text-route.md)
@@ -12,16 +20,16 @@ system.
 ## Shape
 
 ```json
-{"note": "…",
+{"iso": "cmn",
  "editions": {
-  "d:AAAMLT": {"iso": "aaa", "provider": "DBT (4.dbt.io)", "name": "…", "license": "…",
-               "textual_basis": "tr",
-               "script": "Latn", "basis": "metadata", "direction": "ltr", "normalization": "NFC"},
-  "h:cmn_cuv": {"iso": "cmn", "provider": "helloAO", "…": "…",
-                "script": "Hani", "basis": "detected", "direction": "ltr", "spaces": false,
-                "normalization": "NFC"},
-  "d:EN1ESV":  {"…": "…", "script": "Latn", "basis": "detected", "stated_script": "Shaw",
-                "direction": "ltr", "normalization": "NFC"}
+  "e:cmnswcb":   {"provider": "eBible.org", "name": "世界中文圣经", "license": "Public Domain",
+                  "script": "Hani", "basis": "detected", "stated_script": "Latn",
+                  "direction": "ltr", "spaces": false, "normalization": "NFC"},
+  "o:OCCB-CMN-2": {"provider": "openbible (Biblica)", "name": "Biblica® 聖經，當代譯本開放資源",
+                  "license": "Biblica, Inc.", "textual_basis": "tr",
+                  "psalm_titles": "heading", "psalm_titles_basis": "markup",
+                  "script": "Hant", "basis": "metadata", "direction": "ltr", "spaces": false,
+                  "normalization": "NFC"}
  }}
 ```
 

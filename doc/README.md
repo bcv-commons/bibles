@@ -64,7 +64,7 @@ helloAO JSON, plain text or PKF) and where it is. Read it through
 [`tools/verse-text`](../tools/verse-text/), and every client gets the same
 verse text, tokens and fingerprint for the same edition.
 
-**[`edition-struct.json`](catalog-edition-struct.md)** — per edition: name,
+**[`<iso[0]>/<iso>/edition-struct.json`](catalog-edition-struct.md)** — per language, per edition: name,
 licence, textual basis, psalm titles, and its writing system: script (ISO
 15924), direction, whether words are spaced, and the Unicode normalization
 of its text, read from the text itself.

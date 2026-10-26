@@ -42,8 +42,8 @@ from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
 
 # Internal build artifact only — NOT under export/catalog/, so it never gets
 # swept into publish-catalog.sh's whole-directory CDN sync. edition_struct.py
-# reads this and folds textual_basis in as a per-edition field in the one
-# file we do publish (export/catalog/edition-struct.json); nothing external
+# reads this and folds textual_basis in as a per-edition field of the files
+# we do publish (export/catalog/<iso[0]>/<iso>/edition-struct.json); nothing external
 # needs this file standalone. Same reasoning lexeme-aligner's own split uses:
 # this is the slow, rarely-recomputed base; edition_struct.py's merge is the
 # cheap, frequently-recomputed one built on top of it.
