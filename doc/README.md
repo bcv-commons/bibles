@@ -80,10 +80,17 @@ its text/audio, in what format(s)." Narrower and more mechanical than
 should start with those two instead and only reach for these when you
 need DBT's own routing detail.
 
-**[`/dbt/<iso>/coverage.json`](dbt-coverage.md)** gives you, per DBT
-fileset id, the real book/chapter coverage — needed because a partial
-edition's actual book set (e.g. `PORALM`: 4 NT books + 1 OT book) can't be
-assumed from an `"nt"`/`"ot"` canon label alone.
+A partial DBT edition's book set (e.g. `PORALM`: 4 NT books + 1 OT book)
+can't be assumed from an `"nt"`/`"ot"` canon label: its books and chapters
+are in [`books.json`](catalog-books.md#dbt-book-coverage-from-a-fileset)
+below. (`/dbt/<iso>/coverage.json` held the same per fileset and is being
+retired.)
+
+Each of these all-language files (`text-route.json`, `catalog-overlap.json`,
+`catalog-text.json`, `catalog-audio.json`, and `dbt/_vrs/index.json` below) also comes
+**per language** since 2026-10-26, at `catalog/<iso[0]>/<iso>/` next to `books.json`:
+`text-route.json`, `overlap.json`, `text.json`, `audio.json`, `versification.json`. Same keys
+and shape, one language's entries; most apps need one to a few languages, so fetch those.
 
 ## Book names, license, and edition metadata
 

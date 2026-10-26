@@ -20,7 +20,7 @@
 import { Proskomma } from 'proskomma-core';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { sofriaForChapterViaWholeBook } from './whole_book_fallback.mjs';
-import { prepareUsj, restorePipes } from './prepare_usj.mjs';
+import { prepareUsj, finishSofria } from './prepare_usj.mjs';
 
 class BiblesPk extends Proskomma {
   constructor() {
@@ -88,7 +88,7 @@ function main() {
       if (!wholeBookJson) wholeBookJson = JSON.parse(doc.sofria());
       sofriaJson = sofriaForChapterViaWholeBook(wholeBookJson, chNum);
     }
-    writeFileSync(`${outDir}/${chNum}.json`, restorePipes(stripWjLeak(sofriaJson)));
+    writeFileSync(`${outDir}/${chNum}.json`, finishSofria(stripWjLeak(sofriaJson)));
     written++;
   }
 

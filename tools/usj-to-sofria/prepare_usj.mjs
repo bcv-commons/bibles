@@ -65,6 +65,16 @@ const LONG_RUN = /[\p{L}\p{N}\p{M}\u2060]{64,}/gu;
 /** Put `|` back in a Sofria JSON string (after the importer), and remove the word breaks. */
 export const restorePipes = (json) => json.replaceAll(PIPE_PLACEHOLDER, '|').replaceAll(BREAK_PLACEHOLDER, '');
 
+// The chapter as published: placeholders restored, and metadata.translation dropped. Proskomma
+// needs a lang and abbr to import a document and writes them there, but ours are placeholders
+// (lang 'xx'; DBT's own Sofria has 'xxx') that no reader uses: the language and edition are in
+// the path and in _meta.json. Dropped from 2026-10-26; files converted before keep it.
+export function finishSofria(json) {
+  const doc = JSON.parse(restorePipes(json));
+  if (doc.metadata) delete doc.metadata.translation;
+  return JSON.stringify(doc);
+}
+
 const breakLongRuns = (s) => s.replace(LONG_RUN, (run) => {
   const chars = [...run];
   const parts = [];

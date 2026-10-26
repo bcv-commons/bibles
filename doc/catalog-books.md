@@ -141,7 +141,13 @@ source list; `eng` alone has 74.)
   - **`c`** — chapter count (bare int; DBT/PKF/helloAO have this;
     **openbible does not** — book-level coverage is confirmed real via
     `text-book-coverage.json`, but no chapter-count field is populated,
-    since nothing here parses that deep into the USFM).
+    since nothing here parses that deep into the USFM). For DBT it is the
+    number of chapters present, not the last chapter number.
+  - **`ch`** — **DBT only**, the chapter numbers present, only where they
+    aren't simply 1..`c`: a portion such as `AYONTM`'s Psalms
+    (`"c": 18, "ch": [1, 6, 8, 12, … 150]`), or a book that starts later.
+    140 DBT versions have such books (2026-10-26). Absent means chapters
+    1..`c`.
   - **`v`** — **PKF only**, array of verse counts per chapter (`v[0]` =
     chapter 1's count, etc.) — PKF is the only source with real
     per-chapter granularity; not faked from a bare chapter count for the
@@ -150,6 +156,20 @@ source list; `eng` alone has 74.)
     the whole book (`totalNumberOfVerses`) — a third, different
     granularity from PKF's per-chapter array; kept as its own field
     rather than forced into `v`'s shape.
+
+### DBT book coverage, from a fileset
+
+This file replaces `/dbt/<iso>/coverage.json` (2026-10-26; that file is being
+retired). To know which books and chapters a DBT fileset from
+`/dbt/<iso>/media.json` has: take the version `id` the fileset is listed
+under in `media.json`, read `entries["d:<id>"].books` here, and keep the
+books of the fileset's testament (`t`). Each DBT version is filed under both
+its own language and the language `media.json` files its filesets under,
+where those differ (`KINWFW`: `kin` and `cgg`).
+
+Coverage is per version: DBT reports books and chapters per version, not per
+fileset, so an audio fileset can lack a chapter its version lists. A version
+DBT gives no book list for has no `books` here.
 
 ## Source data, and its real limits
 

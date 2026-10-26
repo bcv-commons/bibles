@@ -114,6 +114,43 @@ def _flush(chapters: dict, state: dict):
             chapters.setdefault(state["chapter"], {})[state["verse"]] = text
 
 
+def drop_strongs(node):
+    """Unwrap every USJ `\\w` whose only attribute is a Strong's number, keeping its word (in
+    place). eBible's USFM tags almost every word of some editions this way (frasbl, engoebus,
+    engoebcw, spabll = audiobiblia BLL): an automatic, verse-level tagging that disagrees with
+    lexeme-aligner's alignment on 25-45% of content words and puts content-word numbers on
+    function words (checked 2026-10-26 on eBible's ASV and BSB against lexeme-aligner's
+    eng_asv / eng_BSB, John and Genesis). It made the files 6 times larger and changes no
+    verse text: the extraction rule keeps the word either way. A `\\w` with other attributes
+    (lemma: Biblica's glossary links) only loses `strong`. Call after fix_adjacent_w_spacing,
+    so that two tagged words keep the space between them."""
+    if isinstance(node, list):
+        for x in node:
+            drop_strongs(x)
+        return
+    if not isinstance(node, dict):
+        return
+    content = node.get("content")
+    if isinstance(content, list):
+        out = []
+        for child in content:
+            drop_strongs(child)
+            if isinstance(child, dict) and child.get("marker") == "w" and "strong" in child:
+                child.pop("strong")
+                if set(child) <= {"type", "marker", "content"}:
+                    for c in child.get("content") or []:
+                        if isinstance(c, str) and out and isinstance(out[-1], str):
+                            out[-1] += c
+                        else:
+                            out.append(c)
+                    continue
+            if isinstance(child, str) and out and isinstance(out[-1], str):
+                out[-1] += child
+            else:
+                out.append(child)
+        node["content"] = out
+
+
 def fix_adjacent_w_spacing(node):
     """Recursively insert the missing joining space between two
     immediately-adjacent USJ `"char"`/`marker=="w"` nodes — the same real

@@ -70,7 +70,6 @@ HELLOAO_DL = DOWNLOADS / "helloao"
 HELLOAO_API = "https://bible.helloao.org/api"
 PKF_CACHE = API_CACHE / "pkf"
 PKF_DECODE = REPO_ROOT / "tools" / "pkf-decode" / "decode.mjs"
-DBT_COVERAGE = EXPORT / "dbt"
 OWN_USJ = {"openbible": "openbible-usj", "audiobiblia": "audiobiblia-usj", "ebible": "ebible-usj",
            "crosswire": "crosswire-usj", "door43": "door43-usj"}
 NT_FIRST = ["REV", "MRK", "LUK", "JHN", "MAT", "ACT", "ROM"]
@@ -177,8 +176,13 @@ def dbt_texts(iso: str, distinct_id: str, route: dict) -> list[str]:
 def fetch_dbt_sample(iso: str, distinct_id: str, route: dict) -> None:
     """One chapter through the edition's text route, saved as a sample (one verse per line)."""
     fileset = route.get("id")
-    cov_file = DBT_COVERAGE / iso / "coverage.json"
-    cov = json.loads(cov_file.read_text()).get(fileset, {}) if cov_file.is_file() else {}
+    books_file = CATALOG_DIR / iso[0] / iso / "books.json"
+    entry = json.loads(books_file.read_text())["entries"].get(f"d:{distinct_id}", {}) if books_file.is_file() else {}
+    # books.json is per version; keep the books of this fileset's testament (N / O in its id)
+    m = re.search(r"([NO])\d?(?:_ET|DA)", fileset or "")
+    testament = {"N": "nt", "O": "ot"}.get(m.group(1)) if m else None
+    cov = {b["code"]: b.get("ch") or [1] for b in entry.get("books", [])
+           if b.get("c") and testament in (None, b.get("t"))}
     if not cov:
         return
     book = next((b for b in NT_FIRST if b in cov), next(iter(cov)))

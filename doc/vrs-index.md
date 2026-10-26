@@ -2,6 +2,14 @@
 
 `https://cdn.bibel.wiki/dbt/_vrs/index.json`
 
+Per language (2026-10-26): `https://cdn.bibel.wiki/catalog/<iso[0]>/<iso>/versification.json`
+(e.g. `catalog/e/eng/versification.json`, next to that language's
+[`books.json`](catalog-books.md)). Same keys and shape (`l`, `nt`, `ot`, `assumed`, and the
+same top-level fields such as `vrs_base`, `map_base`, `sentinels`), holding only that
+language's editions; fetch it instead of the combined file (263 KB). helloAO, PKF and eBible
+keys are filed under the edition's language. The combined file stays published until its
+clients have moved.
+
 Classifies every DBT (and helloAO/eBible) text edition into one of the
 standard schemes (`eng`/`org`/`orgw`/`rso`/`lxx`/`vul`/`catm`), fingerprinted
 from cheap structural + diagnostic-verse-count signals — not a download of

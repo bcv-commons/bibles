@@ -2,6 +2,13 @@
 
 `https://cdn.bibel.wiki/dbt/<iso>/coverage.json`
 
+**Being retired (2026-10-26).** Use
+[`books.json`](catalog-books.md#dbt-book-coverage-from-a-fileset) instead: it
+has the same books and chapters (every one of this file's 332,012 book lists
+is reproduced there), one entry per version instead of a copy per fileset,
+11 MB less in all. This file stays published, unchanged in shape, until its
+users have moved.
+
 Real per-fileset book/chapter coverage — companion file to
 `/dbt/<iso>/media.json`, for editions that don't cover the full canon
 (e.g. `PORALM` — Portuguese, only 4 NT books + 1 OT book). Don't assume
@@ -16,6 +23,10 @@ translation doesn't have; check this file first.
   "PORALMO1DA": {"RUT": [1, 2, 3, 4]}
 }
 ```
+
+Despite the per-fileset keys, the coverage is per version: DBT reports it
+per version, and it is copied to each of the version's filesets, filtered
+by testament. A fileset can lack a chapter listed here.
 
 Keyed by the same fileset id that appears in `media.json`'s `filesets`
 entries (`id`/`t`/`a`). Each value is `{book_id: [chapter_numbers]}` — the

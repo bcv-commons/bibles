@@ -13,7 +13,7 @@
 // CLI: node usx_to_sofria.mjs <book.usx> <out-dir>   -> <out-dir>/<chapter>.json
 import { Proskomma } from 'proskomma-core';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { PIPE_PLACEHOLDER, restorePipes } from './prepare_usj.mjs';
+import { PIPE_PLACEHOLDER, finishSofria } from './prepare_usj.mjs';
 
 class BiblesPk extends Proskomma {
   constructor() {
@@ -38,7 +38,7 @@ export function usxToSofria(usxText) {
   const doc = pk.importDocument({ lang: 'xx', abbr: book }, 'usx', usx);
   const chapters = [...usx.matchAll(/<chapter[^>]*number="(\d+)"/g)].map((m) => m[1]);
   const out = {};
-  for (const ch of chapters) out[ch] = restorePipes(doc.sofria(undefined, Number(ch)));
+  for (const ch of chapters) out[ch] = finishSofria(doc.sofria(undefined, Number(ch)));
   return out;
 }
 

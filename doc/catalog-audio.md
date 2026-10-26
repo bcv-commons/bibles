@@ -2,6 +2,12 @@
 
 `https://cdn.bibel.wiki/catalog/audio.json`
 
+Per language (2026-10-26): `https://cdn.bibel.wiki/catalog/<iso[0]>/<iso>/audio.json`
+(e.g. `catalog/e/eng/audio.json`, next to that language's [`books.json`](catalog-books.md)). Same
+keys and shape, holding only that language's entries; most clients need one to a few
+languages, so fetch these instead of the combined file (430 KB). The combined file stays
+published until its clients have moved.
+
 DBT's own audio fileset routing, compact and per-version — "given a DBT
 `(iso, distinct_id, canon)`, which fileset id(s) actually carry its
 audio, and at what bitrate/codec." Companion file:

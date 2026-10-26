@@ -48,7 +48,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
+from usfm_to_verses import drop_strongs, fix_adjacent_w_spacing  # noqa: E402
 from usfm_pipes import protect, restore  # noqa: E402
 from edition_formats import META_FILE, write_meta  # noqa: E402
 import usfmtc  # noqa: E402
@@ -145,6 +145,7 @@ def main():
                 doc = usfmtc.readFile(tmp_path)
                 usj = restore(doc.outUsj())
                 fix_adjacent_w_spacing(usj)
+                drop_strongs(usj)  # BLL is eBible's spabll, with its automatic Strong's tags
             except Exception as e:
                 print(f"  WARNING: {edition}/{book} extraction failed: {e}")
                 continue

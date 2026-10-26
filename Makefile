@@ -241,6 +241,9 @@ edition-struct: ## Generate catalog/edition-struct.json; edition_script.py first
 	$(PYTHON) pipeline/comparison/edition_script.py $(ARGS)
 	$(PYTHON) pipeline/comparison/edition_struct.py --scan
 
+catalog-split: ## Per-language copies of catalog/{audio,text,text-route,overlap}.json + dbt/_vrs/index.json (after edition-struct, before publish-catalog)
+	$(PYTHON) pipeline/comparison/split_catalog.py $(ARGS)
+
 openbible-editions: ## Add published/books/canon/licenses/path to internal-data/openbible-editions.json (after stage-sofria)
 	$(PYTHON) $(CORE)/enrich_openbible_editions.py
 

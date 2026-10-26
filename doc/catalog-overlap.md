@@ -2,6 +2,12 @@
 
 `https://cdn.bibel.wiki/catalog/overlap.json`
 
+Per language (2026-10-26): `https://cdn.bibel.wiki/catalog/<iso[0]>/<iso>/overlap.json`
+(e.g. `catalog/e/eng/overlap.json`, next to that language's [`books.json`](catalog-books.md)). Same
+keys and shape, holding only that language's entries (and the same `priority`, `audio_source`, `probes`); most clients need one to a few
+languages, so fetch these instead of the combined file (205 KB). The combined file stays
+published until its clients have moved.
+
 The verified relationship data between sources, wherever more than one has
 content for a language. Every comparison here is a **real text
 comparison**, not a guess or a naming-convention inference — see

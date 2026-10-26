@@ -2,6 +2,12 @@
 
 `https://cdn.bibel.wiki/catalog/text.json`
 
+Per language (2026-10-26): `https://cdn.bibel.wiki/catalog/<iso[0]>/<iso>/text.json`
+(e.g. `catalog/e/eng/text.json`, next to that language's [`books.json`](catalog-books.md)). Same
+keys and shape, holding only that language's entries; most clients need one to a few
+languages, so fetch these instead of the combined file (207 KB). The combined file stays
+published until its clients have moved.
+
 DBT's own text fileset routing, compact and per-version — "given a DBT
 `(iso, distinct_id, canon)`, which fileset id(s) actually carry its text,
 and in what format(s)." Companion file: [`catalog-audio.md`](catalog-audio.md)

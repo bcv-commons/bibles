@@ -57,7 +57,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
+from usfm_to_verses import drop_strongs, fix_adjacent_w_spacing  # noqa: E402
 from usfm_pipes import protect, restore  # noqa: E402
 from edition_formats import FORMATS, META_FILE, write_meta  # noqa: E402
 import usfmtc  # noqa: E402
@@ -292,13 +292,17 @@ def edition_meta(row: dict, lic: dict) -> dict:
     return meta
 
 
-def convert_book(raw: str) -> dict:
+def convert_book(raw: str, strongs: bool = True) -> dict:
+    """USFM -> USJ (usfmtc). strongs=False drops Strong's tags (usfm_to_verses.drop_strongs): eBible
+    editions; CrossWire and Door43 share this converter and have none."""
     with tempfile.NamedTemporaryFile(mode="w", suffix=".usfm", delete=False, encoding="utf-8") as tf:
         tf.write(protect(raw))  # `|` used as text survives usfmtc
         tmp_path = tf.name
     try:
         usj = restore(usfmtc.readFile(tmp_path).outUsj())
         fix_adjacent_w_spacing(usj)
+        if strongs is False:
+            drop_strongs(usj)
         return usj
     finally:
         Path(tmp_path).unlink(missing_ok=True)
@@ -350,7 +354,7 @@ def process_translation(row: dict, force: bool, outcome: collections.Counter, re
                 continue
             book = m.group(1).upper()
             try:
-                usj = convert_book(raw)
+                usj = convert_book(raw, strongs=False)
             except Exception as e:
                 print(f"  WARNING: {tid}/{book} USJ extraction failed: {e}")
                 outcome["book extraction failures"] += 1

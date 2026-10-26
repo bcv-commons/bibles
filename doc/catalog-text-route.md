@@ -2,6 +2,12 @@
 
 `https://cdn.bibel.wiki/catalog/text-route.json`
 
+Per language (2026-10-26): `https://cdn.bibel.wiki/catalog/<iso[0]>/<iso>/text-route.json`
+(e.g. `catalog/e/eng/text-route.json`, next to that language's [`books.json`](catalog-books.md)). Same
+keys and shape, holding only that language's entries (and the same `base` and `routes`); most clients need one to a few
+languages, so fetch these instead of the combined file (264 KB). The combined file stays
+published until its clients have moved.
+
 For every edition and testament: the **one canonical text** to read for verse
 text, and the route to read it through. Reading it through
 [`tools/verse-text`](../tools/verse-text/) gives every client the same verse
@@ -30,7 +36,7 @@ Source ids are the ones [`catalog-overlap.json`](catalog-overlap.md) and
 
 - **`canon`**: `nt` or `ot`. Partial (`ntp`/`otp`) DBT versions are filed
   under the plain testament here. Book coverage is in
-  [`/dbt/<iso>/coverage.json`](dbt-coverage.md).
+  [`books.json`](catalog-books.md#dbt-book-coverage-from-a-fileset).
 - **`id`**: a DBT fileset id (fetch through DBT's API), or a PKF file name
   (under `pkf/<iso>/`).
 - **`path`**: an edition folder under `base`.
@@ -75,7 +81,7 @@ Present only where the route isn't the one the source's formats would give:
   don't publish (licence). `catalog-overlap.json` rows marked `r: false` are
   unreachable anyway.
 - Whether a given chapter actually exists. That's coverage
-  (`/dbt/<iso>/coverage.json`, each edition's `_meta.json` `books`).
+  (`books.json`, each edition's `_meta.json` `books`).
 
 Built by `pipeline/comparison/generate_text_route.py` (`make text-route`), from
 `catalog-text.json`, `dbt/_catalog.json`, helloAO's book completeness, our

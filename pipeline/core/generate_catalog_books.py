@@ -40,7 +40,7 @@ import zipfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, PKF_BOOKS_CACHE, HELLOAO_BOOKS_CACHE, EXPORT  # noqa: E402
+from paths import API_CACHE, PKF_BOOKS_CACHE, HELLOAO_BOOKS_CACHE, EXPORT, SORTED_DIR  # noqa: E402
 
 BOOKS_OUT_DIR = EXPORT / "catalog"
 
@@ -70,6 +70,7 @@ def testament_of(code):
 def load_dbt():
     """iso -> {"d:<abbr>": {...}}"""
     out = {}
+    also_under = dbt_fileset_isos()
     details_dir = API_CACHE / "bibles" / "bible_details"
     if not details_dir.is_dir():
         print("[catalog-books] WARNING: no bible_details cache — DBT skipped", file=sys.stderr)
@@ -125,11 +126,30 @@ def load_dbt():
             chapters = b.get("chapters")
             if isinstance(chapters, list) and chapters:
                 row["c"] = len(chapters)
+                if chapters != list(range(1, len(chapters) + 1)):
+                    row["ch"] = chapters  # a portion: not chapters 1..c (e.g. 18 selected psalms)
             books.append(row)
         if books:
             entry["books"] = books
 
-        out.setdefault(iso, {})[f"d:{abbr}"] = entry
+        for i in {iso} | also_under.get(abbr, set()):
+            out.setdefault(i, {})[f"d:{abbr}"] = entry
+    return out
+
+
+def dbt_fileset_isos():
+    """abbr -> the isos media.json files its filesets under, where that isn't the bible's own iso
+    (KINWFW: bible kin, fileset cgg). A client goes from media.json to books.json by iso, so the
+    entry is written under both."""
+    out = {}
+    if not SORTED_DIR.is_dir():
+        return out
+    for meta in SORTED_DIR.glob("*/*/metadata.json"):
+        try:
+            abbr = json.loads(meta.read_text())["bible"]["abbr"]
+        except Exception:
+            continue
+        out.setdefault(abbr, set()).add(meta.parent.parent.name)
     return out
 
 
