@@ -3,7 +3,7 @@ CORE := pipeline/core
 
 .PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
-        publish-catalog publish-catalog-dry stage-ebible publish-ebible publish-ebible-dry text-route \
+        publish-catalog publish-catalog-dry stage-ebible publish-ebible publish-ebible-dry text-route edition-struct \
         crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
         door43-usj sofria-door43 stage-door43 publish-door43 publish-door43-dry \
         publish-openbible publish-openbible-dry \
@@ -26,6 +26,7 @@ help: ## Show available targets
 	@echo "  make version-info     Generate version-info artifact"
 	@echo "  make dbt-catalog      Generate catalog-text.json / catalog-audio.json"
 	@echo "  make text-route       Generate catalog/text-route.json (canonical text + reading route per edition)"
+	@echo "  make edition-struct   Generate catalog/edition-struct.json (per-edition metadata: script, direction, normalization, ...)"
 	@echo "  make catalog-books    Generate per-language /catalog/<iso[0]>/<iso>/books.json"
 	@echo ""
 	@echo "  CDN publishing"
@@ -232,6 +233,10 @@ stage-sofria: ## Stage USJ (<BOOK>.usj.json), Sofria (<BOOK>/<ch>.sofria.json) a
 
 text-route: ## Generate catalog/text-route.json: each edition's canonical text and reading route (after the catalog + stage steps)
 	$(PYTHON) pipeline/comparison/generate_text_route.py $(ARGS)
+
+edition-struct: ## Generate catalog/edition-struct.json; edition_script.py first reads each edition's text (after text-route)
+	$(PYTHON) pipeline/comparison/edition_script.py $(ARGS)
+	$(PYTHON) pipeline/comparison/edition_struct.py --scan
 
 openbible-editions: ## Add published/books/canon/licenses/path to catalog/openbible-editions.json (after stage-sofria)
 	$(PYTHON) $(CORE)/enrich_openbible_editions.py

@@ -11,7 +11,7 @@ derive from a source catalog (sha256 of their fetched file, their own ingested b
 count) are theirs alone, not something a catalog merge can ever give us anyway.
 
 So this reads metadata we already cache locally — no live network calls — and merges
-it with textual_basis.py's and psalm_titles.py's own output (pipeline/comparison/) where
+it with textual_basis.py's, psalm_titles.py's and edition_script.py's own output (pipeline/comparison/) where
 available. id format matches catalog-overlap.json's own convention (d:/h:/p:/o:
 prefix), not lexeme-aligner's lowercase "tag" — one less naming scheme to carry.
 
@@ -25,8 +25,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from compare_all import all_candidates, OPENBIBLE_PROJECTS_FILE, OPENBIBLE_EDITIONS_FILE  # noqa: E402
+import edition_script  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR  # noqa: E402
+from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR, EXPORT  # noqa: E402
 
 OUT_PATH = CATALOG_DIR / "edition-struct.json"  # the one file we actually publish
 BIBLE_DETAILS_DIR = API_CACHE / "bibles" / "bible_details"
@@ -36,6 +37,8 @@ OPENBIBLE_TEXT_CACHE = API_CACHE / "openbible" / "text"
 TEXTUAL_BASIS_FILE = COMPARISON_RESULTS_DIR / "textual-basis.json"
 # Same for psalm_titles.py: how the edition presents psalm titles (for lexeme-aligner).
 PSALM_TITLES_FILE = COMPARISON_RESULTS_DIR / "psalm-titles.json"
+# And edition_script.py: letters per script and normalization, read from each edition's text.
+EDITION_SCRIPT_FILE = COMPARISON_RESULTS_DIR / "edition-script.json"
 
 
 def _load_json(path: Path) -> dict:
@@ -47,7 +50,6 @@ def dbt_record(distinct_id: str, iso: str) -> dict:
     return {
         "iso": iso, "provider": "DBT (4.dbt.io)",
         "name": detail.get("name"), "license": detail.get("mark"),
-        "script": (detail.get("alphabet") or {}).get("script"),
     }
 
 
@@ -56,14 +58,12 @@ def helloao_record(translation_id: str, iso: str, helloao_translations: dict) ->
     return {
         "iso": iso, "provider": "helloAO",
         "name": e.get("name"), "license": e.get("licenseUrl"),
-        "script": None if e.get("textDirection") is None else
-                  ("Latn" if e["textDirection"] == "ltr" else None),
     }
 
 
 def pkf_record(iso: str, pkf_manifest: dict) -> dict:
     entry = pkf_manifest.get(iso) or {}
-    return {"iso": iso, "provider": "PKF", "name": entry.get("nm"), "license": None, "script": None}
+    return {"iso": iso, "provider": "PKF", "name": entry.get("nm"), "license": None}
 
 
 def openbible_record(project_id: str, abbr: str, iso: str) -> dict:
@@ -71,8 +71,16 @@ def openbible_record(project_id: str, abbr: str, iso: str) -> dict:
     return {
         "iso": iso, "provider": "openbible (Biblica)",
         "name": detail.get("title"), "license": detail.get("rightsHolder"),
-        "script": detail.get("script"),
     }
+
+
+def own_record(path: str, iso: str) -> dict:
+    """An edition we republish (eBible, CrossWire, Door43; openbible and audiobiblia come from
+    their project caches above), from its _meta.json."""
+    kind, _, edition = path.strip("/").split("/")
+    meta = _load_json(EXPORT / edition_script.OWN_USJ[kind] / iso / edition / "_meta.json")
+    lic = meta.get("licenses") or [{}]
+    return {"iso": iso, "provider": meta.get("provider"), "name": meta.get("name"), "license": lic[0].get("type")}
 
 
 def main() -> None:
@@ -96,6 +104,8 @@ def main() -> None:
                       if OPENBIBLE_EDITIONS_FILE.exists() else {})
     textual_basis = _load_json(TEXTUAL_BASIS_FILE).get("editions", {})
     psalm_titles = _load_json(PSALM_TITLES_FILE).get("editions", {})
+    measured = _load_json(EDITION_SCRIPT_FILE)
+    stated = edition_script.stated_metadata()
 
     editions: dict[str, dict] = {}
 
@@ -107,11 +117,13 @@ def main() -> None:
         if pt:
             record["psalm_titles"] = pt["psalm_titles"]
             record["psalm_titles_basis"] = pt["basis"]
+        record.update(edition_script.verdict(measured.get(edition_id), *stated.get(edition_id, (None, None))))
         editions[edition_id] = record
 
     for canon in ("nt", "ot"):
-        candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon)
-        for iso, (dbt_ids, hao_ids, pkf_files, ob_ids) in candidates.items():
+        # Our own editions (eBible, CrossWire, Door43) are added from text-route.json below.
+        candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, canon, {})
+        for iso, (dbt_ids, hao_ids, pkf_files, ob_ids, _) in candidates.items():
             for distinct_id in dbt_ids:
                 add(f"d:{distinct_id}", dbt_record(distinct_id, iso), f"{iso}:dbt:{distinct_id}")
             for hid in hao_ids:
@@ -120,11 +132,27 @@ def main() -> None:
                 add(f"p:{iso.upper()}PKF", pkf_record(iso, pkf_manifest), f"{iso}:pkf:{iso.upper()}PKF")
             for project_id, abbr in ob_ids:
                 add(f"o:{abbr}", openbible_record(project_id, abbr, iso), f"{iso}:openbible:{abbr}")
+    # Editions only text-route.json lists: the ones we republish from eBible, CrossWire and Door43
+    # (and audiobiblia's two), and DBT versions that only text-route.json found (e.g.
+    # not_in_fileset_listing), which all_candidates() doesn't return.
+    for edition_id, (iso, route) in edition_script.editions().items():
+        if edition_id in editions:
+            continue
+        src, eid = edition_id.split(":", 1)
+        if route.get("path"):
+            name = {"e": "ebible", "c": "crosswire", "g": "door43", "o": "openbible"}[src]
+            add(edition_id, own_record(route["path"], iso), f"{iso}:{name}:{eid}")
+        elif src == "d":
+            add(edition_id, dbt_record(eid, iso), f"{iso}:dbt:{eid}")
+        elif src == "h":
+            add(edition_id, helloao_record(eid, iso, helloao_translations), f"{iso}:helloao:{eid}")
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps({
-        "note": "iso/name/license/script merged from our own cached source catalogs (DBT bible_details, "
-                "helloAO available_translations, PKF manifest, openbible project cache) — no live fetch. "
+        "note": "iso/name/license merged from our own cached source catalogs (DBT bible_details, "
+                "helloAO available_translations, PKF manifest, openbible project cache, our editions' "
+                "_meta.json) — no live fetch. script, scripts, direction, spaces, normalization and basis "
+                "come from edition_script.py, read from each edition's text (doc/catalog-edition-struct.md). "
                 "textual_basis (when present) comes from pipeline/comparison/textual_basis.py's own scan, "
                 "not every edition has one yet. psalm_titles (when present) comes from psalm_titles.py: "
                 "numbered (the title is counted as a verse), mixed (numbered in one probe psalm, not the other), heading (a title marker before verse 1, "

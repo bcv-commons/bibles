@@ -222,7 +222,7 @@ def main() -> None:
             openbible_by_iso[p["languageCode"]].append(p["id"])
     openbible_abbr = json.loads(OPENBIBLE_EDITIONS_FILE.read_text())["entries"] if OPENBIBLE_EDITIONS_FILE.exists() else {}
 
-    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, "ot")
+    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, "ot", {})
     isos = sorted(iso_filter) if iso_filter else sorted(candidates) if "--scan" in args else []
     if not isos:
         print("[psalm-titles] pass --iso ISO[,ISO...] or --scan")

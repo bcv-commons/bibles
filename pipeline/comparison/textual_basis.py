@@ -296,7 +296,7 @@ def main() -> None:
     openbible_abbr = (json.loads(OPENBIBLE_EDITIONS_FILE.read_text())["entries"]
                       if OPENBIBLE_EDITIONS_FILE.exists() else {})
 
-    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, "nt")
+    candidates = all_candidates(catalog, helloao_by_iso, pkf_manifest, openbible_by_iso, openbible_abbr, "nt", {})
     isos = sorted(iso_filter) if iso_filter else sorted(candidates) if scan else []
     if not isos:
         print("[textual-basis] pass --iso ISO[,ISO...] or --scan")
@@ -314,7 +314,7 @@ def main() -> None:
     current = lambda k: editions[k].get("input") == INPUT_VERSION  # noqa: E731
 
     def expected_tags(iso: str) -> set[str]:
-        dbt_ids, hao_ids, pkf_files, ob_ids = candidates[iso]
+        dbt_ids, hao_ids, pkf_files, ob_ids, _ = candidates[iso]
         tags = {f"dbt:{d}" for d in dbt_ids} | {f"helloao:{h}" for h in hao_ids} | {f"openbible:{a}" for _, a in ob_ids}
         if pkf_files:
             tags.add(f"pkf:{iso.upper()}PKF")
