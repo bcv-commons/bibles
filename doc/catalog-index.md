@@ -93,7 +93,7 @@ fixable gap.
   projects with a real, resolved yaapi.bible abbreviation** (decided
   2026-09-19 — publishing a raw Biblica hex project id was judged a bad
   long-term precedent, since a client depending on it makes migrating
-  away later costly; see `openbible-editions.json`'s doc). A project with
+  away later costly; see [`openbible-chapters.md`](openbible-chapters.md)). A project with
   no abbreviation yet is temporarily excluded here entirely, not shown
   under a hex id — see `pending_openbible_coverage` below for how many.
   **`e`** (added 2026-10-15; this settles the question left open on 2026-10-02 of

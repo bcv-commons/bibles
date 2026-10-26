@@ -108,6 +108,14 @@ cutting words, so tokens and text fingerprints don't depend on it.
 
 ## The other fields
 
+- `biblica_project` (openbible): Biblica's project id, for provenance. It isn't an id to
+  address the edition by: that is `o:<abbr>` (the path segment comes from yaapi.bible's
+  abbreviation).
+- `published: false`, `reason` (openbible): an edition we know of but don't publish:
+  `nd_license` (only no-derivatives licences), `no_source` (Biblica's text isn't cached) or
+  `not_built`. Absent for every edition we do publish or link to. Added 2026-10-26, when
+  `catalog/openbible-editions.json` was retired.
+
 - `textual_basis`: from `pipeline/comparison/textual_basis.py`; not every edition has one.
 - `psalm_titles`, `psalm_titles_basis`: from `psalm_titles.py`. `numbered` (the title is
   counted as a verse), `mixed` (numbered in one probe psalm, not the other), `heading` (a title

@@ -17,41 +17,21 @@ The per-chapter verse-json files (`<BOOK>/<chapter>.json`) were removed on 2026-
 from the Sofria chapter. Rendering and text extraction: `tools/sofria-render/`, see
 [`client-chapter-formats.md`](client-chapter-formats.md).
 
-## Choosing an edition: `catalog/openbible-editions.json`
+## Choosing an edition
 
-`cdn.bibel.wiki/catalog/openbible-editions.json` lists every Biblica project we can
-name, keyed by Biblica's project id (the `o:` ids in `catalog/overlap.json`):
+For a language's openbible editions, read:
 
-```json
-{
-  "formats": {
-    "sofria": {"path": "<BOOK>/<chapter>.sofria.json", "granularity": "chapter"},
-    "usj": {"path": "<BOOK>.usj.json", "granularity": "book"}
-  },
-  "entries": {
-    "65174ecae3ab186d581e98ff": {
-      "abbr": "OECV", "iso": "ekk",
-      "published": true,
-      "books": ["1CO", "1JN", "..."],
-      "canon": ["nt"],
-      "licenses": [{"type": "CC BY-SA", "url": "..."}],
-      "path": "openbible/ekk/OECV/"
-    },
-    "<project id>": {"abbr": "...", "iso": "...", "published": false, "reason": "nd_license"}
-  }
-}
-```
+- [`catalog/<iso[0]>/<iso>/edition-struct.json`](catalog-edition-struct.md): every
+  edition of the language, with its name, licence holder, script and Biblica project
+  (`biblica_project`). An edition we don't publish has `published: false` and a `reason`:
+  `nd_license` (only no-derivatives licenses: we don't republish those), `no_source`
+  (Biblica's text isn't cached here) or `not_built`.
+- [`catalog/text-route.json`](catalog-text-route.md): the folder of each published edition
+  (`path`, relative to `https://cdn.bibel.wiki/`).
+- The edition's `_meta.json` in that folder: its books, licence list and formats.
 
-- `published`: the edition's Sofria and USJ are on the CDN. As of 2026-10-09: 274 of
-  307 editions, in 213 languages.
-- `books`: the book codes published (books with at least one chapter). Not every
-  edition has a full NT, let alone a full Bible.
-- `canon`: `nt` / `ot` for a complete testament, `ntp` / `otp` for part of one.
-- `licenses`: Biblica's own per-version license list, as in `_meta.json`.
-- `path`: the edition folder, relative to `https://cdn.bibel.wiki/`; combine with
-  `formats` for file URLs.
-- `reason`, when not published: `nd_license` (only no-derivatives licenses: we don't
-  republish those), `no_source` (Biblica's text isn't cached here), `not_built`.
+Until 2026-10-26 one file, `catalog/openbible-editions.json`, listed every Biblica project
+we can name, with the same information. It is no longer generated.
 
 ## What is covered
 

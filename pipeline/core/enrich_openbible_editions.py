@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Add publish details to catalog/openbible-editions.json, so a client can choose an
-openbible edition without fetching every _meta.json (requested by demo-bibel-wiki,
-2026-10-09).
+"""Add publish details to internal-data/openbible-editions.json (paths.OPENBIBLE_EDITIONS_FILE).
+Published as catalog/openbible-editions.json from 2026-10-09 (requested by demo-bibel-wiki, to
+choose an openbible edition without fetching every _meta.json) until 2026-10-26; the pipeline
+still reads it, and edition_struct.py carries `biblica_project` and, for editions we don't
+publish, `published: false` with the `reason` into catalog/<iso[0]>/<iso>/edition-struct.json.
 
 Each entry keeps `abbr` and `iso` (generate_openbible_abbr.py) and gains:
     published  true when the edition's Sofria + USJ are built and staged for the CDN
@@ -29,9 +31,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from edition_formats import FORMATS, META_FILE  # noqa: E402
 from generate_openbible_usj import current_licenses, has_non_nd_license  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, CATALOG_DIR, EXPORT  # noqa: E402
+from paths import API_CACHE, EXPORT, OPENBIBLE_EDITIONS_FILE  # noqa: E402
 
-EDITIONS_FILE = CATALOG_DIR / "openbible-editions.json"
+EDITIONS_FILE = OPENBIBLE_EDITIONS_FILE
 USJ_DIR = EXPORT / "openbible-usj"
 STAGE_DIR = EXPORT / "publish" / "stage" / "openbible"
 TEXT_CACHE = API_CACHE / "openbible" / "text"

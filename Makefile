@@ -238,7 +238,7 @@ edition-struct: ## Generate catalog/edition-struct.json; edition_script.py first
 	$(PYTHON) pipeline/comparison/edition_script.py $(ARGS)
 	$(PYTHON) pipeline/comparison/edition_struct.py --scan
 
-openbible-editions: ## Add published/books/canon/licenses/path to catalog/openbible-editions.json (after stage-sofria)
+openbible-editions: ## Add published/books/canon/licenses/path to internal-data/openbible-editions.json (after stage-sofria)
 	$(PYTHON) $(CORE)/enrich_openbible_editions.py
 
 publish-sofria: ## Upload the staged USJ + Sofria to cdn.bibel.wiki/{openbible,audiobiblia}/

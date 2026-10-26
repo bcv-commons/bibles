@@ -68,12 +68,19 @@ def pkf_record(iso: str, pkf_manifest: dict) -> dict:
     return {"iso": iso, "provider": "PKF", "name": entry.get("nm"), "license": None}
 
 
-def openbible_record(project_id: str, abbr: str, iso: str) -> dict:
+def openbible_record(project_id: str, abbr: str, iso: str, edition: dict) -> dict:
+    """`edition` is the project's openbible-editions.json entry: an edition we don't publish
+    carries `published: false` and the reason (nd_license, no_source, not_built)."""
     detail = _load_json(OPENBIBLE_TEXT_CACHE / f"{project_id}.json").get("project", {})
-    return {
+    record = {
         "iso": iso, "provider": "openbible (Biblica)",
         "name": detail.get("title"), "license": detail.get("rightsHolder"),
+        "biblica_project": project_id,
     }
+    if edition.get("published") is False:
+        record["published"] = False
+        record["reason"] = edition.get("reason")
+    return record
 
 
 def own_record(path: str, iso: str) -> dict:
@@ -133,7 +140,8 @@ def main() -> None:
             if pkf_files:
                 add(f"p:{iso.upper()}PKF", pkf_record(iso, pkf_manifest), f"{iso}:pkf:{iso.upper()}PKF")
             for project_id, abbr in ob_ids:
-                add(f"o:{abbr}", openbible_record(project_id, abbr, iso), f"{iso}:openbible:{abbr}")
+                add(f"o:{abbr}", openbible_record(project_id, abbr, iso, openbible_abbr.get(project_id, {})),
+                    f"{iso}:openbible:{abbr}")
     # Editions only text-route.json lists: the ones we republish from eBible, CrossWire and Door43
     # (and audiobiblia's two), and DBT versions that only text-route.json found (e.g.
     # not_in_fileset_listing), which all_candidates() doesn't return.

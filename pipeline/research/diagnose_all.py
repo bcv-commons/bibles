@@ -41,7 +41,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "comparison"))
 from compare_pkf_dbt import compare  # noqa: E402
 from fetch_sources import dbt_text, helloao_text, pkf_text, ebible_text, own_usj_text, openbible_text, rclone_env  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR  # noqa: E402
+from paths import API_CACHE, COMPARISON_RESULTS_DIR, OPENBIBLE_EDITIONS_FILE  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from diagnose_taxonomy import classify  # noqa: E402
@@ -107,7 +107,7 @@ def _openbible_project(abbr: str) -> str | None:
     """Biblica project id for a published openbible abbreviation (openbible-editions.json)."""
     global _OB_PROJECTS
     if _OB_PROJECTS is None:
-        f = CATALOG_DIR / "openbible-editions.json"
+        f = OPENBIBLE_EDITIONS_FILE
         entries = json.loads(f.read_text())["entries"] if f.exists() else {}
         _OB_PROJECTS = {e["abbr"]: pid for pid, e in entries.items()}
     return _OB_PROJECTS.get(abbr)

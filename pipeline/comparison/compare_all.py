@@ -59,7 +59,8 @@ from fetch_sources import dbt_text, helloao_text, pkf_text, openbible_text, own_
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, COMPARISON_RESULTS_DIR, CATALOG_DIR  # noqa: E402
+from paths import API_CACHE, COMPARISON_RESULTS_DIR  # noqa: E402
+import paths  # noqa: E402
 
 # Added 2026-09-15: Biblica's Open Bible catalog as a fourth source
 # (`openbible:`). Unlike PKF (one ambiguous manifest entry per language,
@@ -69,7 +70,7 @@ from paths import API_CACHE, COMPARISON_RESULTS_DIR, CATALOG_DIR  # noqa: E402
 # special-case single-slot scoring logic. 18% of Biblica text-having
 # languages (75/412) have more than one project, a real, not-rare case.
 OPENBIBLE_PROJECTS_FILE = API_CACHE / "openbible" / "projects.json"
-OPENBIBLE_EDITIONS_FILE = CATALOG_DIR / "openbible-editions.json"
+OPENBIBLE_EDITIONS_FILE = paths.OPENBIBLE_EDITIONS_FILE
 
 OUT_PATH = COMPARISON_RESULTS_DIR / "all-comparisons.json"
 

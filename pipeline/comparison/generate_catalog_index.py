@@ -56,7 +56,7 @@ from pathlib import Path
 from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, DOWNLOADS, CATALOG_DIR, EXPORT, HELLOAO_BOOK_COMPLETENESS_FILE  # noqa: E402
+from paths import API_CACHE, DOWNLOADS, CATALOG_DIR, EXPORT, HELLOAO_BOOK_COMPLETENESS_FILE, OPENBIBLE_EDITIONS_FILE  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "research"))
 from confirm_text_availability import resolve_fileset  # noqa: E402
 
@@ -173,7 +173,7 @@ def openbible_rows():
     real, deliberate content gap, not a bug — see doc/catalog-index.md's
     note on `pending_openbible_coverage` for how a client can detect it."""
     coverage_file = API_CACHE / "openbible" / "text-book-coverage.json"
-    editions_file = CATALOG_DIR / "openbible-editions.json"
+    editions_file = OPENBIBLE_EDITIONS_FILE
     if not coverage_file.exists():
         return {}
     coverage = json.loads(coverage_file.read_text())
@@ -306,7 +306,7 @@ def main():
     # machine-detectable, not just documented in prose: a client can see
     # a real number here and know more content exists but isn't
     # published under a client-facing id yet — never silently absent.
-    editions_file = CATALOG_DIR / "openbible-editions.json"
+    editions_file = OPENBIBLE_EDITIONS_FILE
     pending_openbible = 0
     if editions_file.exists():
         mapped = set(json.loads(editions_file.read_text())["entries"].keys())

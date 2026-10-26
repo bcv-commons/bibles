@@ -56,7 +56,8 @@ import icu
 import requests
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR, DOWNLOADS, EXPORT, REPO_ROOT, TEXT_DIR  # noqa: E402
+from paths import (API_CACHE, CATALOG_DIR, COMPARISON_RESULTS_DIR, DOWNLOADS, EXPORT,  # noqa: E402
+                   OPENBIBLE_EDITIONS_FILE, REPO_ROOT, TEXT_DIR)
 sys.path.insert(0, str(REPO_ROOT / "pipeline" / "core"))
 import download_language_content as dl  # noqa: E402
 sys.path.insert(0, str(REPO_ROOT / "tools" / "verse-text" / "python"))
@@ -346,7 +347,7 @@ def stated_metadata() -> dict:
     hao = json.loads((API_CACHE / "helloao" / "available_translations.json").read_text())["translations"]
     for t in hao:
         out[f"h:{t['id']}"] = (None, t.get("textDirection"))
-    ob = json.loads((CATALOG_DIR / "openbible-editions.json").read_text())["entries"]
+    ob = json.loads(OPENBIBLE_EDITIONS_FILE.read_text())["entries"]
     for pid, e in ob.items():
         f = API_CACHE / "openbible" / "text" / f"{pid}.json"
         if f.is_file():

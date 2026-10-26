@@ -120,6 +120,12 @@ TEXT_FILL_LOG_FILE = COMPARISON_RESULTS_DIR / "text-fill-log.json"
 ALL_COMPARISONS_FILE = COMPARISON_RESULTS_DIR / "all-comparisons.json"
 ALL_DIAGNOSIS_FILE = COMPARISON_RESULTS_DIR / "all-diagnosis.json"
 
+# Biblica project id -> our abbreviation, iso, and publish details (generate_openbible_abbr.py,
+# enrich_openbible_editions.py). Published as catalog/openbible-editions.json until 2026-10-26;
+# now internal: clients find each edition's path in text-route.json, its books and licences in
+# its _meta.json, and its Biblica project (and why it isn't published) in edition-struct.json.
+OPENBIBLE_EDITIONS_FILE = INTERNAL_DATA / "openbible-editions.json"
+
 # ---------------------------------------------------------------------------
 # Generated build output — rebuilt via `make dbt-metadata`, gitignored,
 # never edited by hand.

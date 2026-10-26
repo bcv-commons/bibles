@@ -91,7 +91,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR, API_CACHE  # noqa: E402
+from paths import ALL_COMPARISONS_FILE, ALL_DIAGNOSIS_FILE, COMPARISON_RESULTS_DIR, CATALOG_DIR, API_CACHE, OPENBIBLE_EDITIONS_FILE  # noqa: E402
 
 SHORT_SOURCE = {"dbt": "d", "helloao": "h", "pkf": "p", "openbible": "o", "ebible": "e", "crosswire": "c", "door43": "g"}
 
@@ -105,7 +105,7 @@ def pending_openbible_coverage() -> int:
     """See catalog-index.json's identical field for the full rationale —
     same computation, kept independent rather than imported cross-module
     to avoid a real dependency between two otherwise-separate generators."""
-    editions_file = CATALOG_DIR / "openbible-editions.json"
+    editions_file = OPENBIBLE_EDITIONS_FILE
     if not editions_file.exists():
         return 0
     mapped = set(json.loads(editions_file.read_text())["entries"].keys())

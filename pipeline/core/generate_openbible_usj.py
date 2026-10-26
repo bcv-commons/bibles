@@ -27,7 +27,7 @@ from pathlib import Path
 
 import usfmtc  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, EXPORT, CATALOG_DIR  # noqa: E402
+from paths import API_CACHE, EXPORT, OPENBIBLE_EDITIONS_FILE  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from usfm_to_verses import fix_adjacent_w_spacing  # noqa: E402
 from usfm_pipes import protect, restore  # noqa: E402
@@ -35,7 +35,7 @@ from edition_formats import META_FILE, write_meta  # noqa: E402
 
 TEXT_CACHE = API_CACHE / "openbible" / "text"
 ZIP_CACHE = API_CACHE / "openbible" / "text-zips"
-EDITIONS_FILE = CATALOG_DIR / "openbible-editions.json"
+EDITIONS_FILE = OPENBIBLE_EDITIONS_FILE
 OUT_DIR = EXPORT / "openbible-usj"
 
 ND_LICENSES = {"CC BY-ND", "CC BY-NC-ND"}

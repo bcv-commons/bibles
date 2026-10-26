@@ -21,7 +21,7 @@ Only covers Biblica projects that actually have a yaapi.bible match (388
 of 553 as of 2026-09-16, per the same coverage check) — a project with no
 match here genuinely isn't on yaapi.bible yet, not a lookup failure.
 
-Output: export/catalog/openbible-editions.json
+Output: internal-data/openbible-editions.json (paths.OPENBIBLE_EDITIONS_FILE)
     {"<project_id>": {"abbr": "<yaapi abbreviation>", "iso": "<iso 639-3>"}}
 """
 import json
@@ -31,11 +31,11 @@ import glob
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, EXPORT  # noqa: E402
+from paths import API_CACHE, EXPORT, OPENBIBLE_EDITIONS_FILE  # noqa: E402
 
 YAAPI_VERSIONS = API_CACHE / "yaapi" / "versions.json"
 OPENBIBLE_TEXT = API_CACHE / "openbible" / "text"
-OUTPUT = EXPORT / "catalog" / "openbible-editions.json"
+OUTPUT = OPENBIBLE_EDITIONS_FILE
 
 
 def main():
