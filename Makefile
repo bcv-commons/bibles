@@ -3,7 +3,7 @@ CORE := pipeline/core
 
 .PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
-        publish-catalog publish-catalog-dry stage-ebible publish-ebible publish-ebible-dry text-route edition-struct \
+        publish-catalog publish-catalog-dry sofria-ebible stage-ebible publish-ebible publish-ebible-dry text-route edition-struct \
         crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
         door43-usj sofria-door43 stage-door43 publish-door43 publish-door43-dry \
         publish-openbible publish-openbible-dry \
@@ -218,10 +218,13 @@ publish-door43: ## Upload the staged Door43 Sofria + USJ + _meta.json (make stag
 publish-door43-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-door43.sh
 
-stage-ebible: ## Stage eBible USJ (<BOOK>.usj.json) and _meta.json as hard links (USJ only, no Sofria)
-	$(PYTHON) $(CORE)/stage_sofria_usj.py export/ebible-usj - $(SOFRIA_STAGE)/ebible --usj-only
+sofria-ebible: ## Convert eBible USJ to per-chapter Sofria
+	node tools/usj-to-sofria/convert_batch.mjs export/ebible-usj $(SOFRIA_OUT)/ebible
 
-publish-ebible: ## Upload the staged eBible USJ + _meta.json (make stage-ebible) to cdn.bibel.wiki/ebible/
+stage-ebible: ## Stage eBible USJ, Sofria and _meta.json as hard links (after sofria-ebible)
+	$(PYTHON) $(CORE)/stage_sofria_usj.py export/ebible-usj $(SOFRIA_OUT)/ebible $(SOFRIA_STAGE)/ebible
+
+publish-ebible: ## Upload the staged eBible Sofria + USJ + _meta.json (make stage-ebible) to cdn.bibel.wiki/ebible/
 	bash $(CORE)/publish-ebible.sh
 
 publish-ebible-dry: ## Dry-run CDN upload (no writes)

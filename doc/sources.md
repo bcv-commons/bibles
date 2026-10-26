@@ -147,7 +147,9 @@ already carries. `generate_ebible_chapters.py` republishes the rest, as book USJ
   The first run (2026-10-15) found 11 such duplicates, e.g. hltmcsb = helloAO
   `hlt_mcs`, eka = openbible EKA, spabll = audiobiblia BLL.
 
-That gave 12 editions. In the catalogs they're the `e` source; their relationships to the
+That gave 12 editions, published as book USJ and (since 2026-10-26) per-chapter Sofria on
+`cdn.bibel.wiki/ebible/`; every verse reads the same from both (route parity, 8,774
+chapters). In the catalogs they're the `e` source; their relationships to the
 other sources (e.g. the Open English Bible's two spelling editions, `e:engoebus` and
 `e:engoebcw`, `orthography_convention` of each other) come from the same text comparison
 as every other source's.

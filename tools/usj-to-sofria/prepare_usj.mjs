@@ -35,9 +35,22 @@
 // 7. \restore paragraphs (Paratext backup metadata, e.g. "01-Sep-2009@09:54, Backup
 //    Description=..."). The importer doesn't know the marker and merges its text into
 //    the last verse before it (hwo LUK 24:53). It becomes a \rem: kept, but a remark.
+// 8. An empty paragraph right before a \c (frasbl SIR 20, after an empty \v 32). The
+//    importer keeps the paragraph before it open across the chapter, so the next
+//    chapter's first line lands in this chapter's file (frasbl SIR 21:1 "Mon fils, as-tu
+//    péché ?"). The empty paragraph has no text and is removed.
+// 9. Long runs of letters. The importer cuts a run of letters into words of at most 127
+//    characters and then truncates any word over 255 bytes, so text written without
+//    spaces loses letters: 127 Thai letters are 381 bytes (thafb 1KI 15:24, EZR 3:5).
+//    Every run of 64 letters or more gets BREAK_PLACEHOLDER after each 60 characters,
+//    which ends a word for the importer (it is neither a letter nor a separator), and
+//    restorePipes() removes it from the Sofria output: 60 characters of up to 4 bytes
+//    stay under 255.
 
 export function prepareUsj(usj) {
   let content = splitFigures(usj.content || []);
+  content = content.filter((n, i) => !(n && n.type === 'para' && !hasText(n) && !(n.content || []).length
+    && content[i + 1]?.type === 'chapter'));
   content = splitHeadingAtVerse(content);
   content = dropDuplicateCp(content);
   content = content.filter((n) => !(n && n.type === 'table' && !hasText(n)));
@@ -46,12 +59,21 @@ export function prepareUsj(usj) {
 }
 
 export const PIPE_PLACEHOLDER = '\uE000';
+export const BREAK_PLACEHOLDER = '\uE001';
+const LONG_RUN = /[\p{L}\p{N}\p{M}\u2060]{64,}/gu;
 
-/** Put `|` back in a Sofria JSON string (after the importer). */
-export const restorePipes = (json) => json.replaceAll(PIPE_PLACEHOLDER, '|');
+/** Put `|` back in a Sofria JSON string (after the importer), and remove the word breaks. */
+export const restorePipes = (json) => json.replaceAll(PIPE_PLACEHOLDER, '|').replaceAll(BREAK_PLACEHOLDER, '');
+
+const breakLongRuns = (s) => s.replace(LONG_RUN, (run) => {
+  const chars = [...run];
+  const parts = [];
+  for (let i = 0; i < chars.length; i += 60) parts.push(chars.slice(i, i + 60).join(''));
+  return parts.join(BREAK_PLACEHOLDER);
+});
 
 function walk(x) {
-  if (typeof x === 'string') return x.replaceAll('|', PIPE_PLACEHOLDER);
+  if (typeof x === 'string') return breakLongRuns(x.replaceAll('|', PIPE_PLACEHOLDER));
   if (Array.isArray(x)) return x.filter((n) => !(n && n.type === 'optbreak')).map(walk);
   if (x && typeof x === 'object') {
     const o = { ...x };

@@ -1,4 +1,4 @@
-"""Each self-published edition's `_meta.json` (openbible, audiobiblia), and the formats
+"""Each self-published edition's `_meta.json` (openbible, audiobiblia, eBible, CrossWire, Door43), and the formats
 it lists. Written into the edition's USJ folder (export/<source>-usj/<iso>/<edition>/)
 by the USJ generators, and published next to the Sofria and USJ files.
 
@@ -35,7 +35,8 @@ USJ_ONLY = {"usj": FORMATS["usj"]}
 
 def write_meta(edition_dir: Path, meta: dict, formats: dict = FORMATS) -> None:
     """Write _meta.json: the edition's own fields, then `books` and `formats` (the formats
-    actually published for it: eBible editions are USJ only, see USJ_ONLY)."""
+    actually published for it: USJ_ONLY for the CrossWire modules published as USJ only;
+    eBible editions were USJ only until 2026-10-26)."""
     out = {**meta, "books": usj_books(edition_dir), "formats": formats}
     (edition_dir / META_FILE).write_text(
         json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

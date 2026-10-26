@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Publish the staged eBible USJ + _meta.json (make stage-ebible) to cdn.bibel.wiki/ebible/
-# via rclone (Cloudflare R2). USJ only (<BOOK>.usj.json): no Sofria is published for eBible.
+# Publish the staged eBible Sofria + USJ + _meta.json (make stage-ebible) to cdn.bibel.wiki/ebible/
+# via rclone (Cloudflare R2): book USJ and per-chapter Sofria, as for the other sources (USJ only
+# until 2026-10-26).
 #
 # The editions are the ones generate_ebible_chapters.py writes: eBible.org editions helloAO
 # doesn't carry, with a public-domain or non-ND Creative Commons licence, whose text isn't

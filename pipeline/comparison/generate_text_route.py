@@ -143,7 +143,7 @@ def main():
     helloao(entries)
     own(entries, "openbible", "o", "sofria")
     own(entries, "audiobiblia", "o", "sofria")
-    own(entries, "ebible", "e", "usj")
+    own(entries, "ebible", "e", "sofria")
     own(entries, "crosswire", "c", "sofria")
     own(entries, "door43", "g", "sofria")
     pkf(entries)

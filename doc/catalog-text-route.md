@@ -21,7 +21,7 @@ Source ids are the ones [`catalog-overlap.json`](catalog-overlap.md) and
   "ceb:nt":{"d:CEBCBV":{"route":"plain","id":"CEBCBV"},
             "d:CEBRPV":{"route":"sofria","id":"CEBRPVN_ET-json"},
             "o:OCCB-CEB":{"route":"sofria","path":"openbible/ceb/OCCB-CEB/"}},
-  "eng:nt":{"e:engoebus":{"route":"usj","path":"ebible/eng/engoebus/"},
+  "eng:nt":{"e:engoebus":{"route":"sofria","path":"ebible/eng/engoebus/"},
             "h:eng_kjv":{"route":"helloao"}}
  }}
 ```
@@ -42,8 +42,8 @@ source supports:
 
 | route | what | read with |
 |---|---|---|
-| `sofria` | DBT: the `text_json` fileset (Sofria, per chapter). Ours (openbible, audiobiblia, CrossWire, Door43): `<BOOK>/<ch>.sofria.json` under `path` (the same text is also there as `<BOOK>.usj.json`) | `extract_sofria` |
-| `usj` | our USJ, where it's the only form we publish (eBible): `<BOOK>.usj.json` under `path` | `extract_usj` |
+| `sofria` | DBT: the `text_json` fileset (Sofria, per chapter). Ours (openbible, audiobiblia, eBible, CrossWire, Door43): `<BOOK>/<ch>.sofria.json` under `path` (the same text is also there as `<BOOK>.usj.json`) | `extract_sofria` |
+| `usj` | our USJ, where it's the only form we publish (two CrossWire modules): `<BOOK>.usj.json` under `path` | `extract_usj` |
 | `usx` | DBT's `text_usx` fileset (per book; fetch with chapter 1) | `usx_to_usj.py` (Python) / `usx_to_sofria.mjs` (JS), then the extractor |
 | `helloao` | helloAO's chapter JSON | tools/verse-text's helloAO converter, then `extract_usj` |
 | `plain` | DBT's `text_plain` fileset (verse JSON) | the plain reader, `extract_plain` |
