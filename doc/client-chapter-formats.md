@@ -11,6 +11,7 @@ published is listed under **Planned** and is not available.
 | openbible (Biblica) | USJ | book | `cdn.bibel.wiki/openbible/<iso>/<abbr>/<BOOK>.usj.json` |
 | audiobiblia (BLL) | Sofria | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.sofria.json` |
 | audiobiblia (BLL) | USJ | book | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>.usj.json` |
+| audiobiblia (BLL) | audio (m4a) | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/audio/<BOOK>_<chapter>.m4a`: the 66-book canon, no deuterocanonical books. See below |
 | openbible, audiobiblia | verse-json | chapter | **Removed**, replaced by Sofria. See [migrating-to-sofria.md](migrating-to-sofria.md) |
 | DBT `-json` filesets | Sofria | chapter | from the DBT API, `type=text_json`: the row's `path` field links to the Sofria document. Coverage varies; see below |
 
@@ -33,6 +34,20 @@ its formats, with paths relative to the edition folder:
   "verse-json": {"path": "<BOOK>/<chapter>.json", "granularity": "chapter", "deprecated": "..."}
 }
 ```
+
+BLL's `_meta.json` also lists its audio (added 2026-10-27), with its own book list,
+since the text has the deuterocanonical books and the audio doesn't:
+
+```json
+"audio": {"path": "audio/<BOOK>_<chapter>.m4a", "granularity": "chapter", "codec": "m4a",
+          "books": ["GEN", "EXO", "...", "REV"]}
+```
+
+The chapter number is not zero-padded (`audio/PSA_23.m4a`). The audio is audiobiblia.org's
+own recording, which it publishes in the public domain like the text; we serve a copy so a
+web client can fetch it (audiobiblia.org sends no CORS header). There is no verse timing yet.
+A `missing` list (`"<BOOK> <chapter>"`) would name text chapters with no audio; today there
+are none.
 
 **Verse-json** (one file per chapter, `{"book", "chapter", "verses": [{"verse", "text"}]}`)
 was removed. `verseList(extractEntries(doc))` on the Sofria chapter gives the same

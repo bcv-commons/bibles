@@ -25,11 +25,10 @@ verse-json; verse-json was retired 2026-10-09 in favour of Sofria.)
     clean protestant canon). Real attribution requirement carried through
     in this script's _meta.json output.
 
-Audio itself is NOT handled here — per the original request, audio-sync
-fetches/aligns audio directly from audiobiblia.org; this script only
-republishes the matching TEXT, which audio-sync specifically asked for to
-avoid having to scrape audiobiblia.org's HTML pages or an unreliable PDF
-extraction themselves.
+Audio is not fetched here: mirror_audiobiblia_audio.py copies BLL's public-domain
+per-chapter audio (2026-10-27). When its manifest exists, _meta.json lists it as
+`formats.audio` (path `audio/<BOOK>_<chapter>.m4a`, with its own `books`: the 66-book
+canon, while the text also has the deuterocanonical books).
 
 Both real USFM zips verified to parse cleanly via `usfmtc` before this
 script was written (real Matthew, 28 chapters, both editions).
@@ -50,12 +49,13 @@ import requests
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from usfm_to_verses import drop_strongs, fix_adjacent_w_spacing  # noqa: E402
 from usfm_pipes import protect, restore  # noqa: E402
-from edition_formats import META_FILE, write_meta  # noqa: E402
+from edition_formats import FORMATS, META_FILE, write_meta  # noqa: E402
 import usfmtc  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from paths import DOWNLOADS, EXPORT  # noqa: E402
 
 ZIP_CACHE = DOWNLOADS / "audiobiblia"
+AUDIO_MANIFESTS = DOWNLOADS / "audiobiblia-audio"  # <iso>/<edition>/audio-manifest.json (mirror_audiobiblia_audio.py)
 USJ_OUT_DIR = EXPORT / "audiobiblia-usj"
 
 EDITIONS = {
@@ -96,6 +96,19 @@ def edition_meta(meta: dict) -> dict:
     return out
 
 
+def edition_formats(iso: str, edition: str) -> dict:
+    """FORMATS, plus `audio` when the edition's audio has been mirrored."""
+    manifest = AUDIO_MANIFESTS / iso / edition / "audio-manifest.json"
+    if not manifest.exists():
+        return FORMATS
+    mirrored = json.loads(manifest.read_text(encoding="utf-8"))
+    audio = {"path": "audio/<BOOK>_<chapter>.m4a", "granularity": "chapter", "codec": "m4a",
+             "books": list(mirrored["books"])}
+    if mirrored["missing"]:
+        audio["missing"] = mirrored["missing"]  # "<BOOK> <chapter>": text chapters without audio
+    return {**FORMATS, "audio": audio}
+
+
 def fetch_zip(edition: str, url: str) -> Path:
     ZIP_CACHE.mkdir(parents=True, exist_ok=True)
     dest = ZIP_CACHE / f"{edition}.zip"
@@ -115,11 +128,8 @@ def main():
         iso = meta["iso"]
         usj_edition_dir = USJ_OUT_DIR / iso / edition
         if usj_edition_dir.exists() and not force:
-            if not (usj_edition_dir / META_FILE).exists():
-                write_meta(usj_edition_dir, edition_meta(meta))
-                print(f"[audiobiblia] {edition} already present: _meta.json written (--force to redo the USJ)")
-            else:
-                print(f"[audiobiblia] {edition} already present, skipping (--force to redo)")
+            write_meta(usj_edition_dir, edition_meta(meta), edition_formats(iso, edition))
+            print(f"[audiobiblia] {edition} already present: _meta.json written (--force to redo the USJ)")
             continue
 
         zip_path = fetch_zip(edition, meta["zip_url"])
@@ -159,7 +169,7 @@ def main():
             )
             total_usj_books += 1
 
-        write_meta(usj_edition_dir, edition_meta(meta))
+        write_meta(usj_edition_dir, edition_meta(meta), edition_formats(iso, edition))
         written_editions += 1
         print(f"[audiobiblia] {edition}: USJ and _meta.json written")
 

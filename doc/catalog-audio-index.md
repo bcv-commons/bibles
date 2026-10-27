@@ -70,6 +70,10 @@ it sounds like:
   `/versions/{id}/artifacts` directly against Biblica's own API for the
   real per-book MP3/Timing artifact ids. This repo does not republish the
   actual audio bytes — see `sources.md`'s Audio section for why.
+  `o` also counts audiobiblia's BLL (`spa`, `nt` and `ot`, added 2026-10-27),
+  whose public-domain audio we do republish next to its text:
+  `audiobiblia/spa/BLL/_meta.json` → `formats.audio` (see
+  [`client-chapter-formats.md`](client-chapter-formats.md)).
 
 ## Why helloAO's population is small, and how it's verified
 

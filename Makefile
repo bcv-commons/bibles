@@ -7,7 +7,7 @@ CORE := pipeline/core
         crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
         door43-usj sofria-door43 stage-door43 publish-door43 publish-door43-dry \
         publish-openbible publish-openbible-dry \
-        publish-audiobiblia publish-audiobiblia-dry \
+        publish-audiobiblia publish-audiobiblia-dry mirror-audiobiblia-audio publish-audiobiblia-audio publish-audiobiblia-audio-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
         publish-vrs-maps publish-vrs-maps-dry publish-vrs-index publish-vrs-index-dry vrs-check \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
@@ -41,6 +41,8 @@ help: ## Show available targets
 	@echo "  make publish-openbible-dry Dry-run (no writes to CDN)"
 	@echo "  make publish-audiobiblia Upload staged Sofria + USJ (make stage-sofria) to cdn.bibel.wiki/audiobiblia/"
 	@echo "  make publish-audiobiblia-dry Dry-run (no writes to CDN)"
+	@echo "  make mirror-audiobiblia-audio Download BLL's public-domain chapter audio from audiobiblia.org"
+	@echo "  make publish-audiobiblia-audio Upload it to cdn.bibel.wiki/audiobiblia/spa/BLL/audio/ (-dry: no writes)"
 	@echo "  make publish-obs         Upload export/obs/ to cdn.bibel.wiki/obs/"
 	@echo "  make publish-obs-dry     Dry-run (no writes to CDN)"
 	@echo "  make publish-vrs-maps     Upload _vrs/map/{org,orgw,catm,rso,vul,lxx}-to-eng.json + multiverse files, verify live sha256"
@@ -180,6 +182,17 @@ publish-audiobiblia: ## Upload the staged Sofria + USJ + _meta.json (make stage-
 
 publish-audiobiblia-dry: ## Dry-run CDN upload (no writes)
 	DRY_RUN=1 bash $(CORE)/publish-audiobiblia.sh
+
+AUDIOBIBLIA_AUDIO = SOURCE_DIR=internal-data/downloads/audiobiblia-audio RCLONE_EXTRA="--include */*/audio/*.m4a"
+
+mirror-audiobiblia-audio: ## Download BLL's public-domain chapter audio from audiobiblia.org (needs the BLL USJ)
+	$(PYTHON) $(CORE)/mirror_audiobiblia_audio.py $(ARGS)
+
+publish-audiobiblia-audio: ## Upload the mirrored audio to cdn.bibel.wiki/audiobiblia/<iso>/<edition>/audio/
+	$(AUDIOBIBLIA_AUDIO) bash $(CORE)/publish-audiobiblia.sh
+
+publish-audiobiblia-audio-dry: ## Dry-run CDN upload (no writes)
+	$(AUDIOBIBLIA_AUDIO) DRY_RUN=1 bash $(CORE)/publish-audiobiblia.sh
 
 SOFRIA_OUT := export/publish/sofria
 SOFRIA_STAGE := export/publish/stage

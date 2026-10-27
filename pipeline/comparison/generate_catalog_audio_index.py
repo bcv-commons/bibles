@@ -39,6 +39,9 @@ Per-source population, as of this build:
     per-book audio coverage per version (`audioBooks`), not just a claimed
     `type: "audio"` — same NT/OT/Portions classification logic as DBT's own
     rows, applied to the CURRENT version's real book list.
+  - audiobiblia (`o`, added 2026-10-27): editions we republish with their audio
+    (BLL, mirror_audiobiblia_audio.py), from `formats.audio.books` in the edition's
+    _meta.json. The edition's own _meta.json gives the path.
 
 Usage:
     python3 pipeline/comparison/generate_catalog_audio_index.py [--out PATH]
@@ -51,7 +54,7 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, CATALOG_DIR, HELLOAO_AUDIO_FILE  # noqa: E402
+from paths import API_CACHE, CATALOG_DIR, EXPORT, HELLOAO_AUDIO_FILE  # noqa: E402
 
 DBT_CATALOG_URL = "https://cdn.bibel.wiki/dbt/_catalog.json"
 HELLOAO_CATALOG_URL = "https://bible.helloao.org/api/available_translations.json"
@@ -106,16 +109,28 @@ def openbible_rows():
             if not v.get("current"):
                 continue
             books = set(v.get("audioBooks") or [])
-            if not books:
-                continue
-            if NT_BOOKS.issubset(books):
-                counts[(iso, "nt", "o")] += 1
-            elif books & NT_BOOKS:
-                counts[(iso, "ntp", "o")] += 1
-            if OT_BOOKS.issubset(books):
-                counts[(iso, "ot", "o")] += 1
-            elif books & OT_BOOKS:
-                counts[(iso, "otp", "o")] += 1
+            if books:
+                canon_counts(iso, books, "o", counts)
+    return counts
+
+
+def canon_counts(iso: str, books: set, source: str, counts: dict) -> None:
+    if NT_BOOKS.issubset(books):
+        counts[(iso, "nt", source)] += 1
+    elif books & NT_BOOKS:
+        counts[(iso, "ntp", source)] += 1
+    if OT_BOOKS.issubset(books):
+        counts[(iso, "ot", source)] += 1
+    elif books & OT_BOOKS:
+        counts[(iso, "otp", source)] += 1
+
+
+def audiobiblia_rows():
+    counts = defaultdict(int)
+    for f in glob.glob(str(EXPORT / "audiobiblia-usj" / "*" / "*" / "_meta.json")):
+        audio = json.loads(Path(f).read_text(encoding="utf-8")).get("formats", {}).get("audio")
+        if audio:
+            canon_counts(Path(f).parent.parent.name, set(audio["books"]), "o", counts)
     return counts
 
 
@@ -124,7 +139,7 @@ def main():
     out_path = Path(args[args.index("--out") + 1]) if "--out" in args else CATALOG_DIR / "audio-index.json"
 
     all_counts = defaultdict(int)
-    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows()):
+    for counts in (dbt_rows(), pkf_rows(), helloao_rows(), openbible_rows(), audiobiblia_rows()):
         for k, v in counts.items():
             all_counts[k] += v
 
