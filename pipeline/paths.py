@@ -93,6 +93,11 @@ OBS_REPOS_FILE = API_CACHE / "obs-repos.json"
 # never written to disk. See fetch_obs_titles.py's docstring.
 OBS_TITLES_FILE = API_CACHE / "obs-titles.json"
 
+# video-sync's YouTube data for the video-only OBS languages (OBS-OBS4All):
+# cdn.bibel.wiki/obs-video/index.json plus each <iso>/youtube.json whose index
+# entry says "youtube": true. Fetched by fetch_obs_video.py.
+OBS_VIDEO_FILE = API_CACHE / "obs-video.json"
+
 # 2026-09-14: retired mirroring audio-sync's actual OBS timing content
 # (internal-data/obs-align-cache) in favor of a lightweight existence
 # digest. Briefly built from a live listing; same day, audio-sync added

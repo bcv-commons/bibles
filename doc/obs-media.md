@@ -128,11 +128,59 @@ Most OBS languages have no audio at all — 122 of 214 as of 2026-09-01 (see
 }
 ```
 
-The reverse asymmetry also happens — `awa` has 50 resolved audio tracks
-but only 1 published story text (`storyCount: 1`, `audioStories: 50`,
-verified directly against door43, not a resolution bug): audio and text
-coverage for a language are genuinely independent facts, don't assume one
-bounds the other.
+Audio and text coverage for a language are independent facts; don't
+assume one bounds the other. The video-only languages below were the
+reverse case (50 audio tracks, 1 story text) until 2026-10-27.
+
+## Video-only languages (YouTube)
+
+Twelve OBS-OBS4All languages (`awa`, `gdx`, `gju`, `lae`, `noi`, `rnp`,
+`thf`, `und-x-bhagiliyani`, `und-x-chopali`, `und-x-choudhancy`,
+`und-x-lahouli`, `xsr`) are published as YouTube videos. Their door43
+repo has an `.m4a` for every story (the untrimmed video soundtrack), but
+its only story text is a single "Video only" placeholder. Their row in
+[`catalog-obs-index.json`](catalog-obs.md) has `media: "atv"`.
+
+For these, `media.json` lists all 50 stories (`storyCount: 50`), from the
+audio and from video-sync's
+[`obs-video/<iso>/youtube.json`](https://cdn.bibel.wiki/obs-video/index.json):
+
+```json
+{
+  "iso": "gdx",
+  "storyCount": 50, "audioStories": 50, "timingStories": 0,
+  "youtube_playlist": "https://www.youtube.com/playlist?list=PLcaGjtXr4D9kmSVjGoAi1ntTdWzmGm-tm",
+  "channel": "Open Bible Stories",
+  "channel_url": "https://www.youtube.com/channel/UCZ5gTmoerV3Qtyb20wQfzVQ",
+  "stories": {
+    "01": {"title": "रचना", "audio_url": "https://git.door43.org/.../gdx_obs_v1_01_128kbps.m4a",
+           "segmentCount": null, "youtube_id": "D9YJ8gi_s8A"}
+  }
+}
+```
+
+- **`youtube_id`** per story: play it as
+  `https://www.youtube.com/watch?v=<youtube_id>`. **`youtube_offset`**
+  (seconds into the video where the `.m4a` starts) appears only when it
+  isn't 0; today it is 0 for every story, so the `.m4a` and the video are
+  interchangeable.
+- **`title`** is the YouTube video title without its story number; door43
+  has no real title for these.
+- **`youtube_playlist`**, **`channel`**, **`channel_url`**: attribution
+  for the videos. The playlist is not in story order; use the story keys.
+- **No story text**: `content_base_url` only has the placeholder, so the
+  text fetch below doesn't apply.
+- **Timing** is video-sync's, detected from the video, not audio-sync's:
+  `https://cdn.bibel.wiki/obs-video/<iso>/<story>_timing.json` (`pos`:
+  segment start times in seconds; `images`: the OBS picture each segment
+  shows; `run_bounds`; `gaps` when something needs review). No word-level
+  timing. `timingStories` is 0 for these languages because it counts
+  audio-sync's timing only; video-sync's `obs-video/index.json` gives the
+  per-language count (`timing`) and the stories under review
+  (`timing_review`).
+
+A language whose video mapping isn't complete (`"youtube": false` in
+`obs-video/index.json`) gets none of this until video-sync completes it.
 
 17 of 122 (all older `ts-desktop`-format door43 repos) have
 `checking_level: null` — that specific field has no reliable value for

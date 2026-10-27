@@ -50,7 +50,7 @@ def main():
         obs_rows = json.load(f)["entries"]
 
     text_isos = {row[0] for row in catalog_rows}
-    text_isos |= {row[0] for row in obs_rows if row[3] in ("t", "at")}
+    text_isos |= {row[0] for row in obs_rows if "t" in row[3]}
 
     audio_isos = {
         iso for iso, entry in media_index.items()

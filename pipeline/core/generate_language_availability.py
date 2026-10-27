@@ -54,7 +54,7 @@ def main():
         iso, canon, src = row[0], row[1], row[2]
         iso_canons[iso][canon].add(src)
 
-    obs_media = {row[0]: row[3] for row in obs_rows}  # iso -> "t"/"at"
+    obs_media = {row[0]: row[3] for row in obs_rows}  # iso -> "t"/"at"/"atv"
 
     isos = sorted(set(iso_canons) | set(obs_media))
 

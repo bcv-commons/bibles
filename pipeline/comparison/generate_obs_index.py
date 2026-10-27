@@ -37,6 +37,11 @@ default for cross-referencing, not a verified "same variant" fact the
 way the other 30 are. See data/obs-iso-639-1.toml's header for the full
 reasoning, found + fixed 2026-09-02.
 
+`v` in `media` (2026-10-27): the language has a YouTube video per story,
+i.e. video-sync's obs-video/index.json says `"youtube": true` (cached by
+fetch_obs_video.py). /obs/<iso>/media.json then carries `youtube_id` per
+story.
+
 Usage:
     python3 pipeline/comparison/generate_obs_index.py [--out PATH]
 """
@@ -46,7 +51,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from obs_iso import normalize_obs_iso  # noqa: E402
-from paths import CATALOG_DIR, OBS_DOOR43_CATALOG_FILE  # noqa: E402
+from paths import CATALOG_DIR, OBS_DOOR43_CATALOG_FILE, OBS_VIDEO_FILE  # noqa: E402
 
 OBS_DOOR43_STATS_URL = "https://git.door43.org/api/v1/catalog/stats-ext?subject=Open%20Bible%20Stories"
 
@@ -62,11 +67,16 @@ def main():
     cached = json.loads(OBS_DOOR43_CATALOG_FILE.read_text())
     languages_all = cached.get("languages_all", {})
     audio_isos_normalized = {normalize_obs_iso(iso) for iso in cached.get("languages_audio", {})}
+    video_languages = (json.loads(OBS_VIDEO_FILE.read_text(encoding="utf-8"))["index"].get("languages", {})
+                       if OBS_VIDEO_FILE.exists() else {})
+    video_isos_normalized = {normalize_obs_iso(iso) for iso, e in video_languages.items() if e.get("youtube")}
 
     entries = []
     for raw_iso, count in languages_all.items():
         iso = normalize_obs_iso(raw_iso)
         media = "at" if iso in audio_isos_normalized else "t"
+        if iso in video_isos_normalized:
+            media += "v"
         row = [iso, "obs", "o", media]
         if count > 1:
             row.append(count)

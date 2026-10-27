@@ -100,7 +100,7 @@ A sibling key to `bible`, not nested under it — OBS has no `nt`/`ot`/
 canon concept at all (see [`catalog-obs.md`](catalog-obs.md) for the
 same reasoning applied to keeping `catalog/obs-index.json` separate from
 `catalog/index.json`), so nesting it under `bible` would misrepresent
-it. Just the `media` flag (`"t"`/`"at"`) from `catalog/obs-index.json` —
+it. Just the `media` flag (`"t"`/`"at"`/`"atv"`) from `catalog/obs-index.json` —
 absent entirely if the language has no real OBS content. Fetch
 [`/obs/<iso>/media.json`](obs-media.md) for full OBS detail (story
 titles, resolved audio, license).

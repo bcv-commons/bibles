@@ -11,7 +11,7 @@ CORE := pipeline/core
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
         publish-vrs-maps publish-vrs-maps-dry publish-vrs-index publish-vrs-index-dry vrs-check \
         cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
-        fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles obs-metadata publish-obs publish-obs-dry \
+        fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles fetch-obs-video obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
 
 help: ## Show available targets
@@ -59,7 +59,8 @@ help: ## Show available targets
 	@echo "  make fetch-obs-catalog Fetch door43's OBS catalog stats, text+audio (existence source of truth)"
 	@echo "  make fetch-obs-repos  Resolve door43 detail (content, license, audio) for every OBS language (run fetch-obs-catalog first)"
 	@echo "  make fetch-obs-titles Fetch per-story vernacular titles for every OBS language (run fetch-obs-repos first)"
-	@echo "  make obs-metadata     Generate export/obs/<iso>/media.json + catalog/obs-index.json (pulls audio-sync's OBS align existence itself)"
+	@echo "  make fetch-obs-video  Fetch video-sync's YouTube ids for video-only OBS languages (also runs as part of obs-metadata)"
+	@echo "  make obs-metadata     Generate export/obs/<iso>/media.json + catalog/obs-index.json (pulls audio-sync's OBS align existence and video-sync's YouTube ids itself)"
 	@echo "  make langs-catalog    Generate catalog/langs.json + langs-mini.json (also runs dbt-metadata + obs-metadata first)"
 	@echo ""
 	@echo "  Pass extra args via ARGS, e.g.:"
@@ -142,6 +143,7 @@ langs-catalog: dbt-metadata obs-metadata ## Generate catalog/langs.json + langs-
 
 obs-metadata: ## Generate export/obs/<iso>/media.json + catalog/obs-index.json (run fetch-obs-catalog, fetch-obs-repos, fetch-obs-titles first; fetch-obs-batches optional, enrichment only)
 	$(PYTHON) $(CORE)/pull_align_manifests.py
+	$(PYTHON) $(CORE)/fetch_obs_video.py
 	$(PYTHON) $(CORE)/generate_obs_metadata.py $(ARGS)
 	$(PYTHON) pipeline/comparison/generate_obs_index.py $(ARGS)
 
@@ -323,6 +325,9 @@ fetch-obs-catalog: ## Fetch door43's OBS catalog stats, text+audio (existence so
 
 fetch-obs-repos: ## Resolve door43 detail (content, license, audio) for every OBS language (run fetch-obs-catalog first)
 	$(PYTHON) $(CORE)/fetch_obs_repos.py
+
+fetch-obs-video: ## Fetch video-sync's YouTube ids for video-only OBS languages (also runs as part of obs-metadata)
+	$(PYTHON) $(CORE)/fetch_obs_video.py
 
 fetch-obs-titles: ## Fetch per-story vernacular titles for every OBS language (run fetch-obs-repos first)
 	$(PYTHON) $(CORE)/fetch_obs_titles.py $(ARGS)

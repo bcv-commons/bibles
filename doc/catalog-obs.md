@@ -68,10 +68,15 @@ Currently `1`.
   OBS-TLF, OBS-OBS4All, translationCore-Create-BCS, unfoldingWord, etc. —
   these all publish into the same door43 repo shape and get treated as one
   production line, rather than DBT/PKF/helloAO's per-organization split).
-- **`media`** — `"t"` (text only) or `"at"` (audio + text — audio always
+- **`media`** — `"t"` (text only), `"at"` (audio + text — audio always
   implies text, since OBS audio is a narration of the OBS text; there is
-  no audio-only case). Tells you at a glance whether it's worth fetching
-  `/obs/<iso>/media.json`'s audio fields at all.
+  no audio-only case) or `"atv"` (also a YouTube video per story, added
+  2026-10-27: the 12 video-only OBS-OBS4All languages, whose door43 text
+  is a "Video only" placeholder; see
+  [`obs-media.md`](obs-media.md#video-only-languages-youtube)). Tells you
+  at a glance whether it's worth fetching `/obs/<iso>/media.json`'s audio
+  and video fields at all. Test for a letter (`media.includes("a")`), not
+  for the whole string.
 - **`count`** — how many distinct door43 repos exist for this language (a
   handful have 2, e.g. `mai`/`bho`/`srb`/`bfy`/`bhd`/`dgo` — independent
   OBS projects for the same language). Omitted when exactly 1, same
