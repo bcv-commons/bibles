@@ -52,6 +52,16 @@ audio and timing is done with your key, straight from DBT; we never republish it
 Full detail on each source, and the default order when several have the same text:
 [`doc/sources.md`](doc/sources.md).
 
+## See it working
+
+**[demo.bibel.wiki](https://demo.bibel.wiki/)** ([source](https://github.com/larsgson/demo-bibel-wiki))
+is a Bible reading, listening and story app for thousands of languages, built on this
+repo's catalogs and tools: language picker, a reader for every language with text from
+any source, audio with verse-synced highlighting, Bible stories with pictures and audio,
+and a parallel view with word alignment. Its README lists which of our files it reads
+and the code it vendors from here (`tools/sofria-render`, `tools/verse-text`). It is
+early days, and it will quickly show more of what bcv-commons offers.
+
 ## Where to start
 
 - **Using the data in an app:** [`doc/README.md`](doc/README.md), with runnable examples in
