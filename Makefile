@@ -1,7 +1,7 @@
 PYTHON := .venv/bin/python
 CORE := pipeline/core
 
-.PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books languages \
+.PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books openbible-abbr languages \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry sofria-ebible stage-ebible publish-ebible publish-ebible-dry text-route edition-struct \
         crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
@@ -143,8 +143,11 @@ dbt-catalog: ## Generate catalog/text.json / catalog/audio.json from the fetched
 	$(PYTHON) $(CORE)/generate_dbt_catalog.py $(ARGS)
 	$(PYTHON) pipeline/comparison/generate_catalog_audio_index.py
 
-catalog-books: ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
+catalog-books: openbible-abbr ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
 	$(PYTHON) $(CORE)/generate_catalog_books.py $(ARGS)
+
+openbible-abbr: ## Add new Biblica projects to data/openbible-abbr.toml and write catalog/openbible-abbr.json (commit the .toml)
+	$(PYTHON) $(CORE)/generate_openbible_abbr_table.py
 
 languages: dbt-metadata obs-metadata ## Language names, audio-only list, per-language availability.json and catalog/langs.json (after the catalog index + overlap; publish with publish-dbt and publish-catalog)
 	$(PYTHON) $(CORE)/generate_language_names.py

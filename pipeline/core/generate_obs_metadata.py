@@ -49,8 +49,9 @@ fetch_obs_video.py), its stories are listed from the audio and youtube.json
 `youtube_offset` when not 0), the YouTube title as `title` where door43 has
 no real one, and youtube_playlist/channel/channel_url at the top level.
 Their timing is video-sync's (obs-video/<iso>/<story>_timing.json), not
-audio-sync's: any align/obs run for them aligned the placeholder text, so it
-isn't counted in timingStories.
+audio-sync's: any align/obs run for them aligned the placeholder text, so
+timingStories counts video-sync's timed stories instead (fetch_obs_video.py),
+and `timingSource: "obs-video"` tells a client where to fetch it.
 
 Usage:
     python3 pipeline/core/generate_obs_metadata.py [--out DIR]
@@ -95,14 +96,16 @@ def segment_counts_from_batch(iso: str) -> dict:
     return {sid: s.get("segment_count") for sid, s in manifest.get("stories", {}).items()}
 
 
-def load_youtube() -> dict:
-    """{iso: youtube.json} for the video-only languages video-sync has fully mapped."""
+def load_video() -> tuple[dict, dict]:
+    """({iso: youtube.json} for the video-only languages video-sync has fully mapped,
+    {iso: [story ids with video-sync's timing]})."""
     if not OBS_VIDEO_FILE.exists():
-        return {}
-    return json.loads(OBS_VIDEO_FILE.read_text(encoding="utf-8")).get("youtube", {})
+        return {}, {}
+    cache = json.loads(OBS_VIDEO_FILE.read_text(encoding="utf-8"))
+    return cache.get("youtube", {}), cache.get("timing", {})
 
 
-def build_media(detail: dict, titles: dict, align_index: dict, youtube: dict) -> dict:
+def build_media(detail: dict, titles: dict, align_index: dict, youtube: dict, video_timing: dict) -> dict:
     raw_iso = detail["iso"]  # door43's own code — needed to key into align/_obs_batches caches
     story_ids = detail.get("storyIds", [])
     audio = detail.get("audio", {})
@@ -115,7 +118,8 @@ def build_media(detail: dict, titles: dict, align_index: dict, youtube: dict) ->
     if video:
         story_ids = sorted(set(story_ids) | set(audio_ids) | set(video_stories))
         lang_titles = {sid: t for sid, t in lang_titles.items() if t != VIDEO_PLACEHOLDER_TITLE}
-        timing_ids = []  # see the module docstring: video-sync's timing, not audio-sync's
+        # see the module docstring: video-sync's timing, not audio-sync's
+        timing_ids = video_timing.get(raw_iso) or video_timing.get(normalize_obs_iso(raw_iso)) or []
 
     media = {
         "iso": normalize_obs_iso(raw_iso),
@@ -129,6 +133,8 @@ def build_media(detail: dict, titles: dict, align_index: dict, youtube: dict) ->
         "audioStories": len(audio_ids),
         "timingStories": len(timing_ids),
     }
+    if video and timing_ids:
+        media["timingSource"] = "obs-video"
     if detail.get("collectionTitle"):
         media["collectionTitle"] = detail["collectionTitle"]
     if video:
@@ -171,10 +177,10 @@ def main():
     repos = json.loads(OBS_REPOS_FILE.read_text())
     titles = json.loads(OBS_TITLES_FILE.read_text()) if OBS_TITLES_FILE.exists() else {}
     align_index = load_obs_align_index()
-    youtube = load_youtube()
+    youtube, video_timing = load_video()
     count = 0
     for detail in repos.values():
-        media = build_media(detail, titles, align_index, youtube)
+        media = build_media(detail, titles, align_index, youtube, video_timing)
         iso_dir = out_dir / media["iso"]
         iso_dir.mkdir(parents=True, exist_ok=True)
         (iso_dir / "media.json").write_text(

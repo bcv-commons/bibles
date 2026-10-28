@@ -340,7 +340,10 @@ def _book_titles_from_zip(zip_path: Path, book_codes: set) -> dict:
 
 
 def load_openbible():
-    """iso -> {"o:<projectId>": {...}}"""
+    """iso -> {"o:<abbr>": {...}}: our abbreviation from data/openbible-abbr.toml
+    (generate_openbible_abbr_table.py), the same o: id as the other catalog files."""
+    from generate_openbible_abbr_table import abbr_by_project
+    abbrs = abbr_by_project()
     out = {}
     projects_path = API_CACHE / "openbible" / "projects.json"
     coverage_path = API_CACHE / "openbible" / "text-book-coverage.json"
@@ -413,7 +416,11 @@ def load_openbible():
         if books:
             entry["books"] = books
 
-        out.setdefault(iso, {})[f"o:{pid}"] = entry
+        if pid not in abbrs:
+            print(f"[catalog-books] WARNING: openbible {pid} has no abbreviation; run make openbible-abbr",
+                  file=sys.stderr)
+            continue
+        out.setdefault(iso, {})[f"o:{abbrs[pid]}"] = entry
     return out
 
 

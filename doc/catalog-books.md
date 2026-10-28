@@ -78,8 +78,10 @@ source list; `eng` alone has 93.)
 - **`<source>:<version_id>`** — same `d:`/`p:`/`h:`/`o:` source-prefix
   convention as `catalog-index.json`/`catalog-overlap.json`. `d:` uses
   DBT's `abbr`; `p:` uses PKF's collection id (e.g. `C01`); `h:` uses
-  helloAO's translation id; `o:` uses Biblica's real project id (queryable
-  directly against `openbible-api-1.biblica.com/projects/{id}`).
+  helloAO's translation id; `o:` uses our openbible abbreviation (since
+  2026-10-28; `TAWobNT`, `PBV-POY`), the same id as the other catalog files.
+  [`openbible-abbr.json`](catalog-openbible-abbr.md) maps it to Biblica's
+  project id (`openbible-api-1.biblica.com/projects/{id}`).
 - **`n`** — the edition's own title.
   - DBT: **`vname`** preferred over `name` — confirmed against real data
     that DBT's `name` field is consistently publisher/year attribution

@@ -103,6 +103,10 @@ and shape, one language's entries; most apps need one to a few languages, so fet
 
 ## Book names, license, and edition metadata
 
+**[`openbible-abbr.json`](catalog-openbible-abbr.md)** — our abbreviation
+for every Biblica (openbible) project, the `o:` id in all catalog files,
+with Biblica's project id behind it.
+
 **[`books.json` (per-language)](catalog-books.md)** — vernacular book
 names, license/year attribution, script direction, and font hints, merged
 across DBT, PKF, and helloAO. Published one file per language
@@ -154,7 +158,7 @@ edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
   from audio-sync's `align/obs/` (80 languages) and, for the 12 video-only
   languages, from video-sync's `obs-video/`. See
   [`obs-media.md`](obs-media.md#obs-story-timing) for the URLs, and
-  `media.json`'s `timingStories` for a language's audio-sync coverage.
+  `media.json`'s `timingStories` (and `timingSource`) for a language's coverage.
 
 ## Language display names + coverage summary
 

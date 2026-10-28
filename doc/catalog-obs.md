@@ -146,8 +146,8 @@ and whether any of it is audio:
 - **Per-story timing** (audio-bearing languages only) — from audio-sync,
   `align/obs/<raw_iso>/<story>_timing.json` ([OBS story timing](obs-media.md#obs-story-timing)),
   when `/obs/<iso>/media.json`'s `timingStories` is nonzero. For `"atv"`
-  rows, from video-sync instead (`obs-video/<iso>/<story>_timing.json`, not
-  counted in `timingStories`; see
+  rows, from video-sync instead (`obs-video/<iso>/<story>_timing.json`,
+  counted in `timingStories` with `timingSource: "obs-video"`; see
   [video-only languages](obs-media.md#video-only-languages-youtube)).
 
 ## Fixed gap: `ts-desktop`-format repos now resolve fully

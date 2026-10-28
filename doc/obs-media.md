@@ -73,9 +73,10 @@ omitted here because `ahr` has all 50.)
   2026-10-28, see [`catalog-obs.md`](catalog-obs.md#current-population)).
   **`timingStoriesSet`** — the story-id list, same omit-when-full-or-empty
   convention as `audioStoriesSet`. When nonzero, fetch each story's timing
-  from audio-sync, see [OBS story timing](#obs-story-timing) below.
-  Video-sync's timing for the 12 video-only languages is not counted here
-  (see below).
+  from audio-sync, see [OBS story timing](#obs-story-timing) below. For
+  the 12 video-only languages these count video-sync's timing instead, and
+  **`timingSource`** is `"obs-video"` (see below); without it, the timing is
+  audio-sync's.
 - **`stories`** — one entry per story, keyed by 2-digit story id
   (`"01"`–`"50"`), present whenever `storyCount > 0` **for every
   language, text-only included** (not just audio-bearing ones — added
@@ -151,7 +152,7 @@ audio and from video-sync's
 ```json
 {
   "iso": "gdx",
-  "storyCount": 50, "audioStories": 50, "timingStories": 0,
+  "storyCount": 50, "audioStories": 50, "timingStories": 50, "timingSource": "obs-video",
   "youtube_playlist": "https://www.youtube.com/playlist?list=PLcaGjtXr4D9kmSVjGoAi1ntTdWzmGm-tm",
   "channel": "Open Bible Stories",
   "channel_url": "https://www.youtube.com/channel/UCZ5gTmoerV3Qtyb20wQfzVQ",
@@ -177,10 +178,9 @@ audio and from video-sync's
   `https://cdn.bibel.wiki/obs-video/<iso>/<story>_timing.json` (`pos`:
   segment start times in seconds; `images`: the OBS picture each segment
   shows; `run_bounds`; `gaps` when something needs review). No word-level
-  timing. `timingStories` is 0 for these languages because it counts
-  audio-sync's timing only; video-sync's `obs-video/index.json` gives the
-  per-language count (`timing`) and the stories under review
-  (`timing_review`).
+  timing. `timingStories`/`timingStoriesSet` count these (since
+  2026-10-28), leaving out the stories video-sync lists under
+  `timing_review` in `obs-video/index.json` (2026-10-28: `xsr` 08, so 49).
 
 A language whose video mapping isn't complete (`"youtube": false` in
 `obs-video/index.json`) gets none of this until video-sync completes it.
@@ -224,8 +224,8 @@ https://cdn.bibel.wiki/align/obs/<raw_iso>/<story>_timing.json
 
 OBS has one source per language (audio-sync, or video-sync for the
 video-only ones) — no priority list to apply, unlike DBT's two. For
-audio-sync's timing, check `/obs/<iso>/media.json`'s `timingStories`/
-`timingStoriesSet` first to know whether a story has timing before
+either, check `/obs/<iso>/media.json`'s `timingStories`/
+`timingStoriesSet` first (and `timingSource` for which) to know whether a story has timing before
 fetching; a 404 on the formula above means the same thing. Since
 2026-10-28 bibles builds these from a listing of `align/obs/` itself, not
 from audio-sync's `align/_runs/` manifests, which were found incomplete.
