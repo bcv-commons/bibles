@@ -74,7 +74,13 @@ FROZEN_LEGACY_PATHS=(
     "_app/catalog-overlap.json"
     "_app/catalog-text.json"
     "_app/catalog-audio.json"
+    # Uploaded by Pass 0b from data/, never present under export/dbt/.
+    "version-exclude.toml"
 )
+# FROZEN_LEGACY_RE: per-book timing <iso>/timing/<BOOK>.json, retired 2026-09-14 and no
+# longer generated, but audio-sync's page still reads the frozen CDN copies (2026-10-28).
+# Remove once that page reads align/ and the files are deleted deliberately.
+FROZEN_LEGACY_RE='^[^/]+/timing/[0-9A-Z]{3}\.json$'
 if [ "${CLEANUP:-}" = "1" ]; then
     if [ ! -d "$SOURCE_DIR" ]; then
         echo "[ERROR] $SOURCE_DIR not found. Run: make dbt-metadata"
@@ -92,6 +98,7 @@ if [ "${CLEANUP:-}" = "1" ]; then
                 break
             fi
         done
+        [[ "$rel" =~ $FROZEN_LEGACY_RE ]] && is_frozen=1
         [ "$is_frozen" = "1" ] && continue
         if [ ! -f "$SOURCE_DIR/$rel" ]; then
             orphans+=("$rel")
