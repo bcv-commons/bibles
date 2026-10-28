@@ -76,6 +76,8 @@ FROZEN_LEGACY_PATHS=(
     "_app/catalog-audio.json"
     # Uploaded by Pass 0b from data/, never present under export/dbt/.
     "version-exclude.toml"
+    # Published by MONO (bible-story-builder), not by this repo.
+    "_catalog.json"
 )
 # FROZEN_LEGACY_RE: per-book timing <iso>/timing/<BOOK>.json, retired 2026-09-14 and no
 # longer generated, but audio-sync's page still reads the frozen CDN copies (2026-10-28).
