@@ -1,11 +1,11 @@
-"""bcv tokenizer v2 + text fingerprint v1 — reference implementation (Python, standard library only).
+"""bcv tokenizer v3 + text fingerprint v1 — reference implementation (Python, standard library only).
 
 Handed over by bcv-commons/lexeme-aligner to bcv-commons/bibles on 2026-10-17, CC0 1.0. Copied VERBATIM from lexeme-aligner
 (pipeline/lexeme_aligner/usj_source.py: tokenize, strip_marks and their helpers; text_fingerprint.py: the fingerprint), so its
 output is the token sequence every published compact-alignments position refers to.
 
 Verse text is NOT part of this file: it comes from bibles' own extraction rule (tools/verse-text, extract_usj / extract_sofria).
-    tokenize(text) -> [token, ...]                         tokenizer v2
+    tokenize(text) -> [token, ...]                         tokenizer v3
     fingerprints({(chapter, verse): text}) -> (book_hex, {chapter: chapter_hex})     text fingerprint v1, full SHA-256
     file_hash(book_hex) -> the 8 hex used in file names
 """

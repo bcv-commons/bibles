@@ -24,7 +24,7 @@ help: ## Show available targets
 	@echo "  make vrs-map          Build cross-scheme verse maps (/_vrs/map/)"
 	@echo "  make versification    Fingerprint versification schemes"
 	@echo "  make version-info     Generate version-info artifact"
-	@echo "  make dbt-catalog      Generate catalog-text.json / catalog-audio.json"
+	@echo "  make dbt-catalog      Generate catalog/text.json / catalog/audio.json"
 	@echo "  make text-route       Generate catalog/text-route.json (canonical text + reading route per edition)"
 	@echo "  make edition-struct   Generate catalog/edition-struct.json (per-edition metadata: script, direction, normalization, ...)"
 	@echo "  make catalog-books    Generate per-language /catalog/<iso[0]>/<iso>/books.json"
@@ -55,7 +55,7 @@ help: ## Show available targets
 	@echo "  make fetch-dbt-catalog Fetch DBT's raw bible catalog into internal-data/api-cache/"
 	@echo "  make sort-dbt-catalog Derive internal-data/sorted/BB/ from the fetched catalog"
 	@echo "  make fetch-catalog-books Fetch PKF + helloAO per-language book data (for catalog-books)"
-	@echo "  make align-pull       Pull new audio-sync align/_runs/ manifests (Bible text + OBS) into internal-data/{align,obs-align}-index.json"
+	@echo "  make align-pull       Index audio-sync's align/ (Bible text + OBS) into internal-data/{align,obs-align}-index.json"
 	@echo "  make align-pull-dry   Dry-run align pull (no writes)"
 	@echo "  make fetch-dbt-timing Check which DBT audio filesets have DBT timing (REV 15 / PSA 117) into internal-data/dbt-timing-index.json"
 	@echo "  make fetch-obs-batches Fetch OBS narration batch manifests into internal-data/obs-batches/"
@@ -76,7 +76,7 @@ help: ## Show available targets
 # Metadata generation
 # ---------------------------------------------------------------------------
 
-dbt-metadata: ## Generate media.json + per-book timing + versification for CDN
+dbt-metadata: ## Generate media.json + versification + DBT catalogs for CDN
 	$(PYTHON) $(CORE)/generate_vrs.py
 	$(MAKE) vrs-map
 	$(PYTHON) $(CORE)/fingerprint_versification.py
@@ -135,7 +135,7 @@ versification: ## Fingerprint DBT versification schemes
 version-info: ## Generate version-info artifact
 	$(PYTHON) $(CORE)/generate_version_info.py $(ARGS)
 
-dbt-catalog: ## Generate catalog-text.json / catalog-audio.json from the fetched DBT catalog
+dbt-catalog: ## Generate catalog/text.json / catalog/audio.json from the fetched DBT catalog
 	$(PYTHON) $(CORE)/generate_dbt_catalog.py $(ARGS)
 
 catalog-books: ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
@@ -325,7 +325,7 @@ fetch-catalog-books: ## Fetch PKF + helloAO per-language book data into internal
 	$(PYTHON) $(CORE)/fetch_pkf_book_data.py
 	$(PYTHON) $(CORE)/fetch_helloao_book_data.py
 
-align-pull: ## Pull new audio-sync align/_runs/ manifests (Bible text + OBS) into internal-data/{align,obs-align}-index.json (also runs as part of dbt-metadata/obs-metadata)
+align-pull: ## Index audio-sync's align/ (Bible text + OBS) into internal-data/{align,obs-align}-index.json, compared with their _runs/ manifests (also runs as part of dbt-metadata/obs-metadata)
 	$(PYTHON) $(CORE)/pull_align_manifests.py
 
 align-pull-dry: ## Dry-run align pull (no writes)

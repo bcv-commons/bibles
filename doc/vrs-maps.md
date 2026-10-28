@@ -10,9 +10,8 @@ a verse reference in scheme X, what's the corresponding reference in `eng`
 numbering" — precisely, not by reconstructing it from `.vrs` chapter/verse
 *counts* (see the note on that below).
 
-Not documented anywhere until now — if you were looking at these files and
-only found the `crosswalk` field (empty for org/rso), you found a smaller,
-different thing than what you wanted. Read on.
+The verse rows are in `map`. The `crosswalk` field (empty for most schemes)
+is a smaller, different thing: book renames only. See below.
 
 ## Shape
 
@@ -138,8 +137,8 @@ documents the rule. Each map carries its `-to-eng` map's checks and known gaps (
 
 ## Deuterocanon rows in `rso` (added 2026-10-06)
 
-The `rso` map includes rows for 1 Esdras, Sirach, Tobit, Judith, Wisdom and
-Baruch, plus the Letter of Jeremiah. They come from TVTMS's Greek sections
+The `rso` map includes rows for 1 Esdras, Sirach, Tobit, Baruch and the
+Letter of Jeremiah. Judith and Wisdom have none. They come from TVTMS's Greek sections
 and are kept because five editions use those books. Nobody has checked them
 against deuterocanon text yet, so treat them as unverified. Susanna and Bel
 (Daniel 13–14) have no rows. See `doc/scheme-manifest.md` for the full list

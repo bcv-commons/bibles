@@ -43,8 +43,9 @@ already tracks independently — not copied from anywhere:
 ```
 TEXT  = catalog-index.json has a row for this (iso, canon), any source
 AUDIO = catalog-audio-index.json has a row for this (iso, canon), any source
-TIMED = confirmed real per-verse timing exists — DBT-only today, the only
-        source with cataloged real timing (see doc/sources.md)
+TIMED = per-verse timing exists for a DBT audio fileset: audio-sync's
+        align/ or DBT's own timing (media-index.json's m == "at";
+        see doc/dbt-timing.md)
 ```
 
 | TEXT | AUDIO | TIMED | → category |

@@ -30,12 +30,12 @@ tell you whether they're duplicates or distinct.
 
 ## The sources
 
-See **[`sources.md`](sources.md)** for what DBT, PKF, helloAO, and
-openbible (Biblica's Open Bible catalog, added 2026-09-16) each are, how
-to fetch actual content from them, and the default priority order
-(`pkf` → `helloao` → `dbt` → `openbible`) `catalog-index.json`/
-`catalog-overlap.json` use when a client just wants one good default
-without deciding for itself.
+See **[`sources.md`](sources.md)** for what each source is (DBT, PKF and
+helloAO, linked; openbible, eBible.org, CrossWire and Door43, republished
+here), how to fetch content from it, and the default priority order
+(`pkf` → `helloao` → `dbt` → `openbible` → `ebible` → `crosswire` →
+`door43`) `catalog-index.json`/`catalog-overlap.json` use when a client
+just wants one good default without deciding for itself.
 
 Want readable openbible **text** specifically, without dealing with
 Biblica's raw whole-edition zips? **[`openbible-chapters.md`](openbible-chapters.md)**
@@ -51,10 +51,19 @@ pulling a chapter from DBT or helloAO, downloading a `.pkf` file, and
 fetching an OBS story (both `contentLayout`s). No packages to install.
 Start there if you want to see real output quickly.
 
-**[`tools/pkf-decode/`](../tools/pkf-decode/)** — a real, runnable decoder
-that turns a `.pkf` file (the format PKF publishes) into plain USFM text.
-`examples/fetch_pkf.js`/`.py` only download the file; this is the actual
-decode step.
+**[`tools/pkf-decode/`](../tools/pkf-decode/)** (JavaScript) and
+[`tools/pkf-decode-py/`](../tools/pkf-decode-py/) (Python, same output) —
+decoders that turn a `.pkf` file (the format PKF publishes) into plain
+USFM text. `examples/fetch_pkf.js`/`.py` only download the file; this is
+the decode step.
+
+**[`tools/get-audio/`](../tools/get-audio/)** — the standard way to play a
+chapter with verse timing: the audio URL (helloAO or DBT), then timing from
+audio-sync's `align/`, then from DBT with your key. JavaScript, no
+dependencies, runs in a browser.
+
+**[`tools/sofria-render/`](../tools/sofria-render/)** — renders a Sofria
+chapter to HTML with the same classes as SIL's Scripture App Builder.
 
 ## Reading verse text: which text, through which route
 
@@ -103,7 +112,13 @@ real localized book titles for a UI, not for discovery.
 
 ## Audio, video, pictures
 
-- **Audio** — **[`catalog-audio-index.json`](catalog-audio-index.md)** is
+- **Audio** — **[`/dbt/<iso>/media.json`](dbt-timing.md)** lists, per
+  language and testament, the audio filesets and which books have verse
+  timing (`"at"`, `timingOnly`/`timingExcept`). Timing itself comes from
+  audio-sync's `align/` first, then from DBT with your own key; bibles
+  publishes no timing files. [`dbt-timing.md`](dbt-timing.md) has the URLs,
+  and [`tools/get-audio`](../tools/get-audio/) the code.
+- **Audio existence across sources** — **[`catalog-audio-index.json`](catalog-audio-index.md)** is
   the source-agnostic existence check: "does source X have audio for this
   `(iso, canon)`" across DBT, helloAO, and openbible (Biblica — PKF has a
   real audio endpoint too, not yet cataloged here — see that doc). DBT has
@@ -113,9 +128,7 @@ real localized book titles for a UI, not for discovery.
   query Biblica's own API directly for that (see `sources.md`). helloAO's
   real audio is small and specific (currently one edition, `BSB`) —
   check `catalog-audio-index.md` before assuming a helloAO translation
-  has audio just because it has text. A dedicated audio-sync pipeline is
-  being built in a separate repo; once it publishes, this doc and the
-  catalog files will be extended to cover it.
+  has audio just because it has text.
 - **Video, pictures** — not yet covered by anything published here.
 
 ## Open Bible Stories (OBS)
@@ -126,7 +139,7 @@ edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
 
 - **[`catalog-obs-index.json`](catalog-obs.md)** — existence signal, same
   `/catalog/` family as the two files above. Covers all 214 languages
-  door43 has real OBS content for (92 with audio, 122 text-only), sourced
+  door43 has real OBS content for (93 with audio, 121 text-only), sourced
   directly from door43's own catalog — same principle as DBT audio
   existence being derived from DBT's own catalog, not a downstream
   pipeline.
@@ -137,14 +150,11 @@ edition, so it publishes at its own root, `/obs/`, not `/dbt/`.
   Two different story-text layouts exist across languages
   (`contentLayout: "md"` for 197, `"ts-desktop"` for 17) — that doc shows
   the fetch code for both.
-- **OBS story timing** — like DBT's real per-verse timing
-  ([`dbt-timing.md`](dbt-timing.md)), bibles publishes no timing file for
-  this either as of 2026-09-14 — see
-  [`obs-media.md`](obs-media.md#obs-story-timing) for the computable URL
-  formula. Depends on audio-sync's real, ongoing alignment work and
-  covers a small, growing subset of the 92 audio-bearing languages —
-  check `media.json`'s `timingStories` field for current coverage of a
-  specific language.
+- **OBS story timing** — bibles publishes no OBS timing file; it comes
+  from audio-sync's `align/obs/` (80 languages) and, for the 12 video-only
+  languages, from video-sync's `obs-video/`. See
+  [`obs-media.md`](obs-media.md#obs-story-timing) for the URLs, and
+  `media.json`'s `timingStories` for a language's audio-sync coverage.
 
 ## Language display names + coverage summary
 
@@ -193,7 +203,8 @@ before assuming the (usually empty, and *not* what you want)
 
 ## New, first-published-here texts
 
-This repo is starting to publish some Bible texts that aren't available
-from DBT, PKF, or helloAO at all — content native to this project. Once
-that begins, it'll appear in the catalog files as its own source
-(alongside `d`/`p`/`h`) rather than being folded into an existing one.
+Texts native to this project, not available from any source above, are
+being prepared under [`b/`](../b/) (e.g. `b/bsb-global/`, not yet
+published). Once published, they'll appear in the catalog files as their
+own source, alongside `d`/`p`/`h`/`o`/`e`/`c`/`g`, rather than being folded
+into an existing one.

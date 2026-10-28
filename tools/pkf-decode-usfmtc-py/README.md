@@ -29,7 +29,7 @@ The only new code:
 - **`usj_render.py`** — a second `SuccinctRenderer` *action set*
   (alongside `usfm_render.py`'s `_usfm_actions()`), driven by the exact
   same render events, but building a
-  [USJ](https://github.com/usfm-bible/usj) (Unified Scripture JSON) tree
+  [USJ](https://github.com/usfm-bible/tcdocs/blob/main/grammar/usj.js) (Unified Scripture JSON) tree
   instead of a flat USFM string.
 - **`decode.py`** — thin CLI, hands the USJ tree to
   `usfmtc.usjtousx()` + `usfmtc.usx2usfm()` for final formatting.

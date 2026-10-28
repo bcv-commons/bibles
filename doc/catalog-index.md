@@ -2,7 +2,8 @@
 
 `https://cdn.bibel.wiki/catalog/index.json`
 
-Thin existence/availability index across all four sources. Answers "what
+Thin existence/availability index across all seven sources (DBT, PKF,
+helloAO and the four `bibles` republishes: `o`, `e`, `c`, `g`). Answers "what
 exists, from whom, for this language, complete or partial" — nothing else.
 No comparison data here; see [`catalog-overlap.json`](catalog-overlap.md)
 for that.
@@ -19,7 +20,8 @@ for that.
     {"h": "https://bible.helloao.org/api/available_translations.json"},
     {"o": "self-republished by bibles, wherever license permits and the original source isn't directly/bulk-usable — see each edition's own _meta.json"},
     {"e": "self-republished by bibles from eBible.org: editions helloAO doesn't carry, ... — see each edition's _meta.json"},
-    {"c": "self-republished by bibles from CrossWire SWORD modules: ... — see each edition's _meta.json"}
+    {"c": "self-republished by bibles from CrossWire SWORD modules: ... — see each edition's _meta.json"},
+    {"g": "self-republished by bibles from Door43 (git.door43.org) aligned Bibles at a pinned commit: ... — see each edition's _meta.json"}
   ],
   "pending_openbible_coverage": 246,
   "pending_ebible_coverage": 7,
@@ -79,7 +81,8 @@ fixable gap.
 - **`source`** — single letter: `d` = DBT, `p` = PKF, `h` = helloAO, `o` =
   self-republished (redefined 2026-10-02 — see [`sources.md`](sources.md)), `e` =
   self-republished from eBible.org (added 2026-10-15, see below), `c` = self-republished
-  from CrossWire (added 2026-10-21, see below).
+  from CrossWire (added 2026-10-21, see below), `g` = self-republished from Door43
+  (added 2026-10-22, see below).
   **`o`** means content `bibles` itself fetched, verified, and
   republishes, wherever the license permits AND the original source's own
   format isn't directly/bulk-usable — currently openbible/Biblica
@@ -95,7 +98,7 @@ fixable gap.
   long-term precedent, since a client depending on it makes migrating
   away later costly; see [`openbible-chapters.md`](openbible-chapters.md)). A project with
   no abbreviation yet is temporarily excluded here entirely, not shown
-  under a hex id — see `pending_openbible_coverage` below for how many.
+  under a hex id — see `pending_openbible_coverage` above for how many.
   **`e`** (added 2026-10-15; this settles the question left open on 2026-10-02 of
   whether eBible shares `o`): eBible.org editions `bibles` republishes
   (`generate_ebible_chapters.py`): editions helloAO doesn't already carry, whose
@@ -110,8 +113,8 @@ fixable gap.
   Bible (`c:GreVamvas`).
   **`g`** (added 2026-10-22): Door43 aligned Bibles `bibles` republishes
   (`generate_door43_usj.py`), each at a pinned commit: the nine Gateway Language texts
-  lexeme-aligner's Door43 word alignments refer to, CC BY-SA 4.0. A `d`
-  row means DBT's catalog has
+  lexeme-aligner's Door43 word alignments refer to, CC BY-SA 4.0.
+  **`d`**: a `d` row means DBT's catalog has
   **independently fetchable text of its own** for this `(iso, canon)` —
   not just a catalog entry. Some DBT rows are external-source *pointers*
   (their text tag references helloAO's or eBible's text rather than

@@ -127,4 +127,4 @@ hold, see [`tools/usj-to-sofria/`](https://github.com/bcv-commons/bibles/tree/ma
 ## More
 
 - [`doc/client-chapter-formats.md`](client-chapter-formats.md): every chapter format we
-  publish, including DBT and PKF Sofria.
+  publish, plus DBT's Sofria and how to render PKF.

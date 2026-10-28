@@ -12,10 +12,8 @@ A sample client that does all of this, audio included:
 **Redesigned 2026-09-14.** Earlier iterations published a merged per-book
 file, then a resolved per-edition pointer index — both retired. Neither
 survived contact with the real requirement: a client only ever needs the
-one edition it already chose, and audio-sync's own manifests already
-carry everything needed to compute the real URL and know whether it's
-real, once two gaps in their manifest schema were closed (see below).
-Publishing a copy of that was redundant.
+one edition it already chose, and the real URL can be computed from
+`media.json` (see below). Publishing a copy of the timing was redundant.
 
 ## The two sources, in this order
 
@@ -33,13 +31,16 @@ under `https://cdn.bibel.wiki/dbt/<iso>/timing-raw/<BB|contrib|legacy>/...`,
 tried first. None was DBT's live timing: `legacy` and `contrib` were
 bibles' own pre-audio-sync alignments (25 sampled chapters: none matched
 DBT, 18 had no DBT timing at all), and `BB` was a copy of DBT's timing
-from April 2026, no longer published since 2026-09-15. `timing-raw/` is
+from April 2026 (deleted from the CDN 2026-10-28). `timing-raw/` is
 being retired: audio-sync aligns what only it had, and `media.json` no
 longer counts it.
 
-`distinct_id` is the DBT edition abbr (same value as `media.json`'s
-`filesets[].id`) for every **DBT-sourced** edition — confirmed live for
-both bibles' own sources and audio-sync's.
+`distinct_id` is the DBT edition abbr, the same value as `media.json`'s
+`filesets[].id`, for every DBT edition but a few: on 2026-10-28, 13 audio
+filesets were filed by audio-sync under another folder (e.g. `cmo`'s
+`CM3WBTN1DA` under `CMOBSCK`, not `CMOBSC`; `pes`'s `PESNMVN1DA` under
+`PESNMV09`). For those the computed path 404s and a client falls through
+to DBT; `media.json` doesn't carry the folder.
 
 `audio_fileset` is the specific audio fileset id (e.g. `ENGKJVN1DA`) —
 **not necessarily equal to `distinct_id`** (e.g. `EN1ESV`'s chapters are
@@ -64,20 +65,20 @@ edition looks exactly like a DBT one, plus two extra fields:
 ```
 
 `audioSource`/`textSource` present means: the real audio and/or text for
-this fileset id isn't ours or DBT's — go get it from wherever `source`
-says (currently always `"helloao"`). This also appears on some entries
-that otherwise look like ordinary DBT editions (real `distinct_id`, real
-`a[]`) — DBT provides the audio but has no native text for that edition,
-so audio-sync tells us which text they verified it against.
+this fileset id isn't this edition's own on DBT — go get it from wherever
+`source` says. `audioSource.source` is currently always `"helloao"`.
+`textSource` also appears on some entries that otherwise look like
+ordinary DBT editions (real `distinct_id`, real `a[]`) — DBT provides the
+audio but has no native text for that edition, so audio-sync tells us
+which text they aligned it against: `"helloao"` (a helloAO translation
+id) or `"dbt-other"` (another DBT edition's id). It is passed through from
+audio-sync as is, with its own `verified` (mostly `false`) and `tier`
+fields.
 
 Until 2026-10-28 four more editions (`nor/NBS`, `deu/DEUSOL`, `mal/MALBIB`,
 `xon/XONIBS`) were listed as `"at"` with neither field, from bibles' own old
 timing. Their audio filesets don't exist on DBT, so they are no longer listed;
 `nor/NBS` and `deu/DEUSOL` went to audio-sync.
-
-`textSource` alone (no `audioSource`) is the DBT-audio-but-non-DBT-text
-case described just above — a real DBT `distinct_id` with real `a[]`,
-just no native DBT text.
 
 **If you already have `media.json`, that's the whole discovery step —
 skip straight to resolving the source below.** The manifest-inspection
@@ -94,14 +95,14 @@ per audio fileset, is published only where it isn't the whole testament
 (added 2026-10-27):
 
 ```json
-{"id": "SPAWTC", "media": "at", "a": ["SPNWTCN1DA", "SPNWTCN2DA"],
- "timingExcept": {"SPNWTCN1DA": ["2JN", "2PE", "3JN"]}}
-{"id": "SPAR95", "media": "at", "a": ["SPNR95N2DA"],
- "timingOnly": {"SPNR95N2DA": ["ACT", "HEB", "JHN", "LUK", "MAT", "MRK", "REV", "ROM"]}}
+{"id": "ARBVDV", "media": "at", "a": ["ARBVDVN2DA", "ARZVDVN1DA"],
+ "timingExcept": {"ARBVDVN2DA": ["JHN"]}}
+{"id": "MDVWYI", "media": "at", "a": ["MDVWYIP1DA"],
+ "timingOnly": {"MDVWYIP1DA": ["MRK"]}}
 ```
 
 - An audio fileset in **neither** map has timing for every book of the
-  testament (27 NT / 39 OT), like `SPNWTCN2DA` in the example.
+  testament (27 NT / 39 OT), like `ARZVDVN1DA` in the example.
 - **`timingOnly`**: the books **with** timing; `[]` means none at all
   (this audio fileset has none, another in `a[]` does).
 - **`timingExcept`**: the books **without** timing.
@@ -138,7 +139,7 @@ recurrence gets its own explicit handling rather than a silent guess.
 
 ## Resolving a no-`audio_fileset` edition (e.g. `ENGBSBHAY`)
 
-Two equivalent places carry the real answer — use whichever you already
+Three equivalent places carry the real answer — use whichever you already
 have in hand:
 
 1. **`media.json`'s `audioSource`/`textSource` fields** (see above) — the
@@ -191,21 +192,25 @@ resolves from one source, so this is one request, sometimes two.
 
 ## Why this is safe to compute, not just convenient
 
-Three real gaps existed in audio-sync's manifests that would have made a
-pure formula unreliable, all found and closed the same day (2026-09-14),
-each the same shape: **audio-sync always has the answer in hand already —
+Four real gaps existed in audio-sync's manifests that would have made a
+pure formula unreliable, all found and closed the same day (2026-09-14;
+two reopened 2026-10-28, see #1 and #2), each the same shape: **audio-sync always has the answer in hand already —
 the fix is always to have them deliver it, not for bibles or a client to
 guess or maintain a side mapping.**
 
 1. **Naming**: `align/`'s version-folder segment could, in principle, be
-   an id not derivable from anything bibles or a client has. Turned out
-   to be one case, corrected twice the same week as the id itself got
+   an id not derivable from anything bibles or a client has. In September
+   that was one case, corrected twice the same week as the id itself got
    refined (`ENGBSB` → `BSBHAY` → `ENGBSBHAY`) — each time fixed at the
-   source, never by bibles maintaining a mapping.
+   source, never by bibles maintaining a mapping. The listing of 2026-10-28
+   found 13 more audio filesets under such folders (see above).
 2. **Existence + path completeness**: manifest results didn't always
    carry `audio_fileset`. Fixed: mandatory on every DBT-sourced result,
    backfilled across the full historical set. A `status: "ok"` result
-   **is** the existence signal for those — no separate check needed.
+   was taken as the existence signal for those. 2026-10-28: it isn't
+   complete (3,466 books on `align/` had no manifest), so bibles now
+   builds its timing index from a listing of `align/` itself and reports
+   the differences to audio-sync.
 3. **The one real exception, found via #2's backfill**: `ENGBSBHAY`'s
    `audio_fileset` values turned out to be fake (`distinct_id` repeated
    back, not a real fileset) — because it was never a DBT edition at
@@ -220,11 +225,16 @@ guess or maintain a side mapping.**
    folded directly into `media.json`'s `filesets[]` (see above) — the
    same catalog you already check for every DBT edition.
 
-## `timing-raw/` (retired)
+## Retired timing files
 
-`https://cdn.bibel.wiki/dbt/<iso>/timing-raw/` still holds bibles' old
-`contrib` and `legacy` timing until audio-sync has aligned the books only it
-had (requested 2026-10-28); then it is deleted. Don't build on it.
+- `https://cdn.bibel.wiki/dbt/<iso>/timing-raw/` still holds bibles' old
+  `contrib` and `legacy` timing until audio-sync has aligned the books only
+  it had (requested 2026-10-28); then it is deleted. `timing-raw/BB/` was
+  deleted 2026-10-28. Don't build on it.
+- `dbt/<iso>/timing/<BOOK>.json` (the merged per-book files): frozen since
+  2026-09-14, still on the CDN, not updated. Don't use them.
+- `dbt/<iso>/timing/<audio_fileset>.json` (the per-fileset pointer index):
+  deleted 2026-10-28.
 
 ## Not applicable to
 

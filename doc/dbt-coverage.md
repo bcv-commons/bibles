@@ -28,8 +28,9 @@ Despite the per-fileset keys, the coverage is per version: DBT reports it
 per version, and it is copied to each of the version's filesets, filtered
 by testament. A fileset can lack a chapter listed here.
 
-Keyed by the same fileset id that appears in `media.json`'s `filesets`
-entries (`id`/`t`/`a`). Each value is `{book_id: [chapter_numbers]}` — the
+Keyed by DBT fileset id: the ids in `media.json`'s `filesets` entries
+(`t`/`a`) plus the variants `media.json` doesn't list (`-opus16`, `-usx`,
+`-json`, ...). Each value is `{book_id: [chapter_numbers]}` — the
 real chapters present, not assumed sequential-from-1 (though in practice
 they usually are).
 

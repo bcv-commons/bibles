@@ -32,6 +32,10 @@ node decode.mjs <dir-of-.pkf-files> [--out <dir>]
 `REV`, `MAT`) — useful for spot-checking a single passage instead of
 exporting an entire collection.
 
+`--out` defaults to `out/`. With a directory of several `.pkf` files, each
+one gets its own subdirectory, named after the file up to its first dot
+(`out/aai_C01/...`).
+
 ### Example: fetch + decode a language from the CDN
 
 ```bash
@@ -60,3 +64,7 @@ corpus via [`../verify_pkf_decode.py`](../verify_pkf_decode.py). Use this
 JS version if you already have Node and want the shortest path to real
 output; use one of the siblings if you want to avoid the Node dependency
 entirely, or are integrating into a Python/Rust codebase.
+
+[`../pkf-decode-usfmtc-py/`](../pkf-decode-usfmtc-py/) is a third variant
+that hands the final USFM writing to `usfmtc`; its output is valid USFM but
+not byte-identical to this script's (see its README).

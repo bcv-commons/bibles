@@ -9,6 +9,11 @@ Built for a "pick a language for reading" UI: fetch
 then drop anything that appears in this file to get a reliable
 text-language selector.
 
+**Not part of the regular build** (checked 2026-10-28): no make target runs
+`pipeline/core/generate_audio_only.py`, so the live file is still the one
+generated 2026-09-15, from that day's `media-index.json`,
+`catalog/index.json` and `catalog/obs-index.json`.
+
 ## Why an exclusion list, not an inclusion list
 
 Of the full `language-names.json` universe (2,435 languages as of
@@ -54,8 +59,8 @@ language have real text" too — by its own documented definition, a row
 there means independently-fetchable text from that source. If you're
 already fetching that file for other reasons, you may not need this one
 at all: any iso with *no* row there and *no* `catalog/obs-index.json`
-row with `media` `t`/`at` is audio-only. The tradeoffs going the other
-way: `catalog/index.json` is per-`(iso, canon, source)` (3,900+ rows,
+row whose `media` contains `t` is audio-only. The tradeoffs going the other
+way: `catalog/index.json` is per-`(iso, canon, source)` (4,300+ rows,
 much heavier for this one question) and doesn't cover OBS text-only
 languages on its own. This file is a purpose-built, much smaller
 derivative of exactly that same signal (plus OBS folded in) for the one

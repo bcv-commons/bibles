@@ -61,7 +61,7 @@ omitted here because `ahr` has all 50.)
   manifest at resolution time, carried through as-is.
 - **`storyCount`** — how many of the 50 canonical OBS stories this
   language's repo has a real content file for (almost always 50; a few
-  repos are genuinely partial — see `awa` below).
+  repos are genuinely partial, e.g. `pwr` 48, `bhd` 49, `ins`/`ylb` 1).
 - **`audioStories`** — how many stories have a real resolved `audio_url`.
   **`audioStoriesSet`** — the actual story-id list, included only when
   `0 < audioStories < 50` (the standard "omit when full or empty, list
@@ -69,12 +69,13 @@ omitted here because `ahr` has all 50.)
   in `/dbt/<iso>/media.json`) — lets a client grey out unavailable stories
   without fetching per-story data.
 - **`timingStories`** — how many stories have real per-segment timing
-  from audio-sync's alignment pipeline (real, running work, currently a
-  small fraction of `audioStories` — see [`catalog-obs.md`](catalog-obs.md)
-  for current numbers). **`timingStoriesSet`** — the story-id list, same
-  omit-when-full-or-empty convention as `audioStoriesSet`. When nonzero,
-  fetch each story's timing from audio-sync, see
-  [OBS story timing](#obs-story-timing) below.
+  from audio-sync's alignment (`align/obs/`; 80 languages as of
+  2026-10-28, see [`catalog-obs.md`](catalog-obs.md#current-population)).
+  **`timingStoriesSet`** — the story-id list, same omit-when-full-or-empty
+  convention as `audioStoriesSet`. When nonzero, fetch each story's timing
+  from audio-sync, see [OBS story timing](#obs-story-timing) below.
+  Video-sync's timing for the 12 video-only languages is not counted here
+  (see below).
 - **`stories`** — one entry per story, keyed by 2-digit story id
   (`"01"`–`"50"`), present whenever `storyCount > 0` **for every
   language, text-only included** (not just audio-bearing ones — added
@@ -105,14 +106,16 @@ omitted here because `ahr` has all 50.)
 
 ## Text-only and partial-coverage languages
 
-Most OBS languages have no audio at all — 122 of 214 as of 2026-09-01 (see
-[`catalog-obs-index.json`](catalog-obs.md)'s `media` field, `"t"` vs
-`"at"`). For these, `media.json` is the same shape with `audioStories`/
-`timingStories` always `0`, and `stories` entries carry only `title`:
+Most OBS languages have no audio at all — 122 of 214 are `"t"` as of
+2026-10-28 (see [`catalog-obs-index.json`](catalog-obs.md)'s `media`
+field). For these, `media.json` is the same shape with `audioStories`/
+`timingStories` `0`, and `stories` entries carry only `title` (one
+exception: `ylb` is `"t"` but has 50 audio stories and 1 story text):
 
 ```json
 {
-  "iso": "am",
+  "iso": "amh",
+  "contentLayout": "md",
   "source": "Door43-Catalog",
   "source_repo": "Door43-Catalog/am_obs",
   "content_base_url": "https://git.door43.org/Door43-Catalog/am_obs/raw/tag/v4.1/content",
@@ -182,7 +185,7 @@ audio and from video-sync's
 A language whose video mapping isn't complete (`"youtube": false` in
 `obs-video/index.json`) gets none of this until video-sync completes it.
 
-17 of 122 (all older `ts-desktop`-format door43 repos) have
+17 text-only languages (all older `ts-desktop`-format door43 repos) have
 `checking_level: null` — that specific field has no reliable value for
 this manifest format (see [`catalog-obs.md`](catalog-obs.md#fixed-gap-ts-desktop-format-repos-now-resolve-fully)
 for why) — but `license`, `storyCount`, and full per-story `title`s all
@@ -199,7 +202,7 @@ the fixed English string `"Open Bible Stories"` in every language (never
 translated), and `README.md` is auto-generated boilerplate — genuinely
 nothing to extract for the other 197 languages, not an oversight. The 17
 `ts-desktop` repos have a real one at `front/title.txt`
-(e.g. `ar-xzn`: `قصص حرََه من الإنجيل`) — confirmed 16 of 17 resolve it; the
+(e.g. `ar-xzn`: `قصص حرََه من الإنجيل`) — 16 of 17 resolve it; the
 17th (`ilo`) is a one-off community repo (`reymark/ilo_obs_text_story_L3`,
 not one of the standard org submissions) that genuinely has no
 `front/title.txt`.
@@ -220,12 +223,12 @@ https://cdn.bibel.wiki/align/obs/<raw_iso>/<story>_timing.json
 ```
 
 OBS has one source per language (audio-sync, or video-sync for the
-video-only ones) — no priority list to apply, unlike DBT's two. Check `/obs/<iso>/media.json`'s `timingStories`/
-`timingStoriesSet` first (bibles' own existence signal — audio-sync
-publishes a completion manifest for OBS too, same `align/_runs/` stream
-as Bible text, distinguished by a `story` field; bibles reads that, never
-a content mirror) to know whether a story has real timing before
-fetching; a 404 on the formula above means the same thing either way.
+video-only ones) — no priority list to apply, unlike DBT's two. For
+audio-sync's timing, check `/obs/<iso>/media.json`'s `timingStories`/
+`timingStoriesSet` first to know whether a story has timing before
+fetching; a 404 on the formula above means the same thing. Since
+2026-10-28 bibles builds these from a listing of `align/obs/` itself, not
+from audio-sync's `align/_runs/` manifests, which were found incomplete.
 
 **`raw_iso` is door43's own code, not always bibles' published `iso`.**
 door43 tags 36 of its 214 OBS languages with an ISO 639-1 code (`en`)

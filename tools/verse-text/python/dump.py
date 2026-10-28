@@ -1,6 +1,6 @@
 """Language parity, Python side: the same lines as ../js/dump.mjs, from verse_text.py.
 
-With --fp, each line also carries the chapter's text fingerprint (tokenizer v2) and content
+With --fp, each line also carries the chapter's text fingerprint (tokenizer v3) and content
 fingerprint (verses with a plain number only; a chapter with none gets "-").
 
 Usage: python dump.py <usj-root> <sofria-root> [--fp] > py.tsv

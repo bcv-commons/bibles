@@ -86,7 +86,7 @@ up.
 | `glossaryLinks` | `true` | `\w` as SAB's glossary link, matched on the `lemma` attribute when present |
 | `keywordLinks` | `false` | `\k` as a glossary link too, matched on its text (SAB: a plain `span.k`) |
 | `introduction` | `'inline'` | `'separate'` returns it in `introduction` instead |
-| `remarks` | `'hidden'` | `\rem` text, kept hidden |
+| `remarks` | `'hidden'` | `\rem` text, kept hidden; `'shown'` shows it |
 | `callers` | SAB defaults | `{ footnote: {type, symbol, noCallerToAuto}, xref: {…} }`, SAB's `default` / `abc` / `custom-symbol` rules |
 | `showNotes`, `showImages`, `showVideos` | `true` | off: still in the output, hidden |
 | `captions` | `'show'` | `'hide'`, `'heuristic'`, or `function(caption, atts)` returning whether to show it. A hidden caption stays in the output with `hidden`. `'heuristic'` hides a plain-ASCII caption that shares no word with the chapter: untranslated (usually English) placeholders. Measured 2026-10-09: it hid 95 of the 106 English placeholders in PKF `mzz`/`vmj`, and 64 of 1,944 genuine openbible captions (3.3%, all single words or names in Latin script) |

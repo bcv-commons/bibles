@@ -1,4 +1,4 @@
-// bcv text fingerprint v1, on top of tokenize.js (tokenizer v2). Reference implementation handed over by bcv-commons/lexeme-aligner
+// bcv text fingerprint v1, on top of tokenize.js (tokenizer v3). Reference implementation handed over by bcv-commons/lexeme-aligner
 // to bcv-commons/bibles on 2026-10-17, CC0 1.0; mirrors python/bcv_tokenize.py. Verse text comes from bibles' extraction rule
 // (tools/verse-text), not from this file. Uses Web Crypto (globalThis.crypto.subtle): browsers and Node >= 19. No dependencies.
 import { tokenize } from "./tokenize.js";

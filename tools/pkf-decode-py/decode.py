@@ -2,7 +2,7 @@
 """Python sibling of ../pkf-decode/decode.mjs — decodes a PKF file (a
 Proskomma "succinct docSet", gzip-compressed JSON) into one plain USFM file
 per book. Same CLI shape, same output naming, same byte-for-byte USFM text
-(verified against decode.mjs; see verify_corpus.py).
+(verified against decode.mjs; see ../verify_pkf_decode.py).
 
 Usage:
   python3 decode.py <path-to.pkf> [--out <dir>] [--book <BOOKCODE>]

@@ -31,7 +31,8 @@ For a language's openbible editions, read:
 - The edition's `_meta.json` in that folder: its books, licence list and formats.
 
 Until 2026-10-26 one file, `catalog/openbible-editions.json`, listed every Biblica project
-we can name, with the same information. It is no longer generated.
+we can name, with the same information. It is no longer generated; the copy still on the
+CDN is frozen at 2026-10-09.
 
 ## What is covered
 

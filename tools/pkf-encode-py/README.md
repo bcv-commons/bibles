@@ -84,6 +84,8 @@ behavior rather than from "how USFM is supposed to work":
 - `byte_array.py`, `enum_builder.py`, `succinct_write.py` — the succinct
   binary format writer (write-side counterparts of `pkf-decode-py`'s
   `byte_array.py`/`succinct.py`).
+- `defs.py` — the item/token/scope enum tables and scope-label rules; an
+  identical copy of `pkf-decode-py`'s `defs.py`.
 - `build_pkf.py` — assembles a `Builder`'s output into the full gzip-
   compressed `.pkf` JSON structure.
 - `encode.py` — CLI entry point.

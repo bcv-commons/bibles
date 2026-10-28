@@ -38,8 +38,9 @@ walks `sequence.blocks`, skips `"graft"` sub-sequences entirely
 (footnotes, headings, cross-references — real content, just not verse
 text), tracks verse boundaries via `verses_label` marks, collects plain
 text. **Not** a full Sofria renderer — no tables, no milestones, no
-`meta_content`, no real HTML/USFM rendering. For that, the authoritative
-reference is `proskomma-json-tools`'s
+`meta_content`, no real HTML/USFM rendering. For HTML, use
+[`tools/sofria-render/`](../sofria-render/) (it takes DBT `text_json` Sofria
+directly). The authoritative USFM round-trip reference is `proskomma-json-tools`'s
 [`SofriaRenderFromJson.js`](https://github.com/Proskomma/proskomma-json-tools/blob/main/src/render/renderers/SofriaRenderFromJson.js).
 
 Verified against real content: `ADXNVSO_ET-json` (Tibetan), Psalm 119 —

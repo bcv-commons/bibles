@@ -27,10 +27,12 @@ language of at a time. Sharded by the language's first letter
 ## Discoverability
 
 Not indexed anywhere else — `catalog-index.json` already tells you which
-sources (`d`/`p`/`h`/`o`) have *some* content for a language; if a source is
-listed there, its `books.json` entry exists here too (same convention
+sources (`d`/`p`/`h`/`o`) have *some* content for a language; if one of those
+four is listed there, its `books.json` entry exists here too (same convention
 `/dbt/<iso>/media.json` already uses: fetch the per-language file
-directly rather than checking a central flag first).
+directly rather than checking a central flag first). The editions we
+republish from eBible, CrossWire and Door43 (`e`/`c`/`g`) are not in this
+file: their book list is the `books` field of each edition's own `_meta.json`.
 
 ## Shape
 
@@ -58,15 +60,16 @@ directly rather than checking a central flag first).
 "h:aai_wbt":{
   "n":"Minaifia NT",
   "license":{"licenseUrl":"https://ebible.org/Scriptures/details.php?id=aai"},
+  "dir":"ltr",
   "books":[
-    {"code":"MAT","n":"...","ns":"...","t":"nt","c":28,"verses":1071}
+    {"code":"MAT","n":"Matthew","ns":"Matthew","title":"Matthew Tur Gewasin Kikirum","t":"nt","c":28,"verses":1070}
   ]
 }
 }}
 ```
 (Every value shown is real, from the live `aai` and `eng` entries — not
 constructed. `aai`'s three source rows above are its actual complete
-source list; `eng` alone has 74.)
+source list; `eng` alone has 93.)
 
 ## Row format
 

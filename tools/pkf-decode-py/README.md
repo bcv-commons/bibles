@@ -50,8 +50,10 @@ paragraph handling, a `cell` wrapper's tag rendering as the literal text
 - `succinct_renderer.py` — the succinct-driven event walker (mirrors the
   real `PerfRenderFromProskomma` class).
 - `usfm_render.py` — the two action sets it's driven with (chapter-position
-  report, then USFM text) and the CLI-facing decode functions.
-- `decode.py` — CLI entry point, `BOOK_NUM` filename table.
+  report, then USFM text), exposed as `calculate_usfm_chapter_positions()`
+  and `perf2usfm()`.
+- `decode.py` — CLI entry point, `decode_pkf()` / `decode_document()`,
+  `BOOK_NUM` filename table.
 
 ## Verification
 

@@ -11,7 +11,8 @@ import sys
 import urllib.request
 
 URL = "https://cdn.bibel.wiki/catalog/index.json"
-SOURCE_NAMES = {"d": "DBT", "p": "PKF", "h": "helloAO"}
+SOURCE_NAMES = {"d": "DBT", "p": "PKF", "h": "helloAO", "o": "openbible",
+                "e": "eBible", "c": "CrossWire", "g": "Door43"}
 
 
 def main():
@@ -35,7 +36,7 @@ def main():
         canon, source = row[1], row[2]
         count = row[3] if len(row) > 3 else 1
         portions = " (Portions - partial coverage)" if canon.endswith("p") else ""
-        print(f"  {canon:4s} {SOURCE_NAMES[source]:8s} {count} version(s){portions}")
+        print(f"  {canon:4s} {SOURCE_NAMES.get(source, source):9s} {count} version(s){portions}")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ revision and what the checks found. Per-edition assignments live in
 `cdn.bibel.wiki/dbt/_vrs/index.json`; its `maps` list names every map file
 below.
 
-Checksums are sha256 of the live CDN files, as of 2026-10-09 (orgw, catm and the multi-verse files: 2026-10-12).
+Checksums are sha256 of the live CDN files, as of 2026-10-09 (orgw, catm and the multi-verse files: 2026-10-12; `rso-to-org.json`: 2026-10-28).
 
 ## New Testament
 
@@ -20,6 +20,7 @@ for that chapter:
 | 2CO 13 | org, orgw, rso, catm | 13:12 → 13:12-13 (multi-verse); 13:13 → 13:14 | 4080-4082 |
 | ACT 19 | org, orgw, rso, catm | 19:40 → 19:40-41 (multi-verse) | 4046-4047 |
 | REV 12–13 | rso | 13:1 → 12:18-13:1 (multi-verse) | 4105-4106 |
+| ROM 14–16 | rso | 14:24-26 → 16:25-27 (the doxology) | none: a text override in `derive_tvtms_org_eng.py`, text-checked by a partner |
 
 Every other NT chapter is identity in every map. `vul` has no NT rows. Its
 3 John 1:15 difference from eng is not mapped, because `vul` stays
@@ -32,7 +33,7 @@ Old Testament only.
 - Multi-verse: `_vrs/map/rso-to-eng.multiverse.json` `c4408debfd7fa2f23eaafb209787423788e0963887c96b2c94e0e4b4d1725f6d` (7 relations: 4 Old Testament, 3 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: zero collisions outside title rows; no rows in books or chapters where the shape equals English; text-checked against `rus_syn` on the cases listed in the message history (Job 39–41, Proverbs 18, Psalms 12–13 and 50–60, Jeremiah 25/26/30/38, Exodus 36/38, 1 Chronicles 6, Joshua 5–6, Leviticus 14, Daniel 3–4). Audited by lexeme-aligner (0 spine verses unmapped; 8 unreached verses, all expected).
-- Not verified against text: the deuterocanon rows (1 Esdras, Sirach, Tobit, Judith, Wisdom, Baruch, the Letter of Jeremiah). Kept because five editions use them. Susanna and Bel (Daniel 13–14) have no rows.
+- Not verified against text: the deuterocanon rows (1 Esdras, Sirach, Tobit, Baruch, the Letter of Jeremiah). Kept because five editions use them. Judith, Wisdom, Susanna and Bel (Daniel 13–14) have no rows.
 - Not a single layout: ten IBT-family editions share some shape features but differ from `rus_syn`. They are not labelled `rso`.
 
 ## org (Hebrew, Masoretic)
@@ -99,7 +100,7 @@ known gaps.
 | `eng-to-org.json` | `f90c427336e53c6415d93c441c3415bb183211e875c2cafeacd979465658769a` | 1,964 | 6 | 0 | 1 |
 | `orgw-to-org.json` | `24e3ec7e23645e33c0a591198bd23aebc01163585841e43eb4d9577f5a4c5f79` | 715 | 2 | 0 | 1 |
 | `catm-to-org.json` | `b16f5e2e1ed8bc16d5cb7d0cc0850eb940693665395a9af3c4d2808e4587ef4d` | 41 | 1 | 0 | 284 |
-| `rso-to-org.json` | `1350b0a84c04ece7882c411cb8ac9cee8b6df62de544d3693074cc5361083436` | 3,329 | 7 | 0 | 199 |
+| `rso-to-org.json` | `e608cfd06f6c5ae3d404f5d723607a35067042a5c06ea82bf6b7e99c5a7e9d37` | 3,330 | 7 | 0 | 119 |
 | `vul-to-org.json` | `6735adc65f4b1b29554c181ce40eb41bff695fdd0d8fca6e6fec5f3cd54e098b` | 3,482 | 35 | 0 | 284 |
 | `lxx-to-org.json` | `30ad68cf2f77d4f93424a41683fbc503f3b019b5ceca3af89eca99751d96f7a8` | 4,388 | 20 | 69 | 158 |
 

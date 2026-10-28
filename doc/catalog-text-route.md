@@ -49,7 +49,7 @@ source supports:
 | route | what | read with |
 |---|---|---|
 | `sofria` | DBT: the `text_json` fileset (Sofria, per chapter). Ours (openbible, audiobiblia, eBible, CrossWire, Door43): `<BOOK>/<ch>.sofria.json` under `path` (the same text is also there as `<BOOK>.usj.json`) | `extract_sofria` |
-| `usj` | our USJ, where it's the only form we publish (two CrossWire modules): `<BOOK>.usj.json` under `path` | `extract_usj` |
+| `usj` | our USJ, where it's the only form we publish (one CrossWire module, `c:KswSKMB`): `<BOOK>.usj.json` under `path` | `extract_usj` |
 | `usx` | DBT's `text_usx` fileset (per book; fetch with chapter 1) | `usx_to_usj.py` (Python) / `usx_to_sofria.mjs` (JS), then the extractor |
 | `helloao` | helloAO's chapter JSON | tools/verse-text's helloAO converter, then `extract_usj` |
 | `plain` | DBT's `text_plain` fileset (verse JSON) | the plain reader, `extract_plain` |

@@ -30,7 +30,7 @@ analogue without breaking that contract.
   ],
   "entries": [
     ["ahr", "obs", "o", "at"],
-    ["am", "obs", "o", "t"],
+    ["amh", "obs", "o", "t"],
     ["mai", "obs", "o", "at", 2]
   ]
 }
@@ -77,9 +77,9 @@ Currently `1`.
   at a glance whether it's worth fetching `/obs/<iso>/media.json`'s audio
   and video fields at all. Test for a letter (`media.includes("a")`), not
   for the whole string.
-- **`count`** — how many distinct door43 repos exist for this language (a
-  handful have 2, e.g. `mai`/`bho`/`srb`/`bfy`/`bhd`/`dgo` — independent
-  OBS projects for the same language). Omitted when exactly 1, same
+- **`count`** — how many distinct door43 repos exist for this language
+  (30 rows: 2, e.g. `mai`/`bho`/`srb`/`bfy`/`bhd`/`dgo`, or 3 for
+  `es-419`/`fra` — independent OBS projects for the same language). Omitted when exactly 1, same
   convention as `catalog-index.json`.
 
 ## Source of truth: door43's own catalog, not audio-sync's staging tree
@@ -123,7 +123,7 @@ count claim, not derivable from door43's catalog alone) — never required
 for a language to have a `media.json`.
 
 **Practical consequence, now**: `/obs/<iso>/media.json` exists for every
-row in this file (214 of 214, verified 2026-09-01) — no more waiting on
+row in this file (214 of 214, checked 2026-10-28) — no more waiting on
 any staging pipeline's pace. The only thing that can still lag is
 timing, which genuinely does depend on audio-sync's real alignment
 work landing at `align/obs/` — check `media.json`'s own `timingStories`
@@ -145,7 +145,10 @@ and whether any of it is audio:
   each.
 - **Per-story timing** (audio-bearing languages only) — from audio-sync,
   `align/obs/<raw_iso>/<story>_timing.json` ([OBS story timing](obs-media.md#obs-story-timing)),
-  when `/obs/<iso>/media.json`'s `timingStories` is nonzero.
+  when `/obs/<iso>/media.json`'s `timingStories` is nonzero. For `"atv"`
+  rows, from video-sync instead (`obs-video/<iso>/<story>_timing.json`, not
+  counted in `timingStories`; see
+  [video-only languages](obs-media.md#video-only-languages-youtube)).
 
 ## Fixed gap: `ts-desktop`-format repos now resolve fully
 
@@ -175,13 +178,12 @@ Originally left as a documented gap (`storyCount: 0`, `license`/
 
 ## Current population
 
-As of 2026-09-02: **214 languages** with real OBS content on door43 — 92
-with audio (`"at"`), 122 text-only (`"t"`). `/obs/<iso>/media.json` is
-resolved for all 214, with real per-story titles for 10,002 of 10,010
-total story slots (the 8-story shortfall is genuinely blank `# N.`
-headings on door43's side — a translator left the title untranslated —
-not a resolution failure). Real per-story timing (audio-sync's `align/obs/`)
-existed for 14 languages at the time, growing as audio-sync's alignment work
-(`align/obs/`) progresses — that's the one thing genuinely still tied to
-a downstream pipeline's pace, by nature (there's no direct-from-door43
-substitute for real alignment output).
+As of 2026-10-28: **214 languages** with real OBS content on door43 — 80
+with audio (`"at"`), 12 video-only (`"atv"`), 122 text-only (`"t"`).
+`/obs/<iso>/media.json` is resolved for all 214, with real per-story titles
+for 10,590 of 10,598 total story slots (the 8-story shortfall is genuinely
+blank `# N.` headings on door43's side — a translator left the title
+untranslated — not a resolution failure). audio-sync's per-story timing
+(`align/obs/`) exists for 80 languages (3,915 stories); video-sync's
+(`obs-video/`) for the 12 video-only ones. Timing is the one thing still
+tied to a downstream pipeline's pace.

@@ -1,3 +1,3 @@
-{"name": "bcv-verse-text", "version": "1.0.0", "type": "module", "license": "CC0-1.0",
+{"name": "bcv-verse-text", "version": "2.0.0", "type": "module", "license": "CC0-1.0",
  "description": "The same verse text, tokens and text fingerprint from a Bible edition, in JS (mirrors ../python)",
  "scripts": {"test": "node conformance.mjs"}}

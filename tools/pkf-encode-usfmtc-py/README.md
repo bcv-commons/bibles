@@ -69,6 +69,14 @@ a clear `ValueError` — tables are explicitly out of scope for
 intended "raise rather than guess" behavior for an unsupported construct,
 not a defect.
 
+`../verify_pkf_usfmtc_roundtrip.py` runs this same loop over every `.pkf`
+in `internal-data/api-cache/pkf/` (no arguments; slow — one subprocess
+per phase per file):
+
+```bash
+python3 ../verify_pkf_usfmtc_roundtrip.py
+```
+
 ## Known scope gaps (same boundary as `../pkf-encode-py`)
 
 - Tables (USJ `table`/`row`/`cell`) — raises, not silently approximated.

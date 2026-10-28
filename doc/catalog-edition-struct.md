@@ -103,8 +103,10 @@ decomposable character at all (most Latin-script text without accents) counts as
 
 We don't normalize the text we republish: our USJ keeps the source's form (checked on every
 openbible edition, 2026-10-26, against the source USFM). A tool that hands text back to a
-team can therefore restore the team's form from this field. Tokenizer v2 applies NFC before
-cutting words, so tokens and text fingerprints don't depend on it.
+team can therefore restore the team's form from this field. The tokenizer in
+[`tools/verse-text`](../tools/verse-text/) (tokenizer v3, verse-text 2.0.0) applies NFC before
+cutting words, and its written tokens are NFC too, so tokens and text fingerprints don't
+depend on it.
 
 ## The other fields
 
@@ -114,7 +116,7 @@ cutting words, so tokens and text fingerprints don't depend on it.
 - `published: false`, `reason` (openbible): an edition we know of but don't publish:
   `nd_license` (only no-derivatives licences), `no_source` (Biblica's text isn't cached) or
   `not_built`. Absent for every edition we do publish or link to. Added 2026-10-26, when
-  `catalog/openbible-editions.json` was retired.
+  `catalog/openbible-editions.json` was retired (its CDN copy is frozen at 2026-10-09).
 
 - `textual_basis`: from `pipeline/comparison/textual_basis.py`; not every edition has one.
 - `psalm_titles`, `psalm_titles_basis`: from `psalm_titles.py`. `numbered` (the title is

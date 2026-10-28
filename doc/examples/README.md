@@ -23,7 +23,7 @@ python3 fetch_catalog_index.py spa       # or: node fetch_catalog_index.js spa
 
 Try them against `spa` (Spanish) or `aai` (Arifama-Miniafia) — both used
 as examples throughout the rest of `doc/`. For `fetch_obs`, try `ahr`
-(standard layout, has audio) or `am` (standard layout, text-only) —
+(standard layout, has audio) or `amh` (standard layout, text-only) —
 `node fetch_obs.js ahr` / `python3 fetch_obs.py ahr`.
 
 ## PKF needs one more step
@@ -37,15 +37,15 @@ node fetch_pkf.js aai
 node ../../tools/pkf-decode/decode.mjs aai.pkf --out out/ --book REV
 ```
 
-That decode step is Node-only — there's no practical Python equivalent
-(it needs the Proskomma engine).
+Or in Python, with the same output:
+[`tools/pkf-decode-py/`](../../tools/pkf-decode-py/) (standard library only).
 
 ## Want more detail than these examples show?
 
 These scripts are deliberately minimal — just enough to see real output
 quickly. For the full picture:
 
-- **[`../sources.md`](../sources.md)** — what DBT/PKF/helloAO each are, their
+- **[`../sources.md`](../sources.md)** — what each source is, their
   full API shapes, and the priority rule these examples' catalog lookups
   are built on.
 - **[`../catalog-index.md`](../catalog-index.md)** — the full row format

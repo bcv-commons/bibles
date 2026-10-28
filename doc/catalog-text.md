@@ -21,7 +21,7 @@ be fetched is marked `r: false` in [`catalog-overlap.json`](catalog-overlap.md),
 and [`text-route.json`](catalog-text-route.md) names the one fileset to read).
 
 Built entirely from DBT's own raw paginated catalog listing — no other
-DBT input. In particular, this file **never** claims a DBT id has
+DBT input (`pipeline/core/generate_dbt_catalog.py`, run by `make dbt-metadata`). In particular, this file **never** claims a DBT id has
 matching text on another source (no eBible/helloAO naming-guess fallback)
 — if DBT's own catalog doesn't independently carry text for a version,
 this file simply has nothing for it. Guessing a naming-convention match to
@@ -70,7 +70,8 @@ answer.
   this file.
 - **`variant.fmt`** — always a list, even for a single format:
   `pl`=plain verse text (the inline, directly-fetchable shape most
-  clients want), `u`=USX, `j`=JSON, `f`=a generic downloadable format.
+  clients want), `u`=USX, `j`=DBT's `text_json` (Sofria JSON, see
+  [`sources.md`](sources.md)), `f`=a generic downloadable format.
   Always a list because DBT sometimes lists the exact same fileset id
   under two different format tags at once (confirmed real — `AAKWBT`
   above is a genuine case, not a contrived example) — if that weren't

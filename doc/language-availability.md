@@ -6,8 +6,8 @@ The merged, per-language "what's available, now that you've picked this
 language" rollup — one fetch instead of cross-referencing
 `catalog/index.json`, `catalog/overlap.json`, `/dbt/<iso>/media.json`,
 and `catalog/obs-index.json` separately. Published one file per language
-that has any Bible-edition or OBS presence (1,970 languages as of
-2026-09-15).
+that has any Bible-edition or OBS presence (about 2,100 languages,
+2026-10-27).
 
 Fetch [`language-names.json`](language-names.md) first to let someone
 pick a language; fetch this file next, for that one language, once
@@ -41,22 +41,22 @@ options there are, not how to fetch any one of them.
   "iso": "asm",
   "bible": {
     "nt": {
-      "sources": ["d", "h"],
+      "sources": ["d", "h", "o"],
       "editions": [
-        { "ids": ["d:ASMDPI", "h:asm_irv"] }
+        { "ids": ["d:ASMDPI", "h:asm_irv", "o:IRVASM"] }
       ],
       "media": "at",
-      "audioBooks": 27
+      "audioBooks": 27,
+      "timingBooks": 27
     },
     "ot": {
-      "sources": ["d", "h"],
+      "sources": ["d", "h", "o"],
       "editions": [
-        { "ids": ["d:ASMDPI", "h:asm_irv"] }
+        { "ids": ["d:ASMDPI", "h:asm_irv", "o:IRVASM"] }
       ],
       "media": "at",
       "audioBooks": 39,
-      "timingBooks": 1,
-      "timingBooksSet": ["JOS"]
+      "timingBooks": 39
     }
   },
   "obs": { "media": "t" }
@@ -71,7 +71,8 @@ never on data changes. Currently `1`.
 - **`canon`** — `nt`/`ntp`/`ot`/`otp`, same 4-value enum as
   `catalog/index.json`. Only canons with real existence appear; a
   language with only NT content has no `ot`/`otp` key at all.
-- **`sources`** — single letters (`d`=DBT, `p`=PKF, `h`=helloAO), copied
+- **`sources`** — single letters (`d`=DBT, `p`=PKF, `h`=helloAO, and
+  `o`/`e`/`c`/`g` for the editions `bibles` republishes), copied
   directly from `catalog/index.json`'s rows for this `(iso, canon)`.
   Always present.
 - **`editions`** — **only present when `catalog/overlap.json` has a real,

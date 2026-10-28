@@ -60,6 +60,14 @@ ALIGN_INGESTED_FILE = INTERNAL_DATA / ".align-ingested.json"
 # ENGBSBHAY) or a DBT-audio-but-non-DBT-text edition actually discoverable
 # in media.json, not just resolvable once you already know its id.
 ALIGN_SOURCES_FILE = INTERNAL_DATA / "align-sources.json"
+# 2026-10-28: align-index.json / obs-align-index.json are built from a listing of align/
+# itself; the manifests' own digest is kept here, only to compare against the listing
+# (pull_align_manifests.py). The differences go to ALIGN_MISMATCH_FILE, for audio-sync.
+ALIGN_MANIFEST_INDEX_FILE = INTERNAL_DATA / "align-manifest-index.json"
+OBS_ALIGN_MANIFEST_INDEX_FILE = INTERNAL_DATA / "obs-align-manifest-index.json"
+ALIGN_MISMATCH_FILE = INTERNAL_DATA / "align-mismatch.json"
+# {"<canon>/<iso>/<audio_fileset>": "<folder>"} — the align/ folder each fileset's files are in.
+ALIGN_FOLDERS_FILE = INTERNAL_DATA / "align-folders.json"
 
 # Local cache of audio-sync's OBS narration batch manifests
 # (cdn.bibel.wiki/_obs_batches/<iso>.json), fetched by fetch_obs_batches.py.

@@ -1,11 +1,15 @@
-# The four sources
+# The sources
+
+DBT, PKF and helloAO are fetched where they are; openbible (with audiobiblia), eBible,
+CrossWire and Door43 editions are republished by `bibles` itself.
 
 ## DBT (Bible Brain, Digital Bible Platform, by Faith Comes By Hearing)
 
 The largest catalog by far, and the only source with **broad, catalog-wide**
 published audio (thousands of versions). Real-time API, no bulk download.
 
-- Catalog: `https://cdn.bibel.wiki/dbt/_catalog.json` — one row per
+- Catalog: `https://cdn.bibel.wiki/dbt/_catalog.json` (published by
+  `bible-story-builder`, not by this repo) — one row per
   `[iso, distinct_id, canon, ...tags]`. `canon` is `nt`/`ntp`/`ot`/`otp`
   (`p` suffix = Portions, i.e. partial coverage — the same convention
   `catalog-index.json` reuses directly). Tags are `a:`/`A:` (audio) and
@@ -14,8 +18,9 @@ published audio (thousands of versions). Real-time API, no bulk download.
 - Fetching actual verse text/audio requires a DBT API key against
   `https://4.dbt.io/api/...` — this repo doesn't proxy that; you'd need
   your own DBT API access to pull content directly, or read the metadata
-  this repo already publishes (timing, media availability) under
-  `/dbt/<iso>/`.
+  this repo already publishes (media availability, book coverage) under
+  `/dbt/<iso>/`. `bibles` publishes no timing: see
+  [`dbt-timing.md`](dbt-timing.md) for where it comes from.
 - **A text fileset's own response can be one of two real, different
   shapes — check `type` before assuming plain text.** Most editions
   return `{"type": "verses", "data": [...]}` (per-verse inline text,
@@ -75,10 +80,8 @@ published audio (thousands of versions). Real-time API, no bulk download.
   they resolve to the same `/api/BSB/...` URLs — there is exactly one real
   audio production in helloAO's system, not two. No per-verse timing
   accompanies it (`thisChapterAudioTimings` is present in the response
-  shape but empty on every chapter checked). Not currently cataloged
-  anywhere this repo publishes — see
-  `internal-docs/catalog-audio-ownership-architecture.md` §8 for the
-  scoping notes on adding it.
+  shape but empty on every chapter checked). Cataloged as existence only:
+  `catalog/audio-index.json`'s `h` rows (`eng`, `nt` and `ot`).
 
 ## openbible (Biblica's Open Bible catalog, `openbible-api-1.biblica.com`)
 
@@ -105,11 +108,10 @@ same underlying catalog).
   (a marker-track export, `label<TAB>HH:MM:SS,fraction` per line, one
   `.txt` per chapter inside a whole-edition zip) — different shape from
   DBT's own timing JSON, not yet consumed by anything this repo publishes.
-- **Per-chapter text access**: `doc/openbible-chapters.md` — a derived,
-  CDN-published per-chapter endpoint (390 of Biblica's 452 yaapi.bible-
-  covered editions, non-ND-only), built as a caching layer in front of
-  [`yaapi.bible`](https://yaapi.bible/)'s own real per-verse API rather
-  than a second USFM extraction pipeline. Use this instead of the raw
+- **Per-chapter text access**: [`openbible-chapters.md`](openbible-chapters.md) —
+  we parse Biblica's whole-edition USFM zips and republish each edition with a
+  yaapi.bible abbreviation and at least one non-ND licence as per-chapter Sofria
+  and per-book USJ under `cdn.bibel.wiki/openbible/`. Use this instead of the raw
   whole-edition zips for any client that just wants readable text.
 - **Licensing is real and mixed, not uniformly "open"** — every version
   carries a real `licenses[]` field; roughly a third of both audio and
@@ -269,10 +271,10 @@ pinned to the commit that was aligned (`_meta.json` `door43.commit`). CC BY-SA 4
 7. door43
 ```
 
-`openbible` placed last, deliberately conservative — it's the newest
-source here, with real but mixed licensing (unlike the other three, which
-are either fully open or already well-understood), so it defaults to
-last pick rather than displacing an existing preference. Revisit this
+`openbible` placed after the first three, deliberately conservative — it
+was the newest source when added, with real but mixed licensing (unlike the
+other three, which are either fully open or already well-understood), so it
+doesn't displace an existing preference. Revisit this
 ordering once more real-world use has confirmed there's no reason to
 prefer it lower. `ebible` (added 2026-10-15) comes after it: its editions are, by
 construction, ones no other source has, so the order only matters if a later comparison
@@ -287,13 +289,13 @@ otherwise; check the alternatives if you do.
 ## Audio
 
 DBT is the largest source with published audio (thousands of versions,
-cataloged today in `catalog-audio.json`). openbible is a real second broad
+cataloged today in [`catalog/audio.json`](catalog-audio.md)). openbible is a real second broad
 source — 357 audio-type projects, catalogued in `catalog-audio-index.json`
 (existence only — no fileset-routing detail the way `catalog-audio.json`
 gives for DBT). helloAO has one real edition with audio (`BSB` — see
-above), not yet cataloged by this repo. A separate audio-sync pipeline
-(different repo) is expected to add more over time via its own alignment
-work — once it publishes, it'll be reflected here too.
+above), in `catalog-audio-index.json` as existence only. Per-verse timing
+for DBT audio comes from audio-sync's `align/` and DBT itself, not from
+this repo — see [`dbt-timing.md`](dbt-timing.md).
 
 Note openbible's audio republishing is explicitly **not** this repo's job
 — its per-book zips aren't directly usable by a client (one zip per book,

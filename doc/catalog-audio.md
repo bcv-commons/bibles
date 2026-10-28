@@ -19,8 +19,10 @@ DBT-only, single-source, structural existence only — this file does
 **not** claim anything about confirmed timing/alignment quality. "Does
 this fileset actually have real, usable per-verse timing" is a
 different, stronger question this file does not answer — that answer
-lives in `/dbt/<iso>/media.json` (`timingBooks`), sourced from real
-alignment work (audio-sync), not from DBT's own catalog metadata. See
+lives in `/dbt/<iso>/media.json` (`media: "at"`, `timingBooks`,
+`timingOnly`/`timingExcept`), from audio-sync's alignments and a real
+fetch of DBT's own timing (see [`dbt-timing.md`](dbt-timing.md)), not from
+DBT's catalog metadata. See
 `variant.dbtTiming` below for DBT's own (weaker, unverified) claim,
 which this file does publish, clearly separated from that confirmed
 answer.
@@ -32,17 +34,18 @@ answer.
 "aaa:nt":{"AAAMLT":[
 {"id":"a:N1DA","br":64,"c":"mp3","dbtTiming":"mms_align"},
 {"id":"a:N1DA-opus16","br":16,"c":"opus"},
+{"id":"a:N1SA","c":"mp3","dbtTiming":"mms_align"},
 {"id":"a:N2DA","br":64,"c":"mp3"},
 {"id":"a:N2DA-opus16","br":16,"c":"opus"}
 ]},
 "lid:nt":{"LIDWBT":[
-{"id":"a:N1SA","c":"mp3"},
+{"id":"a:N1SA","c":"mp3","dbtTiming":"4"},
 {"id":"a:N2SA","c":"mp3"}
 ]}
 }}
 ```
-(`AAAMLT`'s `a:N1DA` variant really does carry `dbtTiming` in the live
-data — the other three variants shown genuinely don't, illustrating that
+(`AAAMLT`'s `a:N1DA` and `a:N1SA` variants really do carry `dbtTiming` in
+the live data — the other three genuinely don't, illustrating that
 this is a real per-variant split, not something every variant of a
 version carries uniformly.)
 (`LIDWBT`'s real live entry has 7 variants total — the two shown above are
@@ -81,8 +84,9 @@ just `a:`/`A:` instead of `t:`/`T:`.
   **`dbtTiming` is DBT's own unverified catalog claim, not a confirmed
   answer.** The confirmed answer — "does this fileset actually have
   real, working per-verse timing we've checked" — is
-  `/dbt/<iso>/media.json`'s `timingBooks`, sourced from real alignment
-  work. Don't substitute one for the other.
+  `/dbt/<iso>/media.json`'s `media: "at"` and `timingOnly`/`timingExcept`,
+  from audio-sync's alignments and a real fetch of DBT's timing. Don't
+  substitute one for the other.
 
   Only one of the four real observed values is confidently understood:
   `"mms_align"` (near-certainly forced-alignment via an MMS —

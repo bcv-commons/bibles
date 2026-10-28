@@ -1,6 +1,6 @@
 # Chapter text formats: what's available and how to use it
 
-Draft, updated 2026-10-08. This describes what is published today. Anything not yet
+Draft, updated 2026-10-28. This describes what is published today. Anything not yet
 published is listed under **Planned** and is not available.
 
 ## What is published today
@@ -12,30 +12,32 @@ published is listed under **Planned** and is not available.
 | audiobiblia (BLL) | Sofria | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>/<chapter>.sofria.json` |
 | audiobiblia (BLL) | USJ | book | `cdn.bibel.wiki/audiobiblia/spa/BLL/<BOOK>.usj.json` |
 | audiobiblia (BLL) | audio (m4a) | chapter | `cdn.bibel.wiki/audiobiblia/spa/BLL/audio/<BOOK>_<chapter>.m4a`: the 66-book canon, no deuterocanonical books. See below |
+| eBible, CrossWire, Door43 | Sofria | chapter | `cdn.bibel.wiki/<ebible\|crosswire\|door43>/<iso>/<abbr>/<BOOK>/<chapter>.sofria.json` |
+| eBible, CrossWire, Door43 | USJ | book | `cdn.bibel.wiki/<ebible\|crosswire\|door43>/<iso>/<abbr>/<BOOK>.usj.json` |
 | openbible, audiobiblia | verse-json | chapter | **Removed**, replaced by Sofria. See [migrating-to-sofria.md](migrating-to-sofria.md) |
 | DBT `-json` filesets | Sofria | chapter | from the DBT API, `type=text_json`: the row's `path` field links to the Sofria document. Coverage varies; see below |
 
 **Sofria** is Proskomma's native format, one document per chapter. It keeps the full
 structure: headings, notes, poetry, tables, figures, red letter. Render it, or read its
 verse text, with `tools/sofria-render/` (below). The openbible and audiobiblia Sofria is
-converted from the books' USJ with `tools/usj-to-sofria/`. Every published chapter has
+converted from the books' USJ with `tools/usj-to-sofria/`. Every one of those chapters has
 been checked with the renderer: no text and no verse or chapter number is dropped.
 
 **USJ** is one file per book, in the USJ 3.0 format, as the source gave it. Use it when
 you want book-level content.
 
-Each openbible and audiobiblia edition's `_meta.json` (`.../<iso>/<abbr>/_meta.json`) lists
-its formats, with paths relative to the edition folder:
+Each edition's `_meta.json` (`.../<iso>/<abbr>/_meta.json`) lists its formats, with
+paths relative to the edition folder. An edition without Sofria (some CrossWire modules)
+lists only `usj`:
 
 ```json
 "formats": {
   "sofria": {"path": "<BOOK>/<chapter>.sofria.json", "granularity": "chapter"},
-  "usj": {"path": "<BOOK>.usj.json", "granularity": "book"},
-  "verse-json": {"path": "<BOOK>/<chapter>.json", "granularity": "chapter", "deprecated": "..."}
+  "usj": {"path": "<BOOK>.usj.json", "granularity": "book"}
 }
 ```
 
-BLL's `_meta.json` also lists its audio (added 2026-10-27), with its own book list,
+BLL's `formats` also lists its audio, with its own book list,
 since the text has the deuterocanonical books and the audio doesn't:
 
 ```json
@@ -131,4 +133,5 @@ These are requests we intend to make to helloAO. None is published yet, so don't
 - helloAO book-level content in USFM or USJ.
 - helloAO chapter-level content in Sofria, alongside their current `.json` format.
 
-When any of these is published, this section will move to the table above.
+When any of these is published, this section will move to the table above. Until then,
+`tools/helloao-to-sofria/` converts helloAO's JSON to Sofria locally.

@@ -40,12 +40,11 @@ helloAO-vs-DBT, PKF-vs-helloAO, and two same-source legs — DBT's own
 multiple native versions against each other, and helloAO's own multiple
 translations against each other. The same-source legs matter because a
 single source can independently publish more than one edition of the same
-underlying translation (e.g. DBT's `SPAERV`/`SPAWTC`, which are an exact
+underlying translation (e.g. DBT's `ENGWEB`/`ENGWWH`, which are an exact
 duplicate of each other) — without comparing a source against itself, a
 bare singleton from that source got no "closest relative" reference at all,
-even when one existed. This is the direct fix for `spa`'s `SPARVC`
-("Reina Valera 1909"), which now correctly shows a `dialect_variant`
-relationship to `SPNR02` (see the example below).
+even when one existed (e.g. `spa`'s `SPAERV`, whose closest relative is
+DBT's own `SPAWTC`; see the example below).
 
 ## Shape
 
@@ -54,18 +53,18 @@ relationship to `SPNR02` (see the example below).
   "schema_version": 2,
   "generated_at": "...",
   "probes": {"nt": ["REV15"], "ot": ["PSA117", "PSA51"]},
-  "priority": ["pkf", "helloao", "dbt", "openbible", "ebible"],
+  "priority": ["pkf", "helloao", "dbt", "openbible", "ebible", "crosswire", "door43"],
   "audio_source": "dbt",
   "pending_openbible_coverage": 246,
   "entries": {
     "aai:nt": [
-      {"ids": ["d:AAIWBT", "h:aai_wbt", "p:AAIPKF"], "pkf_ref": "aai_C01"}
+      {"ids": ["d:AAIWBT", "h:aai_wbt", "p:AAIPKF"], "pkf_ref": "aai_C01.Dv3gvNPV.pkf"}
     ],
     "spa:nt": [
       {"ids": ["d:SPNR02", "h:spa_r09"]},
-      {"ids": ["d:SPAERV", "d:SPAWTC"]},
-      {"ids": ["d:SPARVC"], "likely": "dialect_variant", "closest": "d:SPNR02", "score": 0.9394},
-      {"ids": ["h:spa_onbv"], "likely": "distinct_translation", "closest": "d:SPANTV", "score": 0.7163}
+      {"ids": ["d:SPAERV"], "likely": "orthography_convention", "closest": "d:SPAWTC", "score": 0.9966},
+      {"ids": ["d:SPARVC"], "likely": "dialect_variant", "closest": "h:spa_v2p", "score": 0.9457},
+      {"ids": ["h:spa_onbv"], "likely": "distinct_translation", "closest": "d:SPANTV", "score": 0.7234}
     ]
   }
 }
@@ -77,18 +76,17 @@ Biblica text projects exist but have no cluster here yet, purely because
 they lack a resolved yaapi.bible abbreviation to publish an `o:` id
 under.
 
-`d:SPAERV`/`d:SPAWTC` are a DBT-vs-DBT same-source cluster — an exact
-duplicate found by comparing DBT against itself, with no other source
-involved at all. `d:SPARVC` is a DBT-only singleton whose `closest`
-reference (`d:SPNR02`) also comes from that same-source leg — this is the
-case a client originally flagged: `SPARVC`'s name ("Reina Valera 1909")
-suggested it might be another RV-family variant, and the same-source
-comparison confirms it.
+`d:SPAERV`'s `closest` (`d:SPAWTC`) comes from the DBT-vs-DBT same-source
+leg, with no other source involved at all. The two were one cluster until
+2026-10-16, when the extra-chapter check (see "Identical means identical on
+more than one chapter" below) found they differ. `d:SPARVC` ("Reina Valera
+1909") is the case a client originally flagged: it now shows a
+`dialect_variant` relationship to another Reina-Valera edition.
 
 ## Row format (revised 2026-07-28 for compactness)
 
 `entries["<iso>:<canon>"] = [cluster, cluster, ...]` — grouped by language
-and testament so a language with many clusters (e.g. `eng`/`nt` has 40+)
+and testament so a language with many clusters (e.g. `eng`/`nt` has 60+)
 doesn't repeat the same two strings on every row.
 
 - **`iso`** — ISO 639-3 language code, same as `catalog-index.json`.
@@ -121,7 +119,7 @@ doesn't repeat the same two strings on every row.
   label — with one deliberate
   exception: `p:<ISO>PKF` is always a *minted* label (PKF has no natural
   per-language id of its own), so the real fetchable reference for it is
-  `pkf_ref` (the `.pkf` collection filename prefix), present on any
+  `pkf_ref` (the `.pkf` collection's file name under `pkf/<iso>/`), present on any
   cluster containing a `p:`
   member.
 - **No `default` field.** A multi-id cluster used to carry a computed
@@ -140,7 +138,9 @@ doesn't repeat the same two strings on every row.
   relative could be another DBT version, via the same-source leg). `likely`
   is either the fine-grained taxonomy (`orthography_convention` /
   `phonemic_distinction` / `dialect_variant` / `source_duplication` /
-  `distinct_translation` — computed per language/pair by a diagnosis pass,
+  `distinct_translation` / `single_pair_dominant_ambiguous` (one repeated
+  substitution pair explains the difference, but it isn't known whether it's
+  an encoding artifact or a real distinction) — computed per language/pair by a diagnosis pass,
   see `pipeline/research/`) or, where no diagnosis has run for that
   specific relationship, the coarser score-bucket tier (`near_identical`
   ≥0.98 / `uncertain` ≥0.5 / `distinct` <0.5). A singleton with none of
@@ -160,8 +160,9 @@ doesn't repeat the same two strings on every row.
   real, locally-sampled content; now confirmed dead via a live re-check) —
   as opposed to a plain `r: false` with no `confirmed_removed`, which just
   means "failed this run" and may be transient (`compare_all.py` retries
-  these automatically next run). Occurs on only 2 rows in the whole file
-  today (`BENBIB`) — deliberately NOT abbreviated further, unlike `r`: at
+  these automatically next run). Rare: no row carries it in the
+  2026-10-26 file (`BENBIB`, the case below, now has a plain `r: false`) —
+  deliberately NOT abbreviated further, unlike `r`: at
   this frequency, shortening it saves under 30 bytes total while making an
   already-rare, important flag needlessly cryptic. `ids`/`likely`/`closest`/
   `score` are the same way — their own *values* average 12-20 characters,
@@ -231,8 +232,8 @@ worth knowing before assuming a mismatch is an error:
   relationship in this file comes from comparing one specific chapter
   (`probes` above) — a real match in NT says nothing about OT, and vice
   versa. Two ids can be an exact NT duplicate and a genuinely different OT
-  edition at the same time (confirmed case: DBT's `ENGWM1` is byte-identical
-  to `ENGWEB`/`ENGWWH` in NT but only ~0.90 similar to them in OT — a real
+  edition at the same time (e.g. `arb`: DBT's `ARBVDV` and helloAO's
+  `arb_vdv` are one cluster in NT but score 0.9995 in OT — a real
   difference in the underlying editions, not a comparison error). Don't
   assume a merge (or a `likely`/`closest` value) in one canon implies
   anything about the other.
@@ -246,10 +247,9 @@ worth knowing before assuming a mismatch is an error:
 - **`closest` is the single highest-scoring relationship actually found, not
   the best same-named-family match.** If an edition doesn't score highly
   against anything, `closest` can point to a completely differently-named
-  edition that simply scored higher than the "obvious" sibling (confirmed
-  case: `eng_wyc2017`'s NT `closest` is a Douay-Rheims translation, not
-  `eng_wyc2018`, because that's what actually scored highest — `eng_wyc2017`
-  isn't a strong match for anything in this dataset). A low or
+  edition that simply scored higher than the "obvious" sibling (e.g. DBT's
+  `ENGNLV`'s NT `closest` is helloAO's `AAB`, at only 0.60 — `ENGNLV` isn't
+  a strong match for anything in this dataset). A low or
   unexpected-looking `closest` usually means genuinely low similarity was
   found everywhere, not a data error.
 
@@ -262,7 +262,7 @@ now cover both canons.
 ## Two shades of `r: false`
 
 A catalog-known DBT id that's never been positively confirmed reachable
-(e.g. `AUSWBT`, which 404s every time it's tried) gets a bare placeholder
+(e.g. `AUSWBT` in the OT, which 404s every time it's tried) gets a bare placeholder
 row with `r: false` and no `confirmed_removed` — "we know the catalog
 lists this, but we've never gotten real content from it, and this run
 failed too." A different case, caught by a client (2026-07-23): `BENBIB`
@@ -356,4 +356,4 @@ separate entries; the label should read `orthography_convention`, as in the New 
 
 The published file is minified (no whitespace) — pretty-print it yourself
 if reading by hand. Source prefixes in `ids`/`closest` are single letters
-(`d`/`h`/`p`/`o`/`e`/`c`), not the full source name — see "Row format" above.
+(`d`/`h`/`p`/`o`/`e`/`c`/`g`), not the full source name — see "Row format" above.

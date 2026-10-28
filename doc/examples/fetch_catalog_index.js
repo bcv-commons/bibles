@@ -5,7 +5,7 @@
 // Usage: node fetch_catalog_index.js <iso>
 
 const URL = "https://cdn.bibel.wiki/catalog/index.json";
-const SOURCE_NAMES = { d: "DBT", p: "PKF", h: "helloAO" };
+const SOURCE_NAMES = { d: "DBT", p: "PKF", h: "helloAO", o: "openbible", e: "eBible", c: "CrossWire", g: "Door43" };
 
 async function main() {
   const iso = process.argv[2];
@@ -26,7 +26,7 @@ async function main() {
   for (const row of matches) {
     const [, canon, source, count = 1] = row;
     const portions = canon.endsWith("p") ? " (Portions - partial coverage)" : "";
-    console.log(`  ${canon.padEnd(4)} ${SOURCE_NAMES[source].padEnd(8)} ${count} version(s)${portions}`);
+    console.log(`  ${canon.padEnd(4)} ${(SOURCE_NAMES[source] ?? source).padEnd(9)} ${count} version(s)${portions}`);
   }
 }
 

@@ -48,9 +48,9 @@ on partial evidence, each with a reason explained in `assumed_reasons`:
 | `near_match` | PKF custom `.vrs` within 5 chapters of the scheme; the differing chapters are in `irregular.json` |
 
 Every label not in `assumed` is backed by probe evidence. Treat an assumed label as
-"not checked": prefer the text's own verse numbers, and say so. On 2026-10-09 there
-were 994 assumed entries (889 `nt_only`, 98 `no_psalm_evidence`, 7 `ebible_direct`),
-all labelled `eng`.
+"not checked": prefer the text's own verse numbers, and say so. On 2026-10-28 there
+were 2,717 assumed entries (2,576 `nt_only`, 98 `no_psalm_evidence`, 36 `near_match`,
+7 `ebible_direct`), all labelled `eng` except one `near_match` (`pkf:dbq_C01`, `org`).
 
 ## New Testament: `nt` and `nt-variants.json` (added 2026-10-09)
 
@@ -70,15 +70,15 @@ too. New Testament numbering varies on its own, so an edition can have an `nt` e
 - `profile`: a name for a common set of variants, listed in that file's `profiles`. The
   same thing as the variants, for grouping:
 
-  | Profile | Variants | Editions (2026-10-09) |
+  | Profile | Variants | Editions (2026-10-28) |
   |---|---|---|
   | `nrsv` | `2CO13-13` | 603 |
   | `niv` | `REV12-17` (12:18 starts 13:1) | 513 |
   | `kjv` | `3JN1-14`, `REV12-17` | 172 |
-  | `greek` | `2CO13-13`, `ACT19-40` (NA/UBS) | 97 |
+  | `greek` | `2CO13-13`, `ACT19-40` (NA/UBS) | 128 |
   | `esv` | `REV12-17esv` (12:18's text ends 12:17) | 72 |
 
-  The other 446 entries have a variant list without a profile, most often with
+  The other 456 entries have a variant list without a profile, most often with
   `JHN7-52` (John 7:53 absent or merged into 8:1), which is a missing passage rather
   than a numbering tradition.
 - `unexplained`: chapters whose length matches no scheme and no variant, usually text
@@ -99,8 +99,8 @@ which was wrong for `vul` (its map has no New Testament rows) and incomplete for
 How it's found: for PKF collections, from their `.vrs` files (every chapter); for DBT and
 helloAO editions, by probing the last verse of the 15 chapters TVTMS tests
 (`pipeline/core/nt_probes.py`). Revelation 12 with 17 verses is told apart (KJV/NIV vs
-ESV) by the lengths of 12:17 and 13:1. As of 2026-10-09, 1,903 editions have an `nt`
-entry: 907 DBT, 743 helloAO, 253 PKF. An edition with fewer than 8 of the 15 tested
+ESV) by the lengths of 12:17 and 13:1. As of 2026-10-28, 1,944 editions have an `nt`
+entry: 930 DBT, 760 helloAO, 254 PKF. An edition with fewer than 8 of the 15 tested
 chapters (a partial New Testament) gets none; 53 DBT editions couldn't be probed
 (44 refused with 403, 9 failing on a chapter). Chapters outside the 15 tested ones aren't probed
 for DBT and helloAO, so their `unexplained` lists are from those chapters only.
@@ -114,7 +114,7 @@ editions found five layouts of Job 38-41, two of Ecclesiastes 11-12 and two of H
 way `nt-variants.json` works for the New Testament:
 
 ```json
-"ot": { "helloao:ces_bkr": { "variants": ["JOB-ces"] },
+"ot": { "helloao:ces_bkr": { "variants": ["HOS-eng", "JOB-ces"] },
         "ace/ACEIBS": { "variants": ["JOB-eng"] },
         "helloao:fra_lsg": { "variants": ["ECC-lsg", "HOS-eng"] } },
 "ot_variants": "ot-variants.json"
@@ -168,9 +168,9 @@ Testament is labelled from its New Testament and listed in `assumed` as `nt_only
 
 Only editions where classification succeeded appear in `l` — an edition
 missing from this file hasn't necessarily been checked, it may just be
-unclassified yet (as of 2026-09-04: 234 of 437 DBT text filesets with
-Psalms are classified; the rest need probes that hit real DBT API access
-issues during the last run, not a methodology gap).
+unclassified yet (as of 2026-10-28: 231 of 441 DBT text filesets with
+Psalms are classified; the other 210 still need Psalm probes, fetched with
+`make versification ARGS="--fetch"`).
 
 ## Known-fixed bug (2026-09-04): don't trust Byzantine NT book order alone
 

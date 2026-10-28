@@ -35,9 +35,10 @@ to paragraph handling, a `cell` wrapper's tag rendering as the literal text
 "undefined", attribute values always comma-joined) — do not "fix" these.
 
 One Rust-specific note: `serde_json`'s `preserve_order` feature is required
-because `Doc::headers` must iterate in the `.pkf` file's original JSON key
-order (`document.usfm()`'s `\id`/`\usfm`/etc. header lines are emitted in
-that order) — Rust's `HashMap` would silently reorder them.
+because `Doc::headers` (a `Vec` of key/value pairs, built in `load.rs`)
+must keep the `.pkf` file's original JSON key order (`document.usfm()`'s
+`\id`/`\usfm`/etc. header lines are emitted in that order) — without the
+feature, `serde_json`'s map is a `BTreeMap` and hands the keys back sorted.
 
 ## Module map
 
@@ -51,7 +52,7 @@ Mirrors `pkf-decode-py`'s module map directly:
   report, USFM text) inlined as a `Phase`-gated match rather than a
   pluggable-closures abstraction (there are only ever two fixed action
   sets here, so Rust doesn't need the JS/Python generality).
-- `main.rs` — CLI entry point, `BOOK_NUM` filename table.
+- `main.rs` — CLI entry point, `book_num()` filename table.
 
 ## Verification
 

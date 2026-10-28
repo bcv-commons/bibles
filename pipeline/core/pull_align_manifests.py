@@ -64,6 +64,14 @@ common case: 157+ real DBT editions where audio-sync had to pull text
 from helloAO because DBT itself has none) actually discoverable in
 media.json, instead of just resolvable once you already know its id.
 
+2026-10-28: the manifests turned out incomplete (3,466 books in 247 filesets
+on align/ with no manifest; entries whose files aren't there). Since then
+align-index.json and obs-align-index.json are built from a listing of
+align/ itself, the files a client actually fetches. The manifest digest
+goes to align-manifest-index.json / obs-align-manifest-index.json, and what
+the two disagree on to align-mismatch.json, to send to audio-sync.
+align-folders.json records the align/ folder of every audio fileset.
+
 Usage:
     python3 pipeline/core/pull_align_manifests.py            # pull + update digest
     python3 pipeline/core/pull_align_manifests.py --dry-run  # report only, no writes
@@ -71,6 +79,7 @@ Usage:
 """
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -86,9 +95,15 @@ except ImportError as e:
 load_dotenv()
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import ALIGN_INDEX_FILE, ALIGN_INGESTED_FILE, ALIGN_SOURCES_FILE, OBS_ALIGN_INDEX_FILE  # noqa: E402
+from paths import (  # noqa: E402
+    ALIGN_FOLDERS_FILE, ALIGN_INDEX_FILE, ALIGN_INGESTED_FILE, ALIGN_MANIFEST_INDEX_FILE,
+    ALIGN_MISMATCH_FILE, ALIGN_SOURCES_FILE, OBS_ALIGN_INDEX_FILE, OBS_ALIGN_MANIFEST_INDEX_FILE,
+)
 
+ALIGN_PREFIX = "align"
 RUNS_PREFIX = "align/_runs"
+BIBLE_FILE_RE = re.compile(r"^([0-9A-Z]{3})_\d{3}_(.+)_timing\.json$")
+OBS_FILE_RE = re.compile(r"^(\d{2})_timing\.json$")
 
 
 def rclone_env():
@@ -121,6 +136,66 @@ def save_json(path: Path, data):
     path.write_text(json.dumps(data, separators=(",", ":"), sort_keys=True), encoding="utf-8")
 
 
+def list_align(env, bucket):
+    """Every *_timing.json under align/ (not _runs/): what a client can actually fetch.
+    Returns ({iso: {canon: {audio_fileset: {books}}}}, {raw_iso: {stories}},
+    {"<canon>/<iso>/<audio_fileset>": folder}), or None if the listing failed."""
+    r = subprocess.run(
+        ["rclone", "lsf", f"R2:{bucket}/{ALIGN_PREFIX}/", "--recursive", "--files-only",
+         "--fast-list", "--filter", "- _runs/**", "--filter", "+ *_timing.json", "--filter", "- *"],
+        capture_output=True, text=True, env=env, timeout=1800,
+    )
+    if r.returncode != 0:
+        print(f"[pull-align-manifests] listing {ALIGN_PREFIX}/ failed: {r.stderr.strip()[:500]}")
+        return None
+    books: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(set)))
+    stories: dict = defaultdict(set)
+    folders: dict = {}
+    for rel in r.stdout.splitlines():
+        parts = rel.split("/")
+        if len(parts) == 3 and parts[0] == "obs":
+            m = OBS_FILE_RE.match(parts[2])
+            if m:
+                stories[parts[1]].add(m.group(1))
+        elif len(parts) == 5:
+            canon, iso, folder, book, name = parts
+            m = BIBLE_FILE_RE.match(name)
+            if m and m.group(1) == book:
+                books[iso][canon][m.group(2)].add(book)
+                folders[f"{canon}/{iso}/{m.group(2)}"] = folder
+    return books, stories, folders
+
+
+def plain(digest: dict) -> dict:
+    return {iso: {canon: {fs: sorted(b) for fs, b in filesets.items()} for canon, filesets in canons.items()}
+            for iso, canons in digest.items()}
+
+
+def compare(listed: dict, manifest: dict, listed_obs: dict, manifest_obs: dict) -> dict:
+    """What the listing and the manifests disagree on, for audio-sync."""
+    no_manifest, manifest_no_files = [], []
+    for iso, canons in sorted(listed.items()):
+        for canon, filesets in sorted(canons.items()):
+            for fs, books in sorted(filesets.items()):
+                missing = books - set(manifest.get(iso, {}).get(canon, {}).get(fs, []))
+                if missing:
+                    no_manifest.append({"iso": iso, "canon": canon, "audio_fileset": fs,
+                                        "books": sorted(missing)})
+    for iso, canons in sorted(manifest.items()):
+        for canon, filesets in sorted(canons.items()):
+            for fs, books in sorted(filesets.items()):
+                missing = set(books) - listed.get(iso, {}).get(canon, {}).get(fs, set())
+                if missing:
+                    manifest_no_files.append({"iso": iso, "canon": canon, "id": fs,
+                                              "books": sorted(missing)})
+    obs_no_manifest = {iso: sorted(s - set(manifest_obs.get(iso, [])))
+                       for iso, s in sorted(listed_obs.items()) if s - set(manifest_obs.get(iso, []))}
+    obs_manifest_no_files = {iso: sorted(set(s) - listed_obs.get(iso, set()))
+                             for iso, s in sorted(manifest_obs.items()) if set(s) - listed_obs.get(iso, set())}
+    return {"no_manifest": no_manifest, "manifest_no_files": manifest_no_files,
+            "obs_no_manifest": obs_no_manifest, "obs_manifest_no_files": obs_manifest_no_files}
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
     force = "--force" in sys.argv
@@ -129,14 +204,18 @@ def main():
     ingested = set() if force else set(
         load_json(ALIGN_INGESTED_FILE, {"ingested_batches": []})["ingested_batches"]
     )
-    index = {} if force else load_json(ALIGN_INDEX_FILE, {})
+    # Before 2026-10-28 align-index.json / obs-align-index.json WERE the manifest digests:
+    # seed from them once, so the delta state stays valid without a --force re-pull.
+    seed = ALIGN_MANIFEST_INDEX_FILE if ALIGN_MANIFEST_INDEX_FILE.exists() else ALIGN_INDEX_FILE
+    obs_seed = OBS_ALIGN_MANIFEST_INDEX_FILE if OBS_ALIGN_MANIFEST_INDEX_FILE.exists() else OBS_ALIGN_INDEX_FILE
+    index = {} if force else load_json(seed, {})
     digest: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(set)))
     for iso, canons in index.items():
         for canon, filesets in canons.items():
             for audio_fileset, books in filesets.items():
                 digest[iso][canon][audio_fileset] = set(books)
 
-    obs_index = {} if force else load_json(OBS_ALIGN_INDEX_FILE, {})
+    obs_index = {} if force else load_json(obs_seed, {})
     obs_digest: dict = defaultdict(set)
     for raw_iso, stories in obs_index.items():
         obs_digest[raw_iso] = set(stories)
@@ -150,10 +229,6 @@ def main():
     manifest_files = [ln for ln in r.stdout.splitlines() if ln.strip()]
 
     new_manifests = sorted(f for f in manifest_files if Path(f).stem not in ingested)
-    if not new_manifests:
-        print(f"[pull-align-manifests] {len(manifest_files)} manifest(s), all already digested.")
-        return
-
     print(f"[pull-align-manifests] {len(new_manifests)} new manifest(s) of {len(manifest_files)} total.")
 
     # One bulk transfer (rclone handles parallelism/retries itself) instead
@@ -226,20 +301,37 @@ def main():
               f"(will retry next run — not marked ingested): {skipped[:10]}"
               + (f" ... +{len(skipped) - 10} more" if len(skipped) > 10 else ""))
 
+    print(f"[pull-align-manifests] listing {ALIGN_PREFIX}/ ...")
+    listed = list_align(env, bucket)
+    if listed is None:
+        sys.exit("[pull-align-manifests] no listing: index files left unchanged.")
+    books, stories, folders = listed
+    mismatch = compare(books, plain(digest), stories, {k: sorted(v) for k, v in obs_digest.items()})
+    n_books = sum(len(b) for c in books.values() for f in c.values() for b in f.values())
+    print(f"[pull-align-manifests] align/: {n_books} book(s) in "
+          f"{sum(len(f) for c in books.values() for f in c.values())} fileset(s), "
+          f"{sum(len(s) for s in stories.values())} OBS stor(y/ies) in {len(stories)} language(s).")
+    print(f"[pull-align-manifests] vs manifests: "
+          f"{sum(len(x['books']) for x in mismatch['no_manifest'])} book(s) in "
+          f"{len(mismatch['no_manifest'])} fileset(s) with no manifest; "
+          f"{len(mismatch['manifest_no_files'])} manifest entr(y/ies) with no files; "
+          f"OBS: {sum(map(len, mismatch['obs_no_manifest'].values()))} with no manifest, "
+          f"{sum(map(len, mismatch['obs_manifest_no_files'].values()))} with no files.")
+
     if dry_run:
         print("[pull-align-manifests] dry run: no state written.")
         return
 
     save_json(ALIGN_INGESTED_FILE, {"ingested_batches": sorted(ingested)})
-    save_json(ALIGN_INDEX_FILE, {
-        iso: {canon: {fs: sorted(books) for fs, books in filesets.items()} for canon, filesets in canons.items()}
-        for iso, canons in digest.items()
-    })
-    save_json(OBS_ALIGN_INDEX_FILE, {iso: sorted(stories) for iso, stories in obs_digest.items()})
+    save_json(ALIGN_MANIFEST_INDEX_FILE, plain(digest))
+    save_json(OBS_ALIGN_MANIFEST_INDEX_FILE, {iso: sorted(s) for iso, s in obs_digest.items()})
     save_json(ALIGN_SOURCES_FILE, sources)
-    print(f"[pull-align-manifests] digest covers {len(digest)} Bible-text language(s) -> {ALIGN_INDEX_FILE}")
-    print(f"[pull-align-manifests] digest covers {len(obs_digest)} OBS language(s) -> {OBS_ALIGN_INDEX_FILE}")
-    print(f"[pull-align-manifests] {len(sources)} source-pairing entr(y/ies) -> {ALIGN_SOURCES_FILE}")
+    save_json(ALIGN_INDEX_FILE, plain(books))
+    save_json(OBS_ALIGN_INDEX_FILE, {iso: sorted(s) for iso, s in stories.items()})
+    save_json(ALIGN_FOLDERS_FILE, folders)
+    save_json(ALIGN_MISMATCH_FILE, mismatch)
+    print(f"[pull-align-manifests] {ALIGN_INDEX_FILE.name}: {len(books)} language(s); "
+          f"{OBS_ALIGN_INDEX_FILE.name}: {len(stories)}; differences -> {ALIGN_MISMATCH_FILE}")
 
 
 if __name__ == "__main__":

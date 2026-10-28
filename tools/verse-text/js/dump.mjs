@@ -1,6 +1,6 @@
 // Language parity, JS side: one line per chapter and route, "<route>\t<book>\t<chapter>\t<sha256>",
 // hashing the extracted verses as "<verse>\t<text>\n" lines. ../python/dump.py writes the same.
-// With --fp, each line also carries the chapter's text fingerprint (tokenizer v2) and content
+// With --fp, each line also carries the chapter's text fingerprint (tokenizer v3) and content
 // fingerprint (verses with a plain number only; a chapter with none gets "-").
 // Usage: node dump.mjs <usj-root> <sofria-root> [--fp] > js.tsv
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';

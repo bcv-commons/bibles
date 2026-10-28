@@ -5,11 +5,21 @@ proskomma-core's own import and `sofria()` path.
 
 ```
 npm install
-node convert.mjs <book.usj.json> <out-dir>
+node convert.mjs <book.usj.json> <out-dir> [--book-level-too]
 ```
 
-Writes `<out-dir>/<N>.json` for each chapter, plus nothing else unless
-`--book-level-too` is given.
+Writes `<out-dir>/<N>.json` for each chapter. With `--book-level-too` it also
+writes `<out-dir>/_book.json`, the whole-book Sofria.
+
+Other entry points in this folder:
+- `convert_batch.mjs <usj-dir> <sofria-out-dir>` — the same conversion for every
+  `*.json` under `<usj-dir>` in one Node process; each book's relative path
+  (minus `.json`) becomes a directory of chapter files.
+- `usx_to_sofria.mjs <book.usx> <out-dir>` — USX instead of USJ, for editions
+  that publish USX but no Sofria. Also importable as `usxToSofria(usxText)`.
+- `whole_book_fallback.mjs` — used by both converters when proskomma-core's
+  per-chapter `sofria()` call throws: render the whole book once and cut the
+  chapter out of it.
 
 Known behaviour:
 - Red-letter (`wj`) is kept as a Sofria `usfm:wj` wrapper, the same way `usfm:w`

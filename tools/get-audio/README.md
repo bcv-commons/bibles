@@ -25,6 +25,10 @@ dependencies (`get_audio.mjs`; browsers and Node >= 18).
    A 404 or an empty answer means no timing from that source. bibles publishes no timing
    of its own (`dbt/<iso>/timing-raw/` is being retired).
 
+   The align/ folder is the edition id for all but 13 audio filesets (2026-10-28, e.g. `cmo`
+   `CM3WBTN1DA` is under `CMOBSCK`, not `CMOBSC`); for those this sample gets a 404 and falls
+   through to DBT ([dbt-timing.md](../../doc/dbt-timing.md)).
+
 All of cdn.bibel.wiki, 4.dbt.io and bible.helloao.org allow cross-origin requests, so the
 code runs in a web page unchanged. Without a DBT key a client gets helloAO audio and
 audio-sync's timing only.

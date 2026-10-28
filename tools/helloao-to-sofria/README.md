@@ -4,12 +4,15 @@ helloAO (`bible.helloao.org`) is the one source this repo tracks with no
 USFM available at all — every real translation reports
 `availableFormats: ["json"]` only. So getting from helloAO's own JSON to
 Sofria always starts with a bespoke JSON→JSON mapping
-(`helloao_to_usj.mjs`, a JS port of `tools/verse-text/python/helloao_to_usj.py`,
-producing USJ — Unified Scripture JSON). This directory offers two
+(`tools/verse-text/js/helloao_to_usj.mjs`, the JS twin of
+`tools/verse-text/python/helloao_to_usj.py`, producing USJ — Unified
+Scripture JSON; `helloao_to_usj.mjs` here just re-exports it). This directory offers two
 different ways to take that USJ the rest of the way to Sofria:
 
 - **`via-usj.mjs`** — hands the USJ to real `proskomma-core`
-  (`pk.importDocument(..., 'usj', ...)` → `doc.sofria(chapter)`). Always
+  (`pk.importDocument(..., 'usj', ...)` → `doc.sofria(undefined, chapter)`),
+  after the same importer workarounds as `tools/usj-to-sofria/prepare_usj.mjs`
+  (`prepareUsj` / `restorePipes`). Always
   correct by construction, since it's the real library. Also writes out
   the intermediate USJ file, which is independently useful on its own
   (portable to any other USJ-consuming tool).
@@ -18,15 +21,15 @@ different ways to take that USJ the rest of the way to Sofria:
   structure by hand, reverse-engineered directly from real Proskomma
   output (not from any spec document).
 
-Both reuse the same `helloao_to_usj.mjs` mapping module — the only real
+Both reuse the same helloAO → USJ mapping module — the only real
 difference is the last step: hand the USJ to a real library, or render it
 by hand.
 
 ## Usage
 
 ```
-node via-usj.mjs    <helloAO-complete.json> <out-dir>   # writes out-dir/usj/ and out-dir/sofria/
-node via-native.mjs <helloAO-complete.json> <out-dir>   # writes out-dir/sofria/ only
+node via-usj.mjs    <helloAO-complete.json> <out-dir>   # out-dir/usj/<BOOK>.json + out-dir/sofria/<BOOK>/<N>.json
+node via-native.mjs <helloAO-complete.json> <out-dir>   # out-dir/sofria/<BOOK>/<N>.json only
 ```
 
 `<helloAO-complete.json>` is the response from

@@ -21,12 +21,12 @@ already parsing that file needs zero new logic here.
     {"o": "https://openbible-api-1.biblica.com/projects"}
   ],
   "entries": [
-    ["aai", "nt", "d"],
+    ["aaa", "nt", "d"],
+    ["ahr", "nt", "o", 3],
     ["eng", "nt", "d", 12],
     ["eng", "nt", "h"],
     ["eng", "ot", "d", 8],
-    ["eng", "ot", "h"],
-    ["yal", "nt", "o"]
+    ["eng", "ot", "h"]
   ]
 }
 ```
@@ -50,14 +50,17 @@ it sounds like:
 
 - **`d` (DBT) rows** — real routing detail (which fileset id, bitrate,
   codec, DBT's own unverified timing claim) is in
-  [`catalog-audio.json`](catalog-audio.md). Confirmed, real per-verse
-  timing (when it exists) is in `/dbt/<iso>/media.json`'s `timingBooks`/
-  `timingBooksSet`.
+  [`catalog-audio.json`](catalog-audio.md). Which editions and books have
+  real per-verse timing is in `/dbt/<iso>/media.json` (`media: "at"`,
+  `timingOnly`/`timingExcept`, `timingBooks`/`timingBooksSet`); the timing
+  itself comes from audio-sync or DBT, see [`dbt-timing.md`](dbt-timing.md).
 - **`h` (helloAO) rows** — fetch `https://bible.helloao.org/api/<translation_id>/<BOOK>/<chapter>.json`
   and read `thisChapterAudioLinks` (one URL per narrator) directly; no
   separate routing file for helloAO exists or is planned, since the real
-  population is small (see below). No per-verse timing accompanies helloAO
-  audio today.
+  population is small (see below). helloAO's BSB `hays` narration is also
+  listed in `/dbt/eng/media.json` as `ENGBSBHAY`, with audio-sync timing
+  (see [`dbt-timing.md`](dbt-timing.md)); the other narrators have none
+  from us.
 - **`p` (PKF) rows — not populated yet.** PKF publishes a real per-language
   timing/audio endpoint (`<iso>/timing/<BOOK>-<chapter>.json`), but nothing
   in this pipeline fetches or catalogs it yet. `p` rows will start
