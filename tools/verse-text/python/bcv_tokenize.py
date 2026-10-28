@@ -13,11 +13,11 @@ import hashlib
 import re
 import unicodedata
 
-TOKENIZER_VERSION = 2
+TOKENIZER_VERSION = 3
 TEXT_FP_VERSION = 1
 NAME_HEX = 8
 
-_MYANMAR_KEEP = {4153, 4154}
+_MYANMAR_KEEP = {4153, 4154}   # also used by bcv_written.py
 
 _MYA_ASAT = 4154
 
@@ -25,8 +25,29 @@ _MYA_EVOWEL = 4145
 
 _MYA_VIRAMA = 4153
 
+_MYA_DOT_BELOW = 4151
 
-def _is_variation_selector(o: int) -> bool:
+
+_KAREN_MARK = re.compile("[\u1061\u1063\u1064]")   # S'gaw Karen sha, tone marks hathi and ke pho
+_SHAN_RANGE = re.compile("[\u1075-\u109f]")
+
+
+def _is_karen(text: str) -> bool:
+    """Myanmar-script text in S'gaw Karen. Karen has no final consonants: the asat is a tone mark there,
+    so a consonant before it opens a syllable (ဂၢ်ဒ် -> ဂၢ် · ဒ်) instead of closing one. Decided per text
+    from Karen's own characters: U+1061, U+1063, U+1064, or the vowel U+1062 without Shan letters and
+    tones (U+1075-109F; Shan and Khamti use U+1062 too). Measured 2026-10-26: 31,097 of 31,099 S'gaw
+    Karen verses (KswSKMB), none of the Burmese, Pali, Sanskrit, Mon, Shan, Khamti or other
+    Myanmar-script texts we have."""
+    return bool(_KAREN_MARK.search(text)) or ("\u1062" in text and not _SHAN_RANGE.search(text))
+
+
+def _is_mya_medial(o: int) -> bool:
+    """Myanmar medials ya, ra, wa, ha (U+103B-103E) and the Shan / Mon medials (U+105E-1060, U+1082)."""
+    return 0x103B <= o <= 0x103E or 0x105E <= o <= 0x1060 or o == 0x1082
+
+
+def _is_variation_selector(o: int) -> bool:   # also used by bcv_written.py
     """Variation selectors (U+FE00-FE0F, U+E0100-E01EF) choose a GLYPH form and carry no linguistic
     content, but their combining class is 0 so `strip_marks` kept them and `tokenize` kept them (category
     Mn), splitting one word into two vocabulary entries. Measured on kht (Tai Khamti): 93.3% of its stored
@@ -61,14 +82,16 @@ def tokenize(text: str) -> list[str]:
     unaffected (no combining marks after NFC)."""
     toks: list[str] = []
     cur: list[str] = []
-    for ch in strip_marks(text):
+    stripped = strip_marks(text)
+    karen = _is_karen(stripped)
+    for ch in stripped:
         if unicodedata.category(ch)[0] in ("L", "M"):        # letter or combining mark → part of the word
             cur.append(ch)
         elif cur:
-            toks.extend(_split_unspaced("".join(cur)))
+            toks.extend(_split_unspaced("".join(cur), karen))
             cur = []
     if cur:
-        toks.extend(_split_unspaced("".join(cur)))
+        toks.extend(_split_unspaced("".join(cur), karen))
     return toks
 
 
@@ -97,35 +120,49 @@ def _is_mya_consonant(o: int) -> bool:
             or 0xAA7E <= o <= 0xAA7F)
 
 
-def _mya_syllables(tok: str) -> list[str]:
+def _mya_syllables(tok: str, karen: bool = False) -> list[str]:
     """Rule-based Myanmar syllable segmentation. Myanmar writes no space between words, so whitespace
     tokenization returned whole phrases (measured: kht averaged 23.2 characters per 'word', rki 8.0).
 
-    A syllable starts at a consonant, or at U+1031 (the vowel sign written BEFORE its consonant but
-    pronounced after). It does NOT start when the consonant is stacked under a virama, nor immediately
-    after U+1031, nor after an asat — an asat-killed consonant closes the current syllable rather than
-    opening the next. Vowel signs, medials and tone marks simply attach to the syllable in progress.
-
-    Syllable-level is the right grain here for the same reason character-level is for Han: these are
-    largely monosyllabic Tibeto-Burman/Tai languages, so a syllable is about a morpheme, and eflomal
-    recovers longer words as many-to-one alignments. Verified: အာဗြဟံ (Abraham) → အာ/ဗြ/ဟံ, ဒါဝိဒ
-    (David) → ဒါ/ဝိ/ဒ."""
+    v3: Unicode Myanmar is stored in logical order (the vowel sign e, U+1031, AFTER its consonant), but some
+    texts carry the legacy visual order (U+1031 first). A syllable starts at a consonant, except when
+    - it is stacked under a virama (previous character U+1039), or
+    - an asat (U+103A) follows it, skipping a dot below (U+1037), which NFC puts first: it is the final of
+      the syllable in progress (ပ် in အုပ်, င် in ခင်); not in Karen text (`_is_karen`), where the asat
+      is a tone mark, or
+    - the syllable in progress was opened by a visual-order U+1031 and has no consonant yet.
+    U+1031 opens a syllable only in visual order: when it does not follow a consonant, medial or virama.
+    Vowel signs, medials and tone marks attach to the syllable in progress. v2 opened a syllable at every
+    U+1031 and at a consonant before an asat, and never after an asat, which cut logical-order text
+    (bcv-commons/bibles#1: သော -> သ·ော, ကောင်း -> က·ော·င်း, ခင် -> ခ·င်)."""
     out: list[str] = []
     cur: list[str] = []
+    e_open = False          # the syllable in progress was opened by a visual-order U+1031
+    n = len(tok)
     for i, ch in enumerate(tok):
         o = ord(ch)
         prev = ord(tok[i - 1]) if i else 0
-        if (_is_mya_consonant(o) or o == _MYA_EVOWEL) and cur \
-                and prev not in (_MYA_VIRAMA, _MYA_EVOWEL, _MYA_ASAT):
-            out.append("".join(cur))
-            cur = []
+        if _is_mya_consonant(o):
+            j = i + 1
+            while j < n and ord(tok[j]) == _MYA_DOT_BELOW:
+                j += 1
+            final = not karen and j < n and ord(tok[j]) == _MYA_ASAT
+            if cur and prev != _MYA_VIRAMA and not final and not e_open:
+                out.append("".join(cur))
+                cur = []
+            e_open = False
+        elif o == _MYA_EVOWEL and not (_is_mya_consonant(prev) or _is_mya_medial(prev) or prev == _MYA_VIRAMA):
+            if cur:
+                out.append("".join(cur))
+                cur = []
+            e_open = True
         cur.append(ch)
     if cur:
         out.append("".join(cur))
     return out
 
 
-def _split_unspaced(tok: str) -> list[str]:
+def _split_unspaced(tok: str, karen: bool = False) -> list[str]:
     """Segment a whitespace-delimited run that belongs to a space-free script. Dep-free and
     language-independent by construction — no segmenter model, no download, so it works on any such
     language the moment it has a Bible (the same constraint the rest of the tail-facing pipeline holds to).
@@ -143,7 +180,7 @@ def _split_unspaced(tok: str) -> list[str]:
     written in them in this corpus separate words explicitly, with spaces or ZWSP: bzi 29 spaces per 193
     chars, kdt 46 ZWSP, lao 15 ZWSP. Tibetan already breaks at the tsheg.)"""
     if any(_is_mya_consonant(ord(c)) for c in tok):
-        return _mya_syllables(tok)
+        return _mya_syllables(tok, karen)
     if not any(_cjk_class(c) for c in tok):
         return [tok]
     out: list[str] = []

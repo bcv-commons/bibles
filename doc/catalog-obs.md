@@ -125,7 +125,7 @@ for a language to have a `media.json`.
 **Practical consequence, now**: `/obs/<iso>/media.json` exists for every
 row in this file (214 of 214, verified 2026-09-01) — no more waiting on
 any staging pipeline's pace. The only thing that can still lag is
-`timing.json`, which genuinely does depend on audio-sync's real alignment
+timing, which genuinely does depend on audio-sync's real alignment
 work landing at `align/obs/` — check `media.json`'s own `timingStories`
 field for that, not its mere existence.
 
@@ -143,9 +143,9 @@ and whether any of it is audio:
   for both layouts a language's `media.json` might report
   (`contentLayout: "md"` or `"ts-desktop"`), with working fetch code for
   each.
-- **Per-story timing** (audio-bearing languages only) —
-  [`/obs/<iso>/timing.json`](obs-media.md#obsisotimingjson), when
-  `/obs/<iso>/media.json`'s `timingStories` is nonzero.
+- **Per-story timing** (audio-bearing languages only) — from audio-sync,
+  `align/obs/<raw_iso>/<story>_timing.json` ([OBS story timing](obs-media.md#obs-story-timing)),
+  when `/obs/<iso>/media.json`'s `timingStories` is nonzero.
 
 ## Fixed gap: `ts-desktop`-format repos now resolve fully
 
@@ -180,8 +180,8 @@ with audio (`"at"`), 122 text-only (`"t"`). `/obs/<iso>/media.json` is
 resolved for all 214, with real per-story titles for 10,002 of 10,010
 total story slots (the 8-story shortfall is genuinely blank `# N.`
 headings on door43's side — a translator left the title untranslated —
-not a resolution failure). Real per-story timing (`/obs/<iso>/timing.json`)
-exists for 14 languages so far, growing as audio-sync's alignment work
+not a resolution failure). Real per-story timing (audio-sync's `align/obs/`)
+existed for 14 languages at the time, growing as audio-sync's alignment work
 (`align/obs/`) progresses — that's the one thing genuinely still tied to
 a downstream pipeline's pace, by nature (there's no direct-from-door43
 substitute for real alignment output).

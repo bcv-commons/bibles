@@ -6,8 +6,8 @@ lexeme-aligner (2026-10-12), whose compact alignments address words by their pos
 in a verse's tokens: both sides use one versioned release of this package, so a
 fingerprint means the same text everywhere.
 
-**Version 1.0.0** (`VERSION`; changes in `CHANGELOG.md`). Tokenizer v2, text fingerprint
-v1, content fingerprint v1. CC0 1.0 (the tokenizer and text fingerprint are
+**Version 2.0.0** (`VERSION`; changes in `CHANGELOG.md`). Tokenizer v3, text fingerprint
+v1, content fingerprint v1, written tokens v1. CC0 1.0 (the tokenizer and text fingerprint are
 lexeme-aligner's, handed over 2026-10-17 and copied verbatim).
 
 Which text to read for an edition, and through which route, is in
@@ -21,7 +21,8 @@ Which text to read for an edition, and through which route, is in
 | USX → USJ / Sofria (last resort: only where the source has no usable Sofria) | `python/usx_to_usj.py` (usfmtc) | `../usj-to-sofria/usx_to_sofria.mjs` (proskomma-core, `\|` protected) |
 | verse text from USJ and Sofria | `python/verse_text.py` | `js/extract_usj.js`, `js/extract_sofria.js` (rule: `js/rule.js`) |
 | verse text from plain verse JSON (DBT `text_plain`) | `python/plain_text.py` | `js/extract_plain.js` |
-| tokenizer v2 and text fingerprint v1 | `python/bcv_tokenize.py` | `js/tokenize.js`, `js/text_fingerprint.mjs` |
+| tokenizer v3 and text fingerprint v1 | `python/bcv_tokenize.py` | `js/tokenize.js`, `js/text_fingerprint.mjs` |
+| written tokens v1: the tokens with their marks | `python/bcv_written.py` | `js/tokenize_written.js` |
 | content fingerprint v1 (diagnosis) | `python/content_fingerprint.py` | `js/content_fingerprint.mjs` |
 | conformance suite | `python/conformance.py` | `js/conformance.mjs` |
 | route parity (USJ vs Sofria, every published book) | — | `js/parity.mjs` |
@@ -163,6 +164,34 @@ texts' text fingerprints differ but their content fingerprints match, they diffe
 spacing, word joins, punctuation, case or apostrophe form. Example: FFMWBT MRK 7, where
 DBT's Sofria joins "yo Korbaan" into one word. It's lowercase and not Unicode case
 folding, because JavaScript has no case folding and both languages must agree.
+
+Tokenizer v3 (2.0.0) differs from v2 only in Myanmar script: logical-order Burmese keeps
+its syllables whole (သော, ကောင်း), and in S'gaw Karen the asat is a tone mark. No text
+without Myanmar script tokenizes differently (bcv-commons/bibles#1).
+
+## Written tokens
+
+The tokenizer drops combining marks, so that Arabic harakat and Hebrew points don't split
+words. Where a letter has no precomposed form, the mark is gone: tone on ø, æ, ɨ, the
+rising tone U+1DC4, Yoruba's tone under a dot below, the virama in Devanagari, Tamil and
+Malayalam. `tokenize_written(text)` gives the same tokens at the same positions, each as
+written (NFC), its marks kept: `strip_marks(written[i]) == tokenize(text)[i]`. Positions,
+fingerprints and published alignments are unchanged; a client that needs the marks (a
+reader, search, a segmenter) reads the written form at the same position.
+
+```python
+from bcv_written import tokenize_written
+tokenize_written("Mø̀ndæ qá")      # ['Mø̀ndæ', 'qá']; tokenize() gives ['Møndæ', 'qá']
+```
+
+```js
+import { tokenizeWritten } from './js/tokenize_written.js';
+```
+
+Contributed by bcv-commons/bsb-add-books. On 2026-10-28 the invariant held for every verse
+we publish (9,806 books, 4,051,985 verses; 10.9% of tokens get a mark back), and Python and
+JS agree on all 47,655 Myanmar-script verses. Tests: `python/test_written.py`,
+`js/test_written.mjs` (both on `conformance/written.expected.json`).
 
 ## Conformance
 

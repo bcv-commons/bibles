@@ -8,7 +8,7 @@ import { clean } from './rule.js';
 import { extractUsj } from './extract_usj.js';
 import { extractPlain } from './extract_plain.js';
 import { chapterToUsj } from './helloao_to_usj.mjs';
-import { tokenize } from './tokenize.js';
+import { tokenize, TOKENIZER_VERSION } from './tokenize.js';
 import { fingerprints, verseLine, TEXT_FP_VERSION } from './text_fingerprint.mjs';
 import { content, contentFingerprints, CONTENT_FP_VERSION } from './content_fingerprint.mjs';
 
@@ -42,6 +42,6 @@ for (const ed of readdirSync(join(SUITE, 'helloao')).sort())
     chapters++;
   }
 
-console.log(`tokenizer v2, text fingerprint v${TEXT_FP_VERSION}, content fingerprint v${CONTENT_FP_VERSION}`);
+console.log(`tokenizer v${TOKENIZER_VERSION}, text fingerprint v${TEXT_FP_VERSION}, content fingerprint v${CONTENT_FP_VERSION}`);
 console.log(`rules: ${rules} cases\nhelloAO: ${chapters} chapters\n${bad} failures`);
 process.exit(bad ? 1 : 0);

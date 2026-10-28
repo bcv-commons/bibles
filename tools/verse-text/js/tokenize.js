@@ -15,7 +15,7 @@
 // TOKENIZER_VERSION is published in the dataset manifest. If it does not match the version this file
 // implements, REFUSE TO DECODE rather than risk silently misaligned positions.
 
-export const TOKENIZER_VERSION = 2;
+export const TOKENIZER_VERSION = 3;
 
 // --- canonical combining class != 0 (generated; JS has no unicodedata.combining) ---
 const CCC = [[768,846],[848,879],[1155,1159],[1425,1469],[1471,1471],[1473,1474],[1476,1477],[1479,1479],[1552,1562],[1611,1631],[1648,1648],[1750,1756],[1759,1764],[1767,1768],[1770,1773],[1809,1809],[1840,1866],[2027,2035],[2045,2045],[2070,2073],[2075,2083],[2085,2087],[2089,2093],[2137,2139],[2199,2207],[2250,2273],[2275,2303],[2364,2364],[2381,2381],[2385,2388],[2492,2492],[2509,2509],[2558,2558],[2620,2620],[2637,2637],[2748,2748],[2765,2765],[2876,2876],[2893,2893],[3021,3021],[3132,3132],[3149,3149],[3157,3158],[3260,3260],[3277,3277],[3387,3388],[3405,3405],[3530,3530],[3640,3642],[3656,3659],[3768,3770],[3784,3787],[3864,3865],[3893,3893],[3895,3895],[3897,3897],[3953,3954],[3956,3956],[3962,3965],[3968,3968],[3970,3972],[3974,3975],[4038,4038],[4151,4151],[4153,4154],[4237,4237],[4957,4959],[5908,5909],[5940,5940],[6098,6098],[6109,6109],[6313,6313],[6457,6459],[6679,6680],[6752,6752],[6773,6780],[6783,6783],[6832,6845],[6847,6862],[6964,6964],[6980,6980],[7019,7027],[7082,7083],[7142,7142],[7154,7155],[7223,7223],[7376,7378],[7380,7392],[7394,7400],[7405,7405],[7412,7412],[7416,7417],[7616,7679],[8400,8412],[8417,8417],[8421,8432],[11503,11505],[11647,11647],[11744,11775],[12330,12335],[12441,12442],[42607,42607],[42612,42621],[42654,42655],[42736,42737],[43014,43014],[43052,43052],[43204,43204],[43232,43249],[43307,43309],[43347,43347],[43443,43443],[43456,43456],[43696,43696],[43698,43700],[43703,43704],[43710,43711],[43713,43713],[43766,43766],[44013,44013],[64286,64286],[65056,65071],[66045,66045],[66272,66272],[66422,66426],[68109,68109],[68111,68111],[68152,68154],[68159,68159],[68325,68326],[68900,68903],[68969,68973],[69291,69292],[69373,69375],[69446,69456],[69506,69509],[69702,69702],[69744,69744],[69759,69759],[69817,69818],[69888,69890],[69939,69940],[70003,70003],[70080,70080],[70090,70090],[70197,70198],[70377,70378],[70459,70460],[70477,70477],[70502,70508],[70512,70516],[70606,70608],[70722,70722],[70726,70726],[70750,70750],[70850,70851],[71103,71104],[71231,71231],[71350,71351],[71467,71467],[71737,71738],[71997,71998],[72003,72003],[72160,72160],[72244,72244],[72263,72263],[72345,72345],[72767,72767],[73026,73026],[73028,73029],[73111,73111],[73537,73538],[90415,90415],[92912,92916],[92976,92982],[94192,94193],[113822,113822],[119141,119145],[119149,119154],[119163,119170],[119173,119179],[119210,119213],[119362,119364],[122880,122886],[122888,122904],[122907,122913],[122915,122916],[122918,122922],[123023,123023],[123184,123190],[123566,123566],[123628,123631],[124140,124143],[124398,124399],[125136,125142],[125252,125258]];
@@ -70,21 +70,41 @@ function isMyaConsonant(cp) {
           (cp >= 0xaa71 && cp <= 0xaa76) || cp === 0xaa7a || (cp >= 0xaa7e && cp <= 0xaa7f));
 }
 
-const MYA_VIRAMA = 0x1039, MYA_ASAT = 0x103a, MYA_EVOWEL = 0x1031;
+const MYA_VIRAMA = 0x1039, MYA_ASAT = 0x103a, MYA_EVOWEL = 0x1031, MYA_DOT_BELOW = 0x1037;
+const isMyaMedial = (cp) => (cp >= 0x103b && cp <= 0x103e) || (cp >= 0x105e && cp <= 0x1060) || cp === 0x1082;
 
 // A syllable starts at a consonant, or at U+1031 (written BEFORE its consonant but pronounced after).
 // It does not start when the consonant is stacked under a virama, nor right after U+1031, nor after an
 // asat — an asat-killed consonant closes the current syllable instead of opening the next.
-function myaSyllables(tok) {
+// v3: logical-order Unicode Myanmar (U+1031 after its consonant) and legacy visual order (U+1031 first).
+// A syllable starts at a consonant, except when it is stacked under a virama, when an asat follows it
+// (skipping a dot below: it is the final of the syllable in progress), or when the syllable in progress
+// was opened by a visual-order U+1031 and has no consonant yet. U+1031 opens a syllable only when it does
+// not follow a consonant, medial or virama. Mirrors python/bcv_tokenize.py _mya_syllables.
+// S'gaw Karen: no final consonants, the asat is a tone mark, so a consonant before it opens a syllable.
+// Decided per text: U+1061/1063/1064, or U+1062 without Shan letters and tones (U+1075-109F).
+// Mirrors python/bcv_tokenize.py _is_karen.
+function isKaren(text) {
+  return /[\u1061\u1063\u1064]/u.test(text) || (text.includes("\u1062") && !/[\u1075-\u109f]/u.test(text));
+}
+
+function myaSyllables(tok, karen = false) {
   const chars = Array.from(tok);
   const out = [];
   let cur = [];
+  let eOpen = false;
   for (let i = 0; i < chars.length; i++) {
     const cp = chars[i].codePointAt(0);
     const prev = i ? chars[i - 1].codePointAt(0) : 0;
-    if ((isMyaConsonant(cp) || cp === MYA_EVOWEL) && cur.length &&
-        prev !== MYA_VIRAMA && prev !== MYA_EVOWEL && prev !== MYA_ASAT) {
-      out.push(cur.join("")); cur = [];
+    if (isMyaConsonant(cp)) {
+      let j = i + 1;
+      while (j < chars.length && chars[j].codePointAt(0) === MYA_DOT_BELOW) j++;
+      const final = !karen && j < chars.length && chars[j].codePointAt(0) === MYA_ASAT;
+      if (cur.length && prev !== MYA_VIRAMA && !final && !eOpen) { out.push(cur.join("")); cur = []; }
+      eOpen = false;
+    } else if (cp === MYA_EVOWEL && !(isMyaConsonant(prev) || isMyaMedial(prev) || prev === MYA_VIRAMA)) {
+      if (cur.length) { out.push(cur.join("")); cur = []; }
+      eOpen = true;
     }
     cur.push(chars[i]);
   }
@@ -92,9 +112,9 @@ function myaSyllables(tok) {
   return out;
 }
 
-function splitUnspaced(tok) {
+function splitUnspaced(tok, karen = false) {
   const chars = Array.from(tok);
-  if (chars.some((c) => isMyaConsonant(c.codePointAt(0)))) return myaSyllables(tok);
+  if (chars.some((c) => isMyaConsonant(c.codePointAt(0)))) return myaSyllables(tok, karen);
   if (!chars.some((c) => cjkClass(c.codePointAt(0)))) return [tok];
   const out = [];
   let cur = [], curCls = null;
@@ -116,10 +136,12 @@ function splitUnspaced(tok) {
 export function tokenize(text) {
   const out = [];
   let cur = [];
-  for (const ch of stripMarks(text)) {
+  const stripped = stripMarks(text);
+  const karen = isKaren(stripped);
+  for (const ch of stripped) {
     if (LETTER_OR_MARK.test(ch)) cur.push(ch);
-    else if (cur.length) { out.push(...splitUnspaced(cur.join(""))); cur = []; }
+    else if (cur.length) { out.push(...splitUnspaced(cur.join(""), karen)); cur = []; }
   }
-  if (cur.length) out.push(...splitUnspaced(cur.join("")));
+  if (cur.length) out.push(...splitUnspaced(cur.join(""), karen));
   return out;
 }

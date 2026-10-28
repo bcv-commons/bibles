@@ -9,7 +9,7 @@
   "licence": "CC BY-SA 4.0",
   "verse_text": "bibles' helloAO converter (chapter_to_usj) + extract_usj, tools/verse-text, as vendored by lexeme-aligner at 34cb423a"
  },
- "tokenizer_version": 2,
+ "tokenizer_version": 3,
  "text_fp_version": 1,
  "verses": [
   {

@@ -82,7 +82,7 @@ MINOR_SHARE = 0.01
 RTL = {"Arab", "Aran", "Hebr", "Syrc", "Thaa", "Nkoo", "Adlm", "Samr", "Mand", "Rohg", "Yezi", "Mend",
        "Armi", "Avst", "Chrs", "Elym", "Hatr", "Khar", "Lydi", "Mani", "Narb", "Nbat", "Ougr", "Palm",
        "Phli", "Phlp", "Phnx", "Prti", "Sarb", "Sogd", "Sogo", "Hung", "Orkh"}
-# Scripts written without spaces between words; tokenizer v2 cuts Han per character, Myanmar
+# Scripts written without spaces between words; the tokenizer cuts Han per character, Myanmar
 # per syllable, and Thai, Lao and Khmer only where the text has a zero-width space.
 NO_SPACES = {"Hani", "Hans", "Hant", "Jpan", "Thai", "Laoo", "Khmr", "Mymr", "Tibt", "Lana", "Talu",
              "Tavt", "Bali", "Java"}

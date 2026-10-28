@@ -1,0 +1,156 @@
+[
+ {
+  "name": "tone on letters with no precomposed form",
+  "input": "Mø̀ndæ qá ei᷄n, ɨ́n vø̄sømbiam!",
+  "tokens": [
+   "Møndæ",
+   "qá",
+   "ein",
+   "ɨn",
+   "vøsømbiam"
+  ],
+  "written": [
+   "Mø̀ndæ",
+   "qá",
+   "ei᷄n",
+   "ɨ́n",
+   "vø̄sømbiam"
+  ]
+ },
+ {
+  "name": "decomposed input is normalized first",
+  "input": "qá até",
+  "tokens": [
+   "qá",
+   "até"
+  ],
+  "written": [
+   "qá",
+   "até"
+  ]
+ },
+ {
+  "name": "Yoruba: dot below and tone",
+  "input": "ọkọ̀ ọkọ́ ọkọ",
+  "tokens": [
+   "ọkọ",
+   "ọkọ",
+   "ọkọ"
+  ],
+  "written": [
+   "ọkọ̀",
+   "ọkọ́",
+   "ọkọ"
+  ]
+ },
+ {
+  "name": "Arabic harakat",
+  "input": "فِي البَدْءِ",
+  "tokens": [
+   "في",
+   "البدء"
+  ],
+  "written": [
+   "فِي",
+   "البَدْءِ"
+  ]
+ },
+ {
+  "name": "Hebrew points",
+  "input": "בְּרֵאשִׁית בָּרָא",
+  "tokens": [
+   "בראשית",
+   "ברא"
+  ],
+  "written": [
+   "בְּרֵאשִׁית",
+   "בָּרָא"
+  ]
+ },
+ {
+  "name": "Han and kana split by v2",
+  "input": "神の子イエス",
+  "tokens": [
+   "神",
+   "の",
+   "子",
+   "イエス"
+  ],
+  "written": [
+   "神",
+   "の",
+   "子",
+   "イエス"
+  ]
+ },
+ {
+  "name": "Myanmar syllables, virama and asat kept by v2",
+  "input": "အာဗြဟံ ဒါဝိဒ",
+  "tokens": [
+   "အာ",
+   "ဗြ",
+   "ဟံ",
+   "ဒါ",
+   "ဝိ",
+   "ဒ"
+  ],
+  "written": [
+   "အာ",
+   "ဗြ",
+   "ဟံ",
+   "ဒါ",
+   "ဝိ",
+   "ဒ"
+  ]
+ },
+ {
+  "name": "Devanagari: spacing marks stay, virama dropped",
+  "input": "दाऊद प्रभु",
+  "tokens": [
+   "दाऊद",
+   "परभु"
+  ],
+  "written": [
+   "दाऊद",
+   "प्रभु"
+  ]
+ },
+ {
+  "name": "variation selector stays dropped",
+  "input": "က︀ခ",
+  "tokens": [
+   "က",
+   "ခ"
+  ],
+  "written": [
+   "က",
+   "ခ"
+  ]
+ },
+ {
+  "name": "a mark with no letter before it belongs to no token",
+  "input": "a ́b",
+  "tokens": [
+   "a",
+   "b"
+  ],
+  "written": [
+   "a",
+   "b"
+  ]
+ },
+ {
+  "name": "digits and punctuation are separators",
+  "input": "40 days—and nights.",
+  "tokens": [
+   "days",
+   "and",
+   "nights"
+  ],
+  "written": [
+   "days",
+   "and",
+   "nights"
+  ]
+ }
+]

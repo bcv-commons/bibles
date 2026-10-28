@@ -228,6 +228,6 @@ had (requested 2026-10-28); then it is deleted. Don't build on it.
 
 ## Not applicable to
 
-[`/obs/<iso>/timing.json`](obs-media.md#obsisotimingjson) — a different,
-still-embedded-data format for now; OBS's much smaller content scale (50
-stories) doesn't hit the over-fetch problem this redesign exists to fix.
+OBS: its timing comes from audio-sync (`align/obs/`) or video-sync
+(`obs-video/`) directly, see [OBS story timing](obs-media.md#obs-story-timing).
+The old `/obs/<iso>/timing.json` is retired the same way.

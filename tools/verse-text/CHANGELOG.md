@@ -4,6 +4,18 @@ A change to the verse text, tokens or a fingerprint for any input is a new major
 because published alignments and fingerprints refer to the old output. Additions that
 leave every existing output unchanged are minor versions.
 
+## 2.0.0 (2026-10-28)
+
+- **Tokenizer v3** (bcv-commons/bibles#1): logical-order Burmese (U+1031 no longer opens
+  a syllable after its consonant; a consonant before an asat closes the syllable) and the
+  S'gaw Karen exception (the asat is a tone mark). Tokens and text fingerprints change for
+  Myanmar-script text only: of the 9,806 books we publish, 121 (KswSKMB 66, NTRKB 27,
+  SANBUR 27, SPBT 1); helloAO's `mya_ojv` in the conformance suite. Alignments keyed on
+  those fingerprints must be regenerated.
+- **Written tokens v1** (new, from bcv-commons/bsb-add-books): `tokenize_written` /
+  `tokenizeWritten`, the tokens with the combining marks the tokenizer drops put back,
+  same count and positions. Tests on `conformance/written.expected.json`.
+
 ## 1.0.0 (2026-10-17)
 
 First versioned release.

@@ -73,8 +73,8 @@ omitted here because `ahr` has all 50.)
   small fraction of `audioStories` — see [`catalog-obs.md`](catalog-obs.md)
   for current numbers). **`timingStoriesSet`** — the story-id list, same
   omit-when-full-or-empty convention as `audioStoriesSet`. When nonzero,
-  fetch [`/obs/<iso>/timing.json`](#obsisotimingjson) below for the actual
-  segment ranges.
+  fetch each story's timing from audio-sync, see
+  [OBS story timing](#obs-story-timing) below.
 - **`stories`** — one entry per story, keyed by 2-digit story id
   (`"01"`–`"50"`), present whenever `storyCount > 0` **for every
   language, text-only included** (not just audio-bearing ones — added
@@ -209,16 +209,18 @@ not one of the standard org submissions) that genuinely has no
 **Redesigned 2026-09-14, same day and same reasoning as
 [`dbt-timing.md`](dbt-timing.md): bibles publishes no timing file for
 OBS either.** The earlier `/obs/<iso>/timing.json` (a per-language merge
-of audio-sync's real alignment, mirrored into a local cache first) is
-retired — it was never actually published live. Real per-segment timing
-comes straight from audio-sync's own CDN, at a pure formula:
+of audio-sync's alignment) is retired: published 2026-09-02 to 09-11 for 81
+languages, frozen since, and to be deleted from the CDN once no client reads
+it. Don't use it: it misses everything aligned since. Per-segment timing
+comes straight from audio-sync's own CDN, at a pure formula (for the 12
+video-only languages, from video-sync instead: see above):
 
 ```
 https://cdn.bibel.wiki/align/obs/<raw_iso>/<story>_timing.json
 ```
 
-OBS has only one real source (audio-sync) — no priority list to apply,
-unlike DBT's four. Check `/obs/<iso>/media.json`'s `timingStories`/
+OBS has one source per language (audio-sync, or video-sync for the
+video-only ones) — no priority list to apply, unlike DBT's two. Check `/obs/<iso>/media.json`'s `timingStories`/
 `timingStoriesSet` first (bibles' own existence signal — audio-sync
 publishes a completion manifest for OBS too, same `align/_runs/` stream
 as Bible text, distinguished by a `story` field; bibles reads that, never
@@ -240,23 +242,18 @@ story <NN>", "pos": [<segment start seconds>, ...], "score": [...]}` —
 a segment = the next entry's start, last segment's `end` = its own start
 (use the audio's real duration for that one).
 
-Source data (`align/obs/<iso>/<story>_timing.json`, a flat array of
-`{story, segment, timestamp, score, source}` point timestamps — audio-sync's
-real, running alignment output) is converted into this ranged shape here;
-it is never republished in its original point-timestamp form.
-
-## `media.json` vs `timing.json`: different sources, don't assume either implies the other
+## `media.json` vs timing: different sources, don't assume either implies the other
 
 `/obs/<iso>/media.json` (content base URL, license, resolved per-story
 audio) is resolved directly from door43 — it exists for every language in
 [`catalog-obs-index.json`](catalog-obs.md), full stop, no dependency on
-any other pipeline's pace. `/obs/<iso>/timing.json` depends entirely on
-audio-sync's real, ongoing alignment work (`align/obs/`) and will
-genuinely lag — most languages don't have it yet. **A language can have
-`media.json` without `timing.json` (the common case today), but never the
-reverse** (timing without media.json would be a bug, not an expected
-state, given media.json's unconditional coverage). Check `media.json`'s
-own `timingStories` field before assuming `timing.json` exists.
+any other pipeline's pace. Timing depends entirely on audio-sync's
+ongoing alignment work (`align/obs/`) and will genuinely lag — most
+languages don't have it yet. **A language can have `media.json` without
+timing (the common case today), but never the reverse** (timing without
+media.json would be a bug, not an expected state, given media.json's
+unconditional coverage). Check `media.json`'s own `timingStories` field
+before fetching timing.
 
 This wasn't always true — `media.json`'s audio detail used to depend on
 audio-sync's `_obs_batches/` staging pace too, which caused a real gap
