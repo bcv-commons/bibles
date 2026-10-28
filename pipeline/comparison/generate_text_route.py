@@ -9,9 +9,10 @@ Source ids are catalog/overlap.json's (d: DBT, h: helloAO, p: PKF, o: openbible 
 audiobiblia, e: eBible, c: CrossWire). Routes, in order of preference (agreed with lexeme-aligner 2026-10-17):
 
 - sofria: the source's own Sofria. DBT: its text_json fileset (`id`, the -json fileset).
-  Ours (openbible, audiobiblia, CrossWire): `path` on cdn.bibel.wiki, <BOOK>/<chapter>.sofria.json
+  Ours (openbible, audiobiblia, eBible, CrossWire, Door43): `path` on cdn.bibel.wiki, <BOOK>/<chapter>.sofria.json
   (the same text is also there as <BOOK>.usj.json; route parity holds).
-- usj: our USJ, where that is the only form we publish (eBible): `path`, <BOOK>.usj.json.
+- usj: our USJ, where that is the only form we publish (on 2026-10-28 one CrossWire module,
+  KswSKMB): `path`, <BOOK>.usj.json.
 - usx: the source's USX, read with tools/verse-text (usx_to_usj.py, usx_to_sofria.mjs). Only
   where the source has no Sofria, or its Sofria lost text (`why`: sofria_damaged, evidence
   in data/text-route-overrides.toml).

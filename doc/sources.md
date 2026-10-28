@@ -55,8 +55,22 @@ published audio (thousands of versions). Real-time API, no bulk download.
 - Per-language `app-config.json` carries a `copyright` block
   (`CC-BY-NC-ND-4.0` / `CC-BY-4.0` / Public Domain, varies per language) —
   check it before redistributing decoded text.
-- A real timing/audio endpoint exists per language:
-  `<iso>/timing/<BOOK>-<chapter>.json`.
+- The manifest's per-language `media` says what's there: `a` audio, `v` video, `t` timing
+  (on 2026-10-28: 313 `avt`, 21 `av`, 99 `v`, 156 none). Where `media` has `t`, timing is at
+  `https://cdn.bibel.wiki/pkf/<iso>/timing/<BOOK>-<chapter>.json`, for the books that have
+  audio (404 otherwise): `[[start, end, "1a"], ...]`, seconds per verse part (`1a`, `1b`, ...).
+  `<iso>/info.json` → `media.audio.items` lists the audio, of two kinds by `src`. `h1`, `h2`,
+  ...: DBT's audio, which PKF's apps stream from DBT at runtime (se-regional-pwa,
+  2026-10-28). Anything else (`d1`, `d2`, `a1`): PKF's own audio, mostly on
+  scriptureearth.org, no key needed (115 languages; in `media.json` as `<ISO>PKF` editions,
+  [dbt-timing.md](dbt-timing.md#pkfs-own-audio-no-key-needed)). For DBT audio, each timed
+  chapter's file is named after the DBT fileset (e.g. `B05___01_Acts________ADETBLN2DA.mp3`, `timingFile`
+  `…-ACT-01-timing.txt`), with `len` and `size` from the app's build. Use it only with that
+  fileset: a language's other filesets (non-drama N1DA next to drama N2DA) are other recordings.
+  `size` is no reliable check: it can be missing or differ for the same recording (cul JHN 6,
+  prf PHP 1, zaa MRK 3: same length to 0.02 s), and DBT's API `duration` can be wrong (acu
+  ACT 1: 559, the file is 471 s). PKF's timing is the first choice
+  ([dbt-timing.md](dbt-timing.md)).
 
 ## helloAO (`bible.helloao.org`)
 

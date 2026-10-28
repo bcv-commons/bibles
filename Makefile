@@ -1,7 +1,7 @@
 PYTHON := .venv/bin/python
 CORE := pipeline/core
 
-.PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books \
+.PHONY: all dbt-metadata versification vrs vrs-map version-info dbt-catalog catalog-books languages \
         publish-dbt publish-dbt-dry cleanup-dbt cleanup-dbt-dry \
         publish-catalog publish-catalog-dry sofria-ebible stage-ebible publish-ebible publish-ebible-dry text-route edition-struct \
         crosswire-usj sofria-crosswire stage-crosswire publish-crosswire publish-crosswire-dry \
@@ -10,7 +10,7 @@ CORE := pipeline/core
         publish-audiobiblia publish-audiobiblia-dry mirror-audiobiblia-audio publish-audiobiblia-audio publish-audiobiblia-audio-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
         publish-vrs-maps publish-vrs-maps-dry publish-vrs-index publish-vrs-index-dry vrs-check \
-        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry fetch-dbt-timing \
+        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry fetch-dbt-timing fetch-pkf-audio \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles fetch-obs-video obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
 
@@ -24,10 +24,11 @@ help: ## Show available targets
 	@echo "  make vrs-map          Build cross-scheme verse maps (/_vrs/map/)"
 	@echo "  make versification    Fingerprint versification schemes"
 	@echo "  make version-info     Generate version-info artifact"
-	@echo "  make dbt-catalog      Generate catalog/text.json / catalog/audio.json"
+	@echo "  make dbt-catalog      Generate catalog/text.json / catalog/audio.json / catalog/audio-index.json"
 	@echo "  make text-route       Generate catalog/text-route.json (canonical text + reading route per edition)"
 	@echo "  make edition-struct   Generate catalog/edition-struct.json (per-edition metadata: script, direction, normalization, ...)"
 	@echo "  make catalog-books    Generate per-language /catalog/<iso[0]>/<iso>/books.json"
+	@echo "  make languages        Language names, audio-only list, availability.json, langs.json"
 	@echo ""
 	@echo "  CDN publishing"
 	@echo "  ──────────────"
@@ -57,6 +58,7 @@ help: ## Show available targets
 	@echo "  make fetch-catalog-books Fetch PKF + helloAO per-language book data (for catalog-books)"
 	@echo "  make align-pull       Index audio-sync's align/ (Bible text + OBS) into internal-data/{align,obs-align}-index.json"
 	@echo "  make align-pull-dry   Dry-run align pull (no writes)"
+	@echo "  make fetch-pkf-audio  Index PKF's audio and timing into internal-data/pkf-audio-index.json (also in dbt-metadata)"
 	@echo "  make fetch-dbt-timing Check which DBT audio filesets have DBT timing (REV 15 / PSA 117) into internal-data/dbt-timing-index.json"
 	@echo "  make fetch-obs-batches Fetch OBS narration batch manifests into internal-data/obs-batches/"
 	@echo "  make fetch-obs-catalog Fetch door43's OBS catalog stats, text+audio (existence source of truth)"
@@ -81,12 +83,14 @@ dbt-metadata: ## Generate media.json + versification + DBT catalogs for CDN
 	$(MAKE) vrs-map
 	$(PYTHON) $(CORE)/fingerprint_versification.py
 	$(PYTHON) $(CORE)/pull_align_manifests.py
+	$(PYTHON) $(CORE)/fetch_pkf_audio_index.py
 	$(PYTHON) $(CORE)/publish_timing_raw.py
 	$(PYTHON) $(CORE)/generate_audio_metadata.py
 	$(PYTHON) $(CORE)/generate_sync_candidates.py
 	$(PYTHON) $(CORE)/generate_dbt_coverage.py
 	$(PYTHON) $(CORE)/generate_helloao_crosswalk.py
 	$(PYTHON) $(CORE)/generate_dbt_catalog.py
+	$(PYTHON) pipeline/comparison/generate_catalog_audio_index.py
 
 vrs: ## Verify + stage the standard .vrs scheme files
 	$(PYTHON) $(CORE)/generate_vrs.py $(ARGS)
@@ -135,14 +139,20 @@ versification: ## Fingerprint DBT versification schemes
 version-info: ## Generate version-info artifact
 	$(PYTHON) $(CORE)/generate_version_info.py $(ARGS)
 
-dbt-catalog: ## Generate catalog/text.json / catalog/audio.json from the fetched DBT catalog
+dbt-catalog: ## Generate catalog/text.json / catalog/audio.json from the fetched DBT catalog, and catalog/audio-index.json (all sources)
 	$(PYTHON) $(CORE)/generate_dbt_catalog.py $(ARGS)
+	$(PYTHON) pipeline/comparison/generate_catalog_audio_index.py
 
 catalog-books: ## Generate per-language /catalog/<iso[0]>/<iso>/books.json (run fetch-catalog-books first)
 	$(PYTHON) $(CORE)/generate_catalog_books.py $(ARGS)
 
-langs-catalog: dbt-metadata obs-metadata ## Generate catalog/langs.json + langs-mini.json (Phase 2 — self-derived; now chained after its two real prerequisites so it can't go stale from being forgotten)
+languages: dbt-metadata obs-metadata ## Language names, audio-only list, per-language availability.json and catalog/langs.json (after the catalog index + overlap; publish with publish-dbt and publish-catalog)
+	$(PYTHON) $(CORE)/generate_language_names.py
+	$(PYTHON) $(CORE)/generate_audio_only.py
+	$(PYTHON) $(CORE)/generate_language_availability.py
 	$(PYTHON) pipeline/comparison/generate_langs_catalog.py $(ARGS)
+
+langs-catalog: languages ## Same as languages (old name)
 
 obs-metadata: ## Generate export/obs/<iso>/media.json + catalog/obs-index.json (run fetch-obs-catalog, fetch-obs-repos, fetch-obs-titles first; fetch-obs-batches optional, enrichment only)
 	$(PYTHON) $(CORE)/pull_align_manifests.py
@@ -189,11 +199,15 @@ AUDIOBIBLIA_AUDIO = SOURCE_DIR=internal-data/downloads/audiobiblia-audio RCLONE_
 mirror-audiobiblia-audio: ## Download BLL's public-domain chapter audio from audiobiblia.org (needs the BLL USJ)
 	$(PYTHON) $(CORE)/mirror_audiobiblia_audio.py $(ARGS)
 
-publish-audiobiblia-audio: ## Upload the mirrored audio to cdn.bibel.wiki/audiobiblia/<iso>/<edition>/audio/
+# The staged _meta.json goes up with the audio: its formats.audio is what tells a client the audio
+# exists (2026-10-28: the audio was published alone on 10-27 and the live _meta.json didn't list it).
+publish-audiobiblia-audio: ## Upload the mirrored audio to cdn.bibel.wiki/audiobiblia/<iso>/<edition>/audio/, with the staged _meta.json
 	$(AUDIOBIBLIA_AUDIO) bash $(CORE)/publish-audiobiblia.sh
+	RCLONE_EXTRA="--include */*/_meta.json" SOURCE_DIR=$(SOFRIA_STAGE)/audiobiblia bash $(CORE)/publish-audiobiblia.sh
 
 publish-audiobiblia-audio-dry: ## Dry-run CDN upload (no writes)
 	$(AUDIOBIBLIA_AUDIO) DRY_RUN=1 bash $(CORE)/publish-audiobiblia.sh
+	RCLONE_EXTRA="--include */*/_meta.json" SOURCE_DIR=$(SOFRIA_STAGE)/audiobiblia DRY_RUN=1 bash $(CORE)/publish-audiobiblia.sh
 
 SOFRIA_OUT := export/publish/sofria
 SOFRIA_STAGE := export/publish/stage
@@ -333,6 +347,9 @@ align-pull-dry: ## Dry-run align pull (no writes)
 
 fetch-dbt-timing: ## Check which DBT audio filesets have DBT's own timing (one probe per testament) into internal-data/dbt-timing-index.json
 	$(PYTHON) $(CORE)/fetch_dbt_timing_index.py $(ARGS)
+
+fetch-pkf-audio: ## Index PKF's audio and timing (DBT filesets PKF timed, and PKF's own audio) from pkf/<iso>/info.json, no key, into internal-data/pkf-audio-index.json; also run by dbt-metadata
+	$(PYTHON) $(CORE)/fetch_pkf_audio_index.py
 
 fetch-obs-batches: ## Fetch OBS narration batch manifests into internal-data/obs-batches/
 	$(PYTHON) $(CORE)/fetch_obs_batches.py

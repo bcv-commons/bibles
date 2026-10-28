@@ -24,7 +24,7 @@ logic independently.
 {
   "schema_version": 1,
   "generated_at": "...",
-  "count": 2435,
+  "count": 2641,
   "l": {
     "ivv": "Ivatan",
     "eng": "English",
@@ -80,6 +80,12 @@ you've actually picked a language.
    tags and retired ISO codes) when door43's title alone isn't decisive.
    As of 2026-09-15 all 87 OBS-only gaps are resolved — 0 fall back to
    the bare ISO code.
+5. **Every other language in `catalog/index.json`** (added 2026-10-28:
+   24 had no name, e.g. the CrossWire-only `chu`, `glv`): DBT's own
+   catalog (`language`, `autonym`), then SIL's ISO 639-3 reference name
+   (`iso-639-3.tab`). The OBS table above still wins for its languages.
+
+Built by `make languages`, after `dbt-metadata` and `obs-metadata`.
 
 ## A note on trust
 

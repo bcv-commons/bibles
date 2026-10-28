@@ -59,7 +59,7 @@ the decode step.
 
 **[`tools/get-audio/`](../tools/get-audio/)** — the standard way to play a
 chapter with verse timing: the audio URL (helloAO or DBT), then timing from
-audio-sync's `align/`, then from DBT with your key. JavaScript, no
+PKF, then audio-sync's `align/`, then DBT with your key. JavaScript, no
 dependencies, runs in a browser.
 
 **[`tools/sofria-render/`](../tools/sofria-render/)** — renders a Sofria
@@ -114,14 +114,14 @@ real localized book titles for a UI, not for discovery.
 
 - **Audio** — **[`/dbt/<iso>/media.json`](dbt-timing.md)** lists, per
   language and testament, the audio filesets and which books have verse
-  timing (`"at"`, `timingOnly`/`timingExcept`). Timing itself comes from
-  audio-sync's `align/` first, then from DBT with your own key; bibles
+  timing (`"at"`, `timingOnly`/`timingExcept`): DBT's (with your key),
+  helloAO's and PKF's own audio (`<ISO>PKF` editions, no key, 115 languages). Timing itself comes from
+  PKF first, then audio-sync's `align/`, then DBT with your own key; bibles
   publishes no timing files. [`dbt-timing.md`](dbt-timing.md) has the URLs,
   and [`tools/get-audio`](../tools/get-audio/) the code.
 - **Audio existence across sources** — **[`catalog-audio-index.json`](catalog-audio-index.md)** is
   the source-agnostic existence check: "does source X have audio for this
-  `(iso, canon)`" across DBT, helloAO, and openbible (Biblica — PKF has a
-  real audio endpoint too, not yet cataloged here — see that doc). DBT has
+  `(iso, canon)`" across DBT, PKF, helloAO and openbible (Biblica). DBT has
   by far the broadest real coverage; see `catalog-audio.json` above for
   its fileset routing. openbible is a real second broad source (357 audio
   projects, book-level verified) but has no fileset-routing file yet —

@@ -51,6 +51,7 @@ Output: export/dbt/_app/language-names.json
 """
 import json
 import sys
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -66,8 +67,23 @@ MEDIA_INDEX = EXPORT / "dbt" / "_app" / "media-index.json"
 PKF_MANIFEST = API_CACHE / "pkf-manifest.json"
 OPENBIBLE_PROJECTS = API_CACHE / "openbible" / "projects.json"
 OBS_INDEX = EXPORT / "catalog" / "obs-index.json"
+CATALOG_INDEX = EXPORT / "catalog" / "index.json"
+DBT_BIBLES_PAGES = API_CACHE / "bibles"
+# SIL's ISO 639-3 registry (Ref_Name), the last resort for a catalog language no source names.
+SIL_TABLE = API_CACHE / "iso-639-3.tab"
+SIL_URL = "https://iso639-3.sil.org/sites/iso639-3/files/downloads/iso-639-3.tab"
 OBS_UNRESOLVED_NAMES = DATA / "obs-unresolved-language-names.toml"
 OUTPUT = EXPORT / "dbt" / "_app" / "language-names.json"
+
+
+def load_sil_names() -> dict:
+    """{code: Ref_Name} from SIL's ISO 639-3 table, fetched once into the api-cache."""
+    if not SIL_TABLE.exists():
+        req = urllib.request.Request(SIL_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            SIL_TABLE.write_bytes(resp.read())
+    rows = SIL_TABLE.read_text(encoding="utf-8").splitlines()[1:]
+    return {r.split("\t")[0]: r.split("\t")[6] for r in rows if r.count("\t") >= 6}
 
 
 def main():
@@ -132,6 +148,37 @@ def main():
     else:
         print(f"[generate-language-names] WARNING: {OPENBIBLE_PROJECTS} missing, skipping openbible source")
 
+    # Every language in catalog/index.json gets a name too (2026-10-28: 24 had none, e.g. the
+    # CrossWire-only chu, glv, and DBT languages media-index.json doesn't list). First DBT's
+    # own catalog (language, autonym), then SIL's ISO 639-3 reference name.
+    catalog_added = 0
+    curated = set()
+    if OBS_UNRESOLVED_NAMES.exists():  # its verified names win over DBT's and SIL's spellings
+        with open(OBS_UNRESOLVED_NAMES, "rb") as f:
+            curated = set(tomllib.load(f).get("names", {}))
+    if CATALOG_INDEX.exists():
+        with open(CATALOG_INDEX) as f:
+            catalog_isos = {row[0] for row in json.load(f).get("entries", [])} - set(names) - curated
+        dbt_names = {}
+        for page in sorted(DBT_BIBLES_PAGES.glob("bibles_page_*.json")):
+            for b in json.loads(page.read_text()).get("data", []):
+                if b.get("iso") in catalog_isos and b.get("language"):
+                    dbt_names.setdefault(b["iso"], (b["language"], b.get("autonym")))
+        sil_names = load_sil_names() if catalog_isos - set(dbt_names) else {}
+        for iso in sorted(catalog_isos):
+            if iso in dbt_names:
+                names[iso] = dbt_names[iso]
+            elif iso in sil_names:
+                names[iso] = (sil_names[iso], None)
+            else:
+                continue
+            catalog_added += 1
+        unnamed = sorted(catalog_isos - set(names))
+        if unnamed:
+            print(f"[generate-language-names] WARNING: no name for {len(unnamed)} catalog language(s): {unnamed}")
+    else:
+        print(f"[generate-language-names] WARNING: {CATALOG_INDEX} missing, skipping catalog union")
+
     obs_resolved_from_table = 0
     resolved_names = {}
     if OBS_UNRESOLVED_NAMES.exists():
@@ -175,6 +222,7 @@ def main():
 
     print(f"[generate-language-names] {dbt_family_count} from media-index.json, "
           f"+{pkf_added} new from PKF, +{openbible_added} new from openbible, "
+          f"+{catalog_added} other catalog languages (DBT catalog, then ISO 639-3), "
           f"+{obs_resolved_from_table} OBS-only resolved via "
           f"{OBS_UNRESOLVED_NAMES.name}, +{obs_unnamed} OBS-only still with no real name "
           f"(code used as-is) -> {len(compact)} total -> {OUTPUT}")

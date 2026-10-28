@@ -34,7 +34,7 @@ stories or apps, starts from here and is coordinated through here.
 
 | Source | What it gives | How |
 |---|---|---|
-| PKF (`se-regional-pwa`) | text, audio and versification per language | linked |
+| PKF (`se-regional-pwa`) | text and versification per language; verse timing, and its own audio with timing for 115 languages | linked |
 | helloAO (bible.helloao.org) | text for over 1,200 editions; audio for BSB | linked |
 | openbible (Biblica) and audiobiblia.org | text; audiobiblia's BLL audio | republished |
 | eBible.org | editions helloAO doesn't carry | republished |

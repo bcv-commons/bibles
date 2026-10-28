@@ -28,12 +28,10 @@ Per-source population, as of this build:
     catalog has no audio-existence field, so this can't be derived the way
     DBT's can; each entry was hand-verified against a live per-chapter
     response, not guessed from a translation name.
-  - PKF: NOT YET POPULATED. PKF publishes a real per-language timing/audio
-    endpoint (`<iso>/timing/<BOOK>-<chapter>.json`, confirmed to exist by
-    se-regional-pwa's own summary), but nothing in this pipeline fetches or
-    caches it yet — see internal-docs/catalog-audio-ownership-architecture.md
-    §8's open items. Returns zero rows, not a guess, until that ingestion
-    work happens.
+  - PKF (since 2026-10-28): PKF's own audio, the audio PKF's apps get from
+    scriptureearth.org and elsewhere, not DBT's (internal-data/pkf-audio-index.json,
+    fetch_pkf_audio_index.py, which checks each source answers). Book-level. The DBT
+    audio PKF's apps stream is DBT's, already counted under `d`.
   - openbible (Biblica's Open Bible catalog, added 2026-09-16): real,
     book-level — fetch_openbible_cache.py's phase 2 already confirms real
     per-book audio coverage per version (`audioBooks`), not just a claimed
@@ -54,9 +52,11 @@ from collections import defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import API_CACHE, CATALOG_DIR, EXPORT, HELLOAO_AUDIO_FILE  # noqa: E402
+from paths import API_CACHE, CATALOG_DIR, EXPORT, HELLOAO_AUDIO_FILE, INTERNAL_DATA  # noqa: E402
 
 DBT_CATALOG_URL = "https://cdn.bibel.wiki/dbt/_catalog.json"
+PKF_MANIFEST_URL = "https://cdn.bibel.wiki/pkf/manifest.json"
+PKF_AUDIO_INDEX = INTERNAL_DATA / "pkf-audio-index.json"
 HELLOAO_CATALOG_URL = "https://bible.helloao.org/api/available_translations.json"
 OPENBIBLE_PROJECTS_URL = "https://openbible-api-1.biblica.com/projects"
 
@@ -92,10 +92,12 @@ def helloao_rows():
 
 
 def pkf_rows():
-    # PKF has a real per-language timing/audio endpoint but nothing in this
-    # pipeline fetches it yet — deliberately empty, not a guess. See the
-    # module docstring.
-    return {}
+    counts = defaultdict(int)
+    if not PKF_AUDIO_INDEX.exists():
+        return counts
+    for iso, own in json.loads(PKF_AUDIO_INDEX.read_text()).get("own", {}).items():
+        canon_counts(iso, set(own["audio"]), "p", counts)
+    return counts
 
 
 def openbible_rows():
@@ -153,7 +155,8 @@ def main():
     output = {
         "schema_version": 1,
         "generated_at": None,
-        "sources": [{"d": DBT_CATALOG_URL}, {"h": HELLOAO_CATALOG_URL}, {"o": OPENBIBLE_PROJECTS_URL}],
+        "sources": [{"d": DBT_CATALOG_URL}, {"p": PKF_MANIFEST_URL}, {"h": HELLOAO_CATALOG_URL},
+                    {"o": OPENBIBLE_PROJECTS_URL}],
         "entries": entries,
     }
 

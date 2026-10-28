@@ -42,8 +42,13 @@ and `generate_version_info.py` still read `export/ALL-langs/` — that
 migration hasn't reached them yet.
 
 bibles publishes no timing. `media.json` says which books have it, from
-two local indexes:
+three local indexes:
 
+- `internal-data/pkf-audio-index.json`: PKF's audio and timing, from
+  `pkf/<iso>/info.json` on the CDN (`make fetch-pkf-audio`, also part of
+  `make dbt-metadata`; no key): the DBT filesets PKF timed (it also orders
+  each edition's `a` list, the filesets PKF uses first), and PKF's own
+  audio, which becomes each language's `<ISO>PKF` edition.
 - `internal-data/align-index.json`: audio-sync's timing, from a listing of
   `align/` on the CDN (`make align-pull`, also part of `make dbt-metadata`
   and `make obs-metadata`). It also pulls audio-sync's `align/_runs/`

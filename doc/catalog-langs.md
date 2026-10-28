@@ -30,7 +30,7 @@ added since, OBS's dialect/subtag expansion included.
 data `bibles` already produces — `catalog-index.json`,
 `catalog-audio-index.json`, `/dbt/_app/media-index.json`, and every
 `/obs/<iso>/media.json` — with zero dependency on any external repo.
-Self-refreshing on every `make langs-catalog` run (after `dbt-metadata` +
+Self-refreshing on every `make languages` run (after `dbt-metadata` +
 `obs-metadata`). Same URLs as the Phase 1 mirror, so no client-side
 change needed — content only improved: **2566 languages** (was 2165),
 plus a new **`obs`** canon key the mirrored file never had.

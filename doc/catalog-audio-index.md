@@ -17,6 +17,7 @@ already parsing that file needs zero new logic here.
   "generated_at": "...",
   "sources": [
     {"d": "https://cdn.bibel.wiki/dbt/_catalog.json"},
+    {"p": "https://cdn.bibel.wiki/pkf/manifest.json"},
     {"h": "https://bible.helloao.org/api/available_translations.json"},
     {"o": "https://openbible-api-1.biblica.com/projects"}
   ],
@@ -61,11 +62,12 @@ it sounds like:
   listed in `/dbt/eng/media.json` as `ENGBSBHAY`, with audio-sync timing
   (see [`dbt-timing.md`](dbt-timing.md)); the other narrators have none
   from us.
-- **`p` (PKF) rows — not populated yet.** PKF publishes a real per-language
-  timing/audio endpoint (`<iso>/timing/<BOOK>-<chapter>.json`), but nothing
-  in this pipeline fetches or catalogs it yet. `p` rows will start
-  appearing here once that ingestion work happens — their absence today is
-  a known gap, not "PKF has no audio."
+- **`p` (PKF) rows** (since 2026-10-28) — PKF's own audio, mostly on
+  scriptureearth.org: playable without a key, nearly all with PKF's verse
+  timing (115 languages). Each is the language's PKF edition `<ISO>PKF` in
+  `/dbt/<iso>/media.json` (`audioSource: {"source": "pkf"}`); the audio URL
+  and timing come from `pkf/<iso>/`, see [`dbt-timing.md`](dbt-timing.md).
+  The DBT audio PKF's apps stream is DBT's and counts under `d`.
 - **`o` (openbible/Biblica) rows** — real, book-level verified (not just a
   claimed `type: "audio"`; see [`sources.md`](sources.md)). No fileset-
   routing file exists for these yet (the audio equivalent of

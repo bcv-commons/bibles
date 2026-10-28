@@ -9,15 +9,13 @@ Built for a "pick a language for reading" UI: fetch
 then drop anything that appears in this file to get a reliable
 text-language selector.
 
-**Not part of the regular build** (checked 2026-10-28): no make target runs
-`pipeline/core/generate_audio_only.py`, so the live file is still the one
-generated 2026-09-15, from that day's `media-index.json`,
-`catalog/index.json` and `catalog/obs-index.json`.
+Built by `make languages` (`pipeline/core/generate_audio_only.py`), from
+`media-index.json`, `catalog/index.json` and `catalog/obs-index.json`.
 
 ## Why an exclusion list, not an inclusion list
 
-Of the full `language-names.json` universe (2,435 languages as of
-2026-09-15), roughly 1,900 have real text somewhere and only **624** are
+Of the full `language-names.json` universe (2,641 languages on
+2026-10-28), about 2,000 have real text somewhere and only **610** are
 genuinely audio-only. Publishing the smaller set is the more compact
 choice — same principle as `media.json`'s `audioBooksSet`/
 `timingBooksSet` only appearing when coverage is partial, not

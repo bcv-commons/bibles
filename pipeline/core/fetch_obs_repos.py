@@ -243,9 +243,10 @@ def resolve_one(iso: str) -> dict | None:
     if not story_ids:
         # Older ts-desktop layout fallback: <story>/<chunk>.txt per chunk,
         # title at <story>/title.txt — see module docstring.
+        # "00" is front matter, not a story (ilo: its title is at 00/title.txt, no front/).
         story_ids = sorted(
             m.group(1) for f in contents
-            if f.get("type") == "dir" and (m := STORY_DIR_RE.match(f.get("name", "")))
+            if f.get("type") == "dir" and (m := STORY_DIR_RE.match(f.get("name", ""))) and m.group(1) != "00"
         )
         title_urls = {sid: f"{content_base_url}/{sid}/title.txt" for sid in story_ids}
         content_layout = "ts-desktop"
@@ -258,7 +259,8 @@ def resolve_one(iso: str) -> dict | None:
         # 01.md-50.md, manifest `title:` is always the fixed English
         # string, README.md is boilerplate) — checked directly, genuinely
         # nothing to fetch there, not left out by oversight.
-        collection_title_text = fetch_text(f"{content_base_url}front/title.txt")
+        collection_title_text = (fetch_text(f"{content_base_url}front/title.txt")
+                                 or fetch_text(f"{content_base_url}00/title.txt"))
         collection_title = collection_title_text.strip() if collection_title_text else None
 
     audio = resolve_audio(entry)

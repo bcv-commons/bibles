@@ -4,8 +4,8 @@
 Discovers per-language, per-canon audio/timing/text availability directly
 from this repo's own live caches — internal-data/sorted/BB (DBT, via
 sort_cache_data.py), the helloAO/eBible catalogs, and timing_index.py
-(audio-sync's alignments and DBT's own timing, the two sources a client can
-fetch timing from) — and emits compact metadata per the CDN contract
+(PKF's timing, audio-sync's alignments and DBT's own timing, the three sources
+a client can fetch timing from) — and emits compact metadata per the CDN contract
 (example/plan-docs/dbt-timecode-feedback.md §3).
 
 Migrated 2026-09-12 off export/ALL-langs (MONO's frozen, Jul-28-dated
@@ -36,7 +36,9 @@ from paths import (  # noqa: E402
 )
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from timing_index import ANY_ISO, load_resolved, resolved_of  # noqa: E402
+from timing_index import (  # noqa: E402
+    ANY_ISO, load_pkf, load_pkf_own, load_resolved, pkf_edition_id, resolved_of,
+)
 
 OUTPUT_DIR = EXPORT / "dbt"
 V11N_INDEX = EXPORT / "versification" / "index.json"
@@ -60,11 +62,11 @@ CATEGORY_TO_MEDIA = {
     "syncable": "",
 }
 
-SOURCE_ORDER = ["cdn", "helloao", "ebible", "contrib", "dbt"]
+SOURCE_ORDER = ["cdn", "helloao", "ebible", "contrib", "dbt", "pkf"]
 
 # Compact source codec for media-index.json: single char per source, fixed order
-SOURCE_CHAR = {"cdn": "c", "helloao": "h", "contrib": "r", "dbt": "d", "ebible": "e"}
-SOURCE_CHAR_ORDER = ["c", "h", "e", "r", "d"]
+SOURCE_CHAR = {"cdn": "c", "helloao": "h", "contrib": "r", "dbt": "d", "ebible": "e", "pkf": "p"}
+SOURCE_CHAR_ORDER = ["c", "h", "e", "r", "d", "p"]
 
 def classify(has_text: bool, has_audio: bool, has_timing: bool) -> str | None:
     """Same 5-category logic as sort_cache_data.py's determine_category(),
@@ -98,6 +100,7 @@ def discover_dbt_filesets(v11n: dict, resolved: dict, align_sources: dict) -> tu
     "dbt" tag semantic (audio presence only, not text — verified empirically
     against the ALL-langs-based computation before this migration)."""
     flags: dict[tuple[str, str, str], dict] = {}  # (iso, abbr, canon) -> has_text/has_audio/has_timing
+    pkf = load_pkf()
 
     for iso_dir in sorted(p for p in SORTED_DIR.iterdir() if p.is_dir()):
         iso = iso_dir.name
@@ -146,8 +149,8 @@ def discover_dbt_filesets(v11n: dict, resolved: dict, align_sources: dict) -> tu
     dbt_has_audio: dict[str, dict[str, bool]] = defaultdict(lambda: defaultdict(bool))
 
     for (iso, abbr, canon), flag in sorted(flags.items()):
-        # has_timing must come from timing_index.load_resolved() (audio-sync's
-        # alignments plus DBT's own timing as probed by fetch_dbt_timing_index.py),
+        # has_timing must come from timing_index.load_resolved() (PKF's timing,
+        # audio-sync's alignments, and DBT's own timing as probed by fetch_dbt_timing_index.py),
         # not sort_cache_data.py's DBT-self-declared canon_has_timing
         # (audio_timestamps_filesets.json) — DBT's catalog claim disagrees
         # with what DBT actually serves (2026-10-28: 804 claims without
@@ -166,7 +169,10 @@ def discover_dbt_filesets(v11n: dict, resolved: dict, align_sources: dict) -> tu
         entry: dict = {"id": abbr, "media": media_code}
 
         if audio_fs:
-            entry["a"] = sorted(audio_fs)
+            # The filesets PKF uses (and timed) first: its choice of recording is usually
+            # reviewed by hand, and a client plays the first fileset that has audio.
+            pkf_fs = pkf.get(iso, {})
+            entry["a"] = sorted(audio_fs, key=lambda f: (f not in pkf_fs, f))
 
         if flag["has_text"]:
             entry["t"] = abbr
@@ -313,6 +319,31 @@ def add_timing_exceptions(fs: dict, canon: str, iso: str, timing_books_map: dict
         fs["timingExcept"] = except_
 
 
+def add_pkf_editions(lang_filesets: dict, lang_sources: dict, audio_books_set_map: dict) -> None:
+    """PKF's own audio (scriptureearth.org mostly, not DBT's; fetch_pkf_audio_index.py): one
+    edition per language and testament, <ISO>PKF, the id catalog/text-route.json gives PKF's
+    text. Playable without a key; its timing is PKF's, made against PKF's own text, so the
+    edition's text is PKF's collection (textSource). A client resolves the audio from
+    pkf/<iso>/info.json (doc/dbt-timing.md)."""
+    manifest_path = API_CACHE / "pkf-manifest.json"
+    manifest = json.loads(manifest_path.read_text())["languages"] if manifest_path.exists() else {}
+    for iso, own in sorted(load_pkf_own().items()):
+        edition_id = pkf_edition_id(iso)
+        collections = manifest.get(iso, {}).get("collections", [])
+        for canon, full in (("nt", NT_BOOKS), ("ot", OT_BOOKS)):
+            books = set(own["audio"]) & full
+            if not books:
+                continue
+            entry = {"id": edition_id, "media": "at" if set(own["timing"]) & full else "a",
+                     "a": [edition_id], "audioSource": {"source": "pkf"}}
+            if collections:
+                entry["t"] = edition_id
+                entry["textSource"] = {"source": "pkf", "id": collections[0]["pkf"]}
+            lang_filesets[iso][canon].append(entry)
+            lang_sources[iso][canon].add("pkf")
+            audio_books_set_map[(canon, iso)] = audio_books_set_map.get((canon, iso), set()) | books
+
+
 def count_audio_books() -> dict[tuple[str, str], set[str]]:
     """Book codes with audio per (canon, iso) from sorted metadata."""
     sorted_dir = SORTED_DIR
@@ -385,6 +416,9 @@ def main():
     for iso, canons in ebible_sources.items():
         for canon in canons:
             lang_sources[iso][canon].add("ebible")
+
+    print("[INFO] Adding PKF's own audio editions...")
+    add_pkf_editions(lang_filesets, lang_sources, audio_books_set_map)
 
     # Union, not just lang_filesets: a language with only helloAO/eBible
     # presence and zero DBT filesets has no entry in sorted/BB at

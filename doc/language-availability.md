@@ -6,8 +6,9 @@ The merged, per-language "what's available, now that you've picked this
 language" rollup — one fetch instead of cross-referencing
 `catalog/index.json`, `catalog/overlap.json`, `/dbt/<iso>/media.json`,
 and `catalog/obs-index.json` separately. Published one file per language
-that has any Bible-edition or OBS presence (about 2,100 languages,
-2026-10-27).
+that has any Bible text or OBS presence (2,038 languages on 2026-10-28;
+an audio-only language has none, see [`audio-only.md`](audio-only.md)).
+Built by `make languages`.
 
 Fetch [`language-names.json`](language-names.md) first to let someone
 pick a language; fetch this file next, for that one language, once

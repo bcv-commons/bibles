@@ -2,8 +2,8 @@
 
 `bibles` publishes no timing of its own — there is nothing to fetch here
 beyond this page. Per-verse timing for an audio fileset comes from one of
-two sources, each at a fixed, computable URL: audio-sync's alignments,
-then DBT's own timing with your own DBT key. Compute the path yourself
+three sources, each at a fixed, computable URL: PKF's timing, then
+audio-sync's alignments, then DBT's own timing with your own DBT key. Compute the path yourself
 from `media.json`'s `filesets[]` and fetch it directly — treat a 404 or an
 empty answer as "no data from that source for this chapter," nothing more.
 A sample client that does all of this, audio included:
@@ -15,16 +15,71 @@ survived contact with the real requirement: a client only ever needs the
 one edition it already chose, and the real URL can be computed from
 `media.json` (see below). Publishing a copy of the timing was redundant.
 
-## The two sources, in this order
+## The three sources, in this order
 
 | # | Source | Path |
 |---|---|---|
-| 1 | **audio-sync** (`align/`, no key) | `https://cdn.bibel.wiki/align/<canon>/<iso>/<distinct_id>/<book>/<book>_<chapter:03d>_<audio_fileset>_timing.json` |
-| 2 | **DBT**, with your own key | `https://4.dbt.io/api/timestamps/<audio_fileset>/<book>/<chapter>?v=4&key=<key>` |
+| 1 | **PKF** (se-regional-pwa, no key) | `https://cdn.bibel.wiki/pkf/<iso>/timing/<book>-<chapter>.json`, where `pkf/<iso>/info.json` lists that chapter for `<audio_fileset>` (or, for a PKF edition `<ISO>PKF`, for PKF's own audio) |
+| 2 | **audio-sync** (`align/`, no key) | `https://cdn.bibel.wiki/align/<canon>/<iso>/<distinct_id>/<book>/<book>_<chapter:03d>_<audio_fileset>_timing.json` |
+| 3 | **DBT**, with your own key | `https://4.dbt.io/api/timestamps/<audio_fileset>/<book>/<chapter>?v=4&key=<key>` |
 
-Stop at the first one that answers. Both allow cross-origin requests from
-a browser. Without a DBT key a client has audio-sync's timing only (and no
-DBT audio either).
+Stop at the first one that answers. All allow cross-origin requests from
+a browser. Without a DBT key a client has no DBT audio, but still PKF's own
+audio with its timing, and helloAO's audio with audio-sync's.
+
+**PKF first (2026-10-28).** PKF's apps play DBT's audio, and their timing
+is often checked by hand before an app is built. On 6 aca chapters PKF's
+verse durations followed the text closely (correlation 0.82-0.95 in five)
+and no verse had zero length; audio-sync's had 37 zero-length verses of
+218. This order holds until there's evidence for another.
+
+PKF timing is per chapter of one audio fileset: `info.json` →
+`media.audio.items[]` with `hasTiming`, `src` starting with `h` (streamed
+from DBT) and `timingFile` containing `-<book>-<chapter:02d>-` (any case:
+`des` writes `-Heb-`). The fileset is in `filename`, in one of four forms:
+`B01___01_Matthew_____ACAWBTP2DA.mp3`, `B07___01_1CorinthiansADETBLN2DA.mp3`,
+`BSNWBTN2DA_B03_LUK_001.mp3`, or an old DAM id, `…_N1IZZTBL.mp3` =
+`IZZTBLN1DA`. No such item: no PKF timing for that fileset. Other `src`
+values are PKF's own audio, below.
+
+PKF's timing counts in `media.json` (`"at"`, `timingOnly`/`timingExcept`)
+like the other two, and an edition's `a` lists the filesets PKF uses first:
+where a language has several recordings (non-drama N1DA, drama N2DA), PKF's
+choice is usually reviewed by hand. Play the first one that has audio.
+
+## PKF's own audio: no key needed
+
+Besides DBT's audio, PKF's apps play audio they get elsewhere, mostly from
+scriptureearth.org: `info.json` items whose `src` doesn't start with `h`
+(`d1`, `d2`, `a1`). On 2026-10-28 that's 115 languages, 111 of them with
+PKF's verse timing, playable without any key. `media.json` lists it as the
+language's PKF edition, the same id `catalog/text-route.json` gives PKF's
+text:
+
+```json
+{
+  "id": "TEEPKF", "media": "at", "a": ["TEEPKF"], "t": "TEEPKF",
+  "audioSource": {"source": "pkf"},
+  "textSource": {"source": "pkf", "id": "tee_tee.CGf_tdMW.pkf"}
+}
+```
+
+For a chapter, take the `info.json` item with that book and chapter (in
+`timingFile`, else in `bookCode` and `chapter`) and a `src` not starting
+with `h`:
+
+- **Audio**: the item's `url`, else `media.audio.base_url` + `/` +
+  `filename`, else `https://www.scriptureearth.org/data/<iso>/audio/<filename>`,
+  percent-encoded (file names can have spaces: `ded_01_01-Gen 01.mp3`).
+  scriptureearth.org allows cross-origin requests. bibles checks one file
+  per language and `src` before listing it (5 languages' `a1` audio answers
+  404 and is left out).
+- **Timing**, where the item has `hasTiming`:
+  `https://cdn.bibel.wiki/pkf/<iso>/timing/<book>-<chapter>.json`, made
+  against PKF's own text (`textSource`: the language's `.pkf` collection,
+  [`tools/pkf-decode/`](../tools/pkf-decode/)). The audio files can be a
+  different encoding than the one PKF timed (larger file), but are the same
+  recording: on 4 sampled chapters the length matched PKF's `len` to 2 s.
 
 **Changed 2026-10-28.** Until then this page listed three more sources
 under `https://cdn.bibel.wiki/dbt/<iso>/timing-raw/<BB|contrib|legacy>/...`,
@@ -66,7 +121,7 @@ edition looks exactly like a DBT one, plus two extra fields:
 
 `audioSource`/`textSource` present means: the real audio and/or text for
 this fileset id isn't this edition's own on DBT — go get it from wherever
-`source` says. `audioSource.source` is currently always `"helloao"`.
+`source` says. `audioSource.source` is `"helloao"` or `"pkf"` (PKF's own audio, above).
 `textSource` also appears on some entries that otherwise look like
 ordinary DBT editions (real `distinct_id`, real `a[]`) — DBT provides the
 audio but has no native text for that edition, so audio-sync tells us
@@ -176,12 +231,15 @@ resolution differs, not whether it's trustworthy.
 
 ## Trying the sources (DBT editions only)
 
-Once you've confirmed `audio_fileset` is present, try audio-sync first,
-then DBT, and stop at the first answer with verses. A whole chapter
-resolves from one source, so this is one request, sometimes two.
+Once you've confirmed `audio_fileset` is present, try PKF first, then
+audio-sync, then DBT, and stop at the first answer with verses. A whole
+chapter resolves from one source.
 
 ## Response shapes
 
+- **PKF**: `[[start, end, "<label>"], ...]`, seconds, one row per verse
+  part: `"1a"`, `"1b"`, a bridge `"1-2b"`; other labels (`"s2"`, a heading)
+  aren't verses. A verse starts at its first part.
 - **audio-sync** (`align/`): `{"id": "<BOOK> <CH>", "pos": [<verse start
   seconds>, ...], "intro_end"?: <seconds>}` — `pos` is index-aligned to
   verse order starting at verse 1.
