@@ -1,11 +1,13 @@
 # Real per-verse audio timing
 
-`bibles` publishes no resolved timing index — there is nothing to fetch
-here beyond this page. Real per-verse timing for any DBT audio fileset
-comes from one of four sources, each at a fixed, computable URL. Compute
-the path yourself from data you already have (from `media.json`'s
-`filesets[]`, or from audio-sync's own manifests) and fetch it directly —
-treat a 404 as "no data from that source for this chapter," nothing more.
+`bibles` publishes no timing of its own — there is nothing to fetch here
+beyond this page. Per-verse timing for an audio fileset comes from one of
+two sources, each at a fixed, computable URL: audio-sync's alignments,
+then DBT's own timing with your own DBT key. Compute the path yourself
+from `media.json`'s `filesets[]` and fetch it directly — treat a 404 or an
+empty answer as "no data from that source for this chapter," nothing more.
+A sample client that does all of this, audio included:
+[`tools/get-audio/`](../tools/get-audio/).
 
 **Redesigned 2026-09-14.** Earlier iterations published a merged per-book
 file, then a resolved per-edition pointer index — both retired. Neither
@@ -15,14 +17,25 @@ carry everything needed to compute the real URL and know whether it's
 real, once two gaps in their manifest schema were closed (see below).
 Publishing a copy of that was redundant.
 
-## The four sources, in override priority (later wins on a conflict)
+## The two sources, in this order
 
-| # | `src` | Owner | Path formula |
-|---|---|---|---|
-| 1 | `BB` | bibles (DBT's own bulk export, republished) | `https://cdn.bibel.wiki/dbt/<iso>/timing-raw/BB/<canon>/<distinct_id>/<book>/<book>_<chapter:03d>_<audio_fileset>_timing.json` |
-| 2 | `contrib` | bibles (community-contributed, republished) | same shape, `BB` → `contrib` |
-| 3 | `legacy` | bibles (one-time historical copy, republished) | same shape, `BB` → `legacy` |
-| 4 | `align` | **audio-sync** (their own live CDN, not mirrored here) | `https://cdn.bibel.wiki/align/<canon>/<iso>/<distinct_id>/<book>/<book>_<chapter:03d>_<audio_fileset>_timing.json` |
+| # | Source | Path |
+|---|---|---|
+| 1 | **audio-sync** (`align/`, no key) | `https://cdn.bibel.wiki/align/<canon>/<iso>/<distinct_id>/<book>/<book>_<chapter:03d>_<audio_fileset>_timing.json` |
+| 2 | **DBT**, with your own key | `https://4.dbt.io/api/timestamps/<audio_fileset>/<book>/<chapter>?v=4&key=<key>` |
+
+Stop at the first one that answers. Both allow cross-origin requests from
+a browser. Without a DBT key a client has audio-sync's timing only (and no
+DBT audio either).
+
+**Changed 2026-10-28.** Until then this page listed three more sources
+under `https://cdn.bibel.wiki/dbt/<iso>/timing-raw/<BB|contrib|legacy>/...`,
+tried first. None was DBT's live timing: `legacy` and `contrib` were
+bibles' own pre-audio-sync alignments (25 sampled chapters: none matched
+DBT, 18 had no DBT timing at all), and `BB` was a copy of DBT's timing
+from April 2026, no longer published since 2026-09-15. `timing-raw/` is
+being retired: audio-sync aligns what only it had, and `media.json` no
+longer counts it.
 
 `distinct_id` is the DBT edition abbr (same value as `media.json`'s
 `filesets[].id`) for every **DBT-sourced** edition — confirmed live for
@@ -57,27 +70,10 @@ that otherwise look like ordinary DBT editions (real `distinct_id`, real
 `a[]`) — DBT provides the audio but has no native text for that edition,
 so audio-sync tells us which text they verified it against.
 
-**A handful of editions (4, confirmed 2026-09-15: `nor/NBS` — `src:
-"legacy"`; `deu/DEUSOL` — `src: "contrib"`; `mal/MALBIB` and `xon/XONIBS`
-— `src: "BB"`) carry `media: "at"` and a real `a[]` id with *neither*
-field** — bibles' own pre-this-repo historical timing imports (not DBT,
-not audio-sync), with no preserved record of the real audio's origin.
-Real and resolvable via the formula above (using each one's own `src`
-above — they're not all the same source), just honestly un-attributed
-rather than guessed — e.g. `nor/NBS`'s real DBT text counterpart is very
-likely `NORNBS` by name, but that's an unverified guess, not confirmed
-the way `ENGBSBHAY`'s pairing was, so no `t` is published for these. If
-you can independently verify the real source for one of these, that's
-useful information to send back.
-
-**One of the four, `nor/NBS`, also has a real playable raw audio file** —
-confirmed live: `https://cdn.bibel.wiki/audio/nor/NBS/<BOOK>_<chapter>.mp3`
-(e.g. `.../JHN_1.mp3`, `.../JHN_2.mp3`, `.../JHN_3.mp3`, all real
-`audio/mpeg`, no zero-padding on the chapter number). **This is not a
-general convention** — checked directly and ruled out for the other
-three (`DEUSOL`, `MALBIB`, `XONIBS` all 404 at the equivalent path
-across multiple books/chapters tried) — don't assume it applies beyond
-`NBS` specifically without checking.
+Until 2026-10-28 four more editions (`nor/NBS`, `deu/DEUSOL`, `mal/MALBIB`,
+`xon/XONIBS`) were listed as `"at"` with neither field, from bibles' own old
+timing. Their audio filesets don't exist on DBT, so they are no longer listed;
+`nor/NBS` and `deu/DEUSOL` went to audio-sync.
 
 `textSource` alone (no `audioSource`) is the DBT-audio-but-non-DBT-text
 case described just above — a real DBT `distinct_id` with real `a[]`,
@@ -92,9 +88,10 @@ understand what these fields mean.
 
 ## Which books have timing: `timingOnly` / `timingExcept`
 
-An edition with `media: "at"` has timing for at least some books of at
-least one of its `a[]` audio filesets. Which books, per audio fileset, is
-published only where it isn't the whole testament (added 2026-10-27):
+An edition with `media: "at"` has timing, from audio-sync or DBT, for at
+least some books of at least one of its `a[]` audio filesets. Which books,
+per audio fileset, is published only where it isn't the whole testament
+(added 2026-10-27):
 
 ```json
 {"id": "SPAWTC", "media": "at", "a": ["SPNWTCN1DA", "SPNWTCN2DA"],
@@ -114,6 +111,11 @@ published only where it isn't the whole testament (added 2026-10-27):
 So: `timingOnly[id]` if present, else every book but `timingExcept[id]`,
 else every book. A book in that set still 404s for a chapter whose
 alignment failed; treat a 404 as "no timing for this chapter".
+
+DBT's timing is checked once per testament (REV 15, else MRK 1 for the NT;
+PSA 117, else GEN 1 for the OT), so a fileset with DBT timing counts as
+timed for its whole testament: DBT may still answer empty for a book it
+never timed.
 
 The testament-level `timingBooks` (count) and `timingBooksSet` (books,
 only when partial) are the union across all of the language's audio
@@ -173,20 +175,19 @@ resolution differs, not whether it's trustworthy.
 
 ## Trying the sources (DBT editions only)
 
-Once you've confirmed `audio_fileset` is present, try the four sources in
-priority order 1→4, stop at the first 200. In practice a whole chapter
-(often a whole book) resolves from exactly one source, so this is
-usually one request, sometimes two.
+Once you've confirmed `audio_fileset` is present, try audio-sync first,
+then DBT, and stop at the first answer with verses. A whole chapter
+resolves from one source, so this is one request, sometimes two.
 
-## Response shapes — differ by `src`
+## Response shapes
 
-- **`BB` / `contrib` / `legacy`** (bibles' own, unchanged raw files): a
-  flat list of `{book, chapter, verse_start, timestamp}` rows, one per
-  verse. `end` for a verse = the next row's `timestamp`; the last verse's
-  `end` = its own `timestamp` — use the audio's real duration for that one.
-- **`align`** (audio-sync's own): `{"id": "<BOOK> <CH>", "pos": [<verse
-  start seconds>, ...], "intro_end": <seconds>}` — `pos` is index-aligned
-  to verse order starting at verse 1.
+- **audio-sync** (`align/`): `{"id": "<BOOK> <CH>", "pos": [<verse start
+  seconds>, ...], "intro_end"?: <seconds>}` — `pos` is index-aligned to
+  verse order starting at verse 1.
+- **DBT** (`timestamps`): `{"data": [{book, chapter, verse_start,
+  verse_start_alt, timestamp}, ...]}`, one row per verse; `verse_start`
+  `"0"` is the intro. `end` for a verse = the next row's `timestamp`; for
+  the last verse, use the audio's duration.
 
 ## Why this is safe to compute, not just convenient
 
@@ -219,13 +220,11 @@ guess or maintain a side mapping.**
    folded directly into `media.json`'s `filesets[]` (see above) — the
    same catalog you already check for every DBT edition.
 
-## For bibles' own sources (`BB`/`contrib`/`legacy`)
+## `timing-raw/` (retired)
 
-These are republished unchanged, byte-for-byte, by `publish_timing_raw.py`
-— bibles is the only host for these three (no external producer), so this
-part still requires a real publish step, just no resolution logic. A
-version-excluded `(iso, distinct_id)` pair (`data/version-exclude.toml`)
-is skipped entirely — nothing published for it under any of the three.
+`https://cdn.bibel.wiki/dbt/<iso>/timing-raw/` still holds bibles' old
+`contrib` and `legacy` timing until audio-sync has aligned the books only it
+had (requested 2026-10-28); then it is deleted. Don't build on it.
 
 ## Not applicable to
 

@@ -6,11 +6,17 @@ dedup — the one legitimate remaining server-side use of timing existence
 data (see pull_align_manifests.py's docstring for why this stopped being
 a published, client-facing artifact on 2026-09-14).
 
-Combines two sources:
+The two sources a client can fetch timing from (doc/dbt-timing.md), nothing else:
   - internal-data/align-index.json — audio-sync's real work, distilled
-    from their _runs/ manifests (pull_align_manifests.py).
-  - BB/contrib/legacy-timing-data — bibles' own raw sources, scanned
-    directly (real directory structure, not a published index).
+    from their _runs/ manifests (pull_align_manifests.py). Per book.
+  - internal-data/dbt-timing-index.json — DBT's own timing, one probe per
+    testament (fetch_dbt_timing_index.py). A testament that passes counts
+    as timed for all its books: DBT gives no per-book answer short of
+    probing every book.
+
+bibles' own old timing (internal-data/timing/BB, contrib, legacy-timing-data)
+is no longer read (2026-10-28): BB is replaced by dbt-timing-index.json, and
+contrib/legacy are timing no client can fetch once timing-raw is retired.
 """
 import json
 import sys
@@ -18,15 +24,22 @@ from pathlib import Path
 from collections import defaultdict
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import ALIGN_INDEX_FILE, TIMING_DIR, LEGACY_TIMING_DIR  # noqa: E402
+from paths import ALIGN_INDEX_FILE, INTERNAL_DATA  # noqa: E402
 
-LOCAL_SOURCES = [TIMING_DIR / "BB", TIMING_DIR / "contrib", LEGACY_TIMING_DIR]
+DBT_TIMING_INDEX_FILE = INTERNAL_DATA / "dbt-timing-index.json"
+# DBT's index has no iso: its filesets sit under this key, matched by fileset id alone.
+ANY_ISO = "*"
+
+OT_BOOKS = {"GEN", "EXO", "LEV", "NUM", "DEU", "JOS", "JDG", "RUT", "1SA", "2SA", "1KI", "2KI",
+            "1CH", "2CH", "EZR", "NEH", "EST", "JOB", "PSA", "PRO", "ECC", "SNG", "ISA", "JER",
+            "LAM", "EZK", "DAN", "HOS", "JOL", "AMO", "OBA", "JON", "MIC", "NAM", "HAB", "ZEP", "HAG", "ZEC", "MAL"}
+NT_BOOKS = {"MAT", "MRK", "LUK", "JHN", "ACT", "ROM", "1CO", "2CO", "GAL", "EPH", "PHP", "COL",
+            "1TH", "2TH", "1TI", "2TI", "TIT", "PHM", "HEB", "JAS", "1PE", "2PE", "1JN", "2JN", "3JN", "JUD", "REV"}
 
 
 def load_resolved() -> dict:
-    """{iso: {audio_fileset: {books}}} — every fileset with real timing
-    from ANY source (audio-sync's real work + bibles' own owned sources),
-    and which books it covers."""
+    """{iso: {audio_fileset: {books}}} — every fileset with timing a client
+    can fetch, and which books it covers. DBT's filesets are under ANY_ISO."""
     resolved: dict = defaultdict(lambda: defaultdict(set))
 
     if ALIGN_INDEX_FILE.exists():
@@ -36,48 +49,14 @@ def load_resolved() -> dict:
                 for audio_fileset, books in filesets.items():
                     resolved[iso][audio_fileset].update(books)
 
-    for base in LOCAL_SOURCES:
-        if not base.exists():
-            continue
-        for tf in base.rglob("*_timing.json"):
-            name_parts = tf.stem.replace("_timing", "").split("_", 2)
-            if len(name_parts) < 3:
-                continue
-            book, _chapter, audio_fileset = name_parts
-            try:
-                iso = tf.relative_to(base).parts[1]
-            except (ValueError, IndexError):
-                continue
-            resolved[iso][audio_fileset].add(book)
+    if DBT_TIMING_INDEX_FILE.exists():
+        dbt = json.loads(DBT_TIMING_INDEX_FILE.read_text()).get("filesets", {})
+        for audio_fileset, canons in dbt.items():
+            for canon, books in (("nt", NT_BOOKS), ("ot", OT_BOOKS)):
+                if canons.get(canon) is True:
+                    resolved[ANY_ISO][audio_fileset].update(books)
 
     return resolved
-
-
-def load_local_editions() -> dict:
-    """{iso: {abbr: {audio_fileset: {books}}}} — bibles' own owned sources
-    (BB/contrib/legacy-timing-data) ONLY, preserving the directory-level
-    abbr grouping load_resolved() flattens away. Needed to publish a
-    local-only foreign edition (e.g. nor/NBS) correctly: `id` must be the
-    real edition abbr, `a` the real audio fileset id(s) under it — they
-    can differ (confirmed: NBS's real audio file is
-    "..._NBSN2DA_timing.json", same pattern as DBT's own abbr-vs-fileset-id
-    split, e.g. ACRNNT/ACRWB1N2DA)."""
-    editions: dict = defaultdict(lambda: defaultdict(lambda: defaultdict(set)))
-    for base in LOCAL_SOURCES:
-        if not base.exists():
-            continue
-        for tf in base.rglob("*_timing.json"):
-            name_parts = tf.stem.replace("_timing", "").split("_", 2)
-            if len(name_parts) < 3:
-                continue
-            book, _chapter, audio_fileset = name_parts
-            try:
-                parts = tf.relative_to(base).parts
-                iso, abbr = parts[1], parts[2]
-            except (ValueError, IndexError):
-                continue
-            editions[iso][abbr][audio_fileset].add(book)
-    return editions
 
 
 def resolved_of(resolved: dict, iso: str, known_fileset_ids) -> set:
@@ -87,4 +66,4 @@ def resolved_of(resolved: dict, iso: str, known_fileset_ids) -> set:
     Do not guess this by string-prefix on the abbr (verified false
     negatives: e.g. abbr "ACRNNT"'s real audio files are literally named
     "ACRWB1N2DA_timing.json", no shared prefix at all)."""
-    return set(known_fileset_ids) & set(resolved.get(iso, {}).keys())
+    return set(known_fileset_ids) & (set(resolved.get(iso, {})) | set(resolved.get(ANY_ISO, {})))

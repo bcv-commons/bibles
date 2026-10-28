@@ -10,7 +10,7 @@ CORE := pipeline/core
         publish-audiobiblia publish-audiobiblia-dry mirror-audiobiblia-audio publish-audiobiblia-audio publish-audiobiblia-audio-dry \
         sofria-openbible sofria-audiobiblia stage-sofria openbible-editions publish-sofria publish-sofria-meta publish-sofria-dry retire-verse-json retire-verse-json-dry \
         publish-vrs-maps publish-vrs-maps-dry publish-vrs-index publish-vrs-index-dry vrs-check \
-        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry \
+        cache fetch-dbt-catalog sort-dbt-catalog fetch-catalog-books align-pull align-pull-dry fetch-dbt-timing \
         fetch-obs-batches fetch-obs-catalog fetch-obs-repos fetch-obs-titles fetch-obs-video obs-metadata publish-obs publish-obs-dry \
         langs-catalog check help
 
@@ -57,6 +57,7 @@ help: ## Show available targets
 	@echo "  make fetch-catalog-books Fetch PKF + helloAO per-language book data (for catalog-books)"
 	@echo "  make align-pull       Pull new audio-sync align/_runs/ manifests (Bible text + OBS) into internal-data/{align,obs-align}-index.json"
 	@echo "  make align-pull-dry   Dry-run align pull (no writes)"
+	@echo "  make fetch-dbt-timing Check which DBT audio filesets have DBT timing (REV 15 / PSA 117) into internal-data/dbt-timing-index.json"
 	@echo "  make fetch-obs-batches Fetch OBS narration batch manifests into internal-data/obs-batches/"
 	@echo "  make fetch-obs-catalog Fetch door43's OBS catalog stats, text+audio (existence source of truth)"
 	@echo "  make fetch-obs-repos  Resolve door43 detail (content, license, audio) for every OBS language (run fetch-obs-catalog first)"
@@ -329,6 +330,9 @@ align-pull: ## Pull new audio-sync align/_runs/ manifests (Bible text + OBS) int
 
 align-pull-dry: ## Dry-run align pull (no writes)
 	$(PYTHON) $(CORE)/pull_align_manifests.py --dry-run
+
+fetch-dbt-timing: ## Check which DBT audio filesets have DBT's own timing (one probe per testament) into internal-data/dbt-timing-index.json
+	$(PYTHON) $(CORE)/fetch_dbt_timing_index.py $(ARGS)
 
 fetch-obs-batches: ## Fetch OBS narration batch manifests into internal-data/obs-batches/
 	$(PYTHON) $(CORE)/fetch_obs_batches.py
