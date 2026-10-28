@@ -336,6 +336,29 @@ def count_timing_books(resolved: dict) -> dict[tuple[str, str, str], set[str]]:
     return books_by_fileset
 
 
+def add_timing_exceptions(fs: dict, canon: str, iso: str, timing_books_map: dict) -> None:
+    """Per audio fileset of a timed ("at") edition, which books have timing — published only
+    as exceptions. An audio fileset in neither map has timing for every book of the canon (the
+    common case: nothing added). Otherwise the shorter of the two lists:
+      timingOnly:   {audio_fileset: [books WITH timing]}     ([] = none at all)
+      timingExcept: {audio_fileset: [books WITHOUT timing]}"""
+    full = OT_BOOKS if canon == "ot" else NT_BOOKS
+    only, except_ = {}, {}
+    for audio_id in fs.get("a", []):
+        books = timing_books_map.get((canon, iso, audio_id), set()) & full
+        if books == full:
+            continue
+        missing = full - books
+        if len(books) <= len(missing):
+            only[audio_id] = sorted(books)
+        else:
+            except_[audio_id] = sorted(missing)
+    if only:
+        fs["timingOnly"] = only
+    if except_:
+        fs["timingExcept"] = except_
+
+
 def count_audio_books() -> dict[tuple[str, str], set[str]]:
     """Book codes with audio per (canon, iso) from sorted metadata."""
     sorted_dir = SORTED_DIR
@@ -463,9 +486,15 @@ def main():
             # the set would be redundant; when it's partial, also publish the
             # actual book codes so a client can grey out unavailable books
             # without a per-book fetch.
+            # Timing is keyed by audio fileset id (fs["a"]), not the edition
+            # id: looking it up by fs["id"] found only editions whose id
+            # happens to equal their audio fileset's (21 of 1,552 timed canons).
             timing_books = set()
-            for fs in filesets:
-                timing_books.update(timing_books_map.get((canon, iso, fs["id"]), set()))
+            for fs in audio_filesets:
+                for audio_id in fs.get("a", []):
+                    timing_books.update(timing_books_map.get((canon, iso, audio_id), set()))
+                if fs.get("media") == "at":
+                    add_timing_exceptions(fs, canon, iso, timing_books_map)
             if timing_books:
                 canon_out["timingBooks"] = len(timing_books)
                 if len(timing_books) < FULL_CANON_SIZE[canon]:

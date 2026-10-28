@@ -90,6 +90,36 @@ for audio-sync's own manifests directly, useful if you're consuming
 those independently rather than through bibles' catalog, or want to
 understand what these fields mean.
 
+## Which books have timing: `timingOnly` / `timingExcept`
+
+An edition with `media: "at"` has timing for at least some books of at
+least one of its `a[]` audio filesets. Which books, per audio fileset, is
+published only where it isn't the whole testament (added 2026-10-27):
+
+```json
+{"id": "SPAWTC", "media": "at", "a": ["SPNWTCN1DA", "SPNWTCN2DA"],
+ "timingExcept": {"SPNWTCN1DA": ["2JN", "2PE", "3JN"]}}
+{"id": "SPAR95", "media": "at", "a": ["SPNR95N2DA"],
+ "timingOnly": {"SPNR95N2DA": ["ACT", "HEB", "JHN", "LUK", "MAT", "MRK", "REV", "ROM"]}}
+```
+
+- An audio fileset in **neither** map has timing for every book of the
+  testament (27 NT / 39 OT), like `SPNWTCN2DA` in the example.
+- **`timingOnly`**: the books **with** timing; `[]` means none at all
+  (this audio fileset has none, another in `a[]` does).
+- **`timingExcept`**: the books **without** timing.
+- Each audio fileset appears in at most one of the two, whichever list is
+  shorter.
+
+So: `timingOnly[id]` if present, else every book but `timingExcept[id]`,
+else every book. A book in that set still 404s for a chapter whose
+alignment failed; treat a 404 as "no timing for this chapter".
+
+The testament-level `timingBooks` (count) and `timingBooksSet` (books,
+only when partial) are the union across all of the language's audio
+filesets: use them to grey out books for the language as a whole, and the
+per-fileset fields once an edition is chosen.
+
 ## First, check whether `audio_fileset` is even present (manifests only)
 
 **If a manifest result has `audio_fileset` → it's a normal DBT edition.**
