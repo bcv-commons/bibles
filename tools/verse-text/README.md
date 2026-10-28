@@ -21,7 +21,7 @@ Which text to read for an edition, and through which route, is in
 | USX → USJ / Sofria (last resort: only where the source has no usable Sofria) | `python/usx_to_usj.py` (usfmtc) | `../usj-to-sofria/usx_to_sofria.mjs` (proskomma-core, `\|` protected) |
 | verse text from USJ and Sofria | `python/verse_text.py` | `js/extract_usj.js`, `js/extract_sofria.js` (rule: `js/rule.js`) |
 | verse text from plain verse JSON (DBT `text_plain`) | `python/plain_text.py` | `js/extract_plain.js` |
-| tokenizer v3 and text fingerprint v1 | `python/bcv_tokenize.py` | `js/tokenize.js`, `js/text_fingerprint.mjs` |
+| tokenizer v3 (and its mark stripping) and text fingerprint v1 | `python/bcv_tokenize.py` (`strip_marks`) | `js/tokenize.js` (`stripMarks`), `js/text_fingerprint.mjs` |
 | written tokens v1: the tokens with their marks | `python/bcv_written.py` | `js/tokenize_written.js` |
 | content fingerprint v1 (diagnosis) | `python/content_fingerprint.py` | `js/content_fingerprint.mjs` |
 | conformance suite | `python/conformance.py` | `js/conformance.mjs` |
@@ -146,6 +146,20 @@ file_hash(book_fp)                                                   # 8 hex, <B
 import { tokenize } from './js/tokenize.js';
 import { fingerprints, fileHash } from './js/text_fingerprint.mjs';
 const { book, chapters } = await fingerprints(new Map([['3:16', text], ...]));
+```
+
+The tokenizer first strips combining marks (NFC, then every mark with a combining class,
+except the Myanmar virama and asat, and variation selectors). The same step is exported on
+its own, in both languages:
+
+```python
+from bcv_tokenize import strip_marks
+strip_marks("سَلَامٌ")      # 'سلام'
+```
+
+```js
+import { stripMarks } from './js/tokenize.js';
+stripMarks("سَلَامٌ");      // 'سلام'
 ```
 
 Text fingerprint v1:
