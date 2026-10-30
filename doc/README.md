@@ -89,7 +89,7 @@ its text/audio, in what format(s)." Narrower and more mechanical than
 should start with those two instead and only reach for these when you
 need DBT's own routing detail.
 
-A partial DBT edition's book set (e.g. `PORALM`: 4 NT books + 1 OT book)
+A partial DBT edition's book set (e.g. `PORALM`: 4 NT books + 1 Tanakh book)
 can't be assumed from an `"nt"`/`"ot"` canon label: its books and chapters
 are in [`books.json`](catalog-books.md#dbt-book-coverage-from-a-fileset)
 below. (`/dbt/<iso>/coverage.json` held the same per fileset and is being
@@ -187,7 +187,7 @@ reasons — see `audio-only.md` for the tradeoff.
 **[`langs.json` / `langs-mini.json`](catalog-langs.md)** — an older,
 narrower sibling: per-language display names (`{n, v, s}`, DBT-oriented,
 smaller source coverage than `language-names.json` above) bucketed by
-NT/OT/OBS coverage category (`with-timecode`/`audio-with-timecode`/
+NT, Tanakh and OBS coverage category (`with-timecode`/`audio-with-timecode`/
 `syncable`/`text-only`/`audio-only`). Useful if you specifically want the
 category bucketing or the ISO 15924 script code (`s`); for a plain
 name lookup or picker, prefer `language-names.json` instead — it has

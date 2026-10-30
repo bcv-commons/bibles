@@ -94,7 +94,7 @@ def main():
         }
     doc = {
         "target_scheme": "eng",
-        "note": ("Old Testament layouts that vary between editions of one scheme. For an edition whose "
+        "note": ("Tanakh layouts that vary between editions of one scheme. For an edition whose "
                  "dbt/_vrs/index.json `ot` entry lists a variant, take that block's rows from the variant "
                  "instead of from its `l` scheme's map; elsewhere use the scheme map. A row maps the edition's "
                  "verse s to eng verse(s) t and to the org (Hebrew) verse o; a verse with no row keeps its number "

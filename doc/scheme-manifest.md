@@ -11,7 +11,7 @@ Checksums are sha256 of the live CDN files, as of 2026-10-09 (orgw, catm and the
 
 ## New Testament
 
-The maps cover Old Testament numbering differences, plus one narrow New
+The maps cover Tanakh numbering differences, plus one narrow New
 Testament exception (2026-10-07). Each row is read from TVTMS's own section
 for that chapter:
 
@@ -24,13 +24,13 @@ for that chapter:
 
 Every other NT chapter is identity in every map. `vul` has no NT rows. Its
 3 John 1:15 difference from eng is not mapped, because `vul` stays
-Old Testament only.
+Tanakh only.
 
 ## rso (Russian Synodal, reference text: helloAO `rus_syn`)
 
 - Shape: `_vrs/rso.vrs` `56e9042dabaf53017bac48f8e82ff4cfffca91e5f9aba4d0d9caab937a33c761`
 - Map: `_vrs/map/rso-to-eng.json` `cf324586456ab280dbc421a08a368f19ddd4fe295f87562ec88d3375f64c4637` (3,004 rows)
-- Multi-verse: `_vrs/map/rso-to-eng.multiverse.json` `c4408debfd7fa2f23eaafb209787423788e0963887c96b2c94e0e4b4d1725f6d` (7 relations: 4 Old Testament, 3 New Testament)
+- Multi-verse: `_vrs/map/rso-to-eng.multiverse.json` `c4408debfd7fa2f23eaafb209787423788e0963887c96b2c94e0e4b4d1725f6d` (7 relations: 4 Tanakh, 3 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: zero collisions outside title rows; no rows in books or chapters where the shape equals English; text-checked against `rus_syn` on the cases listed in the message history (Job 39–41, Proverbs 18, Psalms 12–13 and 50–60, Jeremiah 25/26/30/38, Exodus 36/38, 1 Chronicles 6, Joshua 5–6, Leviticus 14, Daniel 3–4). Audited by lexeme-aligner (0 spine verses unmapped; 8 unreached verses, all expected).
 - Not verified against text: the deuterocanon rows (1 Esdras, Sirach, Tobit, Baruch, the Letter of Jeremiah). Kept because five editions use them. Judith, Wisdom, Susanna and Bel (Daniel 13–14) have no rows.
@@ -40,7 +40,7 @@ Old Testament only.
 
 - Shape: `_vrs/org.vrs` `bf70cea4115322d4b286206f240e90d12cf16abeec39ba351df1ef8cf9174e23`
 - Map: `_vrs/map/org-to-eng.json` `efed1a4ea7e4e4ac5bab19f78a759ba641d0f25af086863c1fb1ff5327b83c98` (2,033 rows)
-- Multi-verse: `_vrs/map/org-to-eng.multiverse.json` `63c5f9f4ee047769bbe65af21a3b2c6e1fc98f0873bc4402ba8307a8a934356b` (8 relations: 6 Old Testament, 2 New Testament)
+- Multi-verse: `_vrs/map/org-to-eng.multiverse.json` `63c5f9f4ee047769bbe65af21a3b2c6e1fc98f0873bc4402ba8307a8a934356b` (8 relations: 6 Tanakh, 2 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: Daniel included (Hebrew numbering in 3–4). Verified against the org baseline and the partner's shape check (clean).
 
@@ -48,30 +48,30 @@ Old Testament only.
 
 - Shape: `_vrs/orgw.vrs` `1f00151de97901aae13f338f639fd590bc10f92b523ca4723ebc49dc764c9123`
 - Map: `_vrs/map/orgw-to-eng.json` `6c088abfb15aeea37fb99ae6fb7914132322043c8039cd9716178f0ba9ba558e` (1,467 rows)
-- Multi-verse: `_vrs/map/orgw-to-eng.multiverse.json` `f05f1012050e47cfb4ac11746de5b8e425d52f192031291687fb808a58852679` (6 relations: 4 Old Testament, 2 New Testament)
+- Multi-verse: `_vrs/map/orgw-to-eng.multiverse.json` `f05f1012050e47cfb4ac11746de5b8e425d52f192031291687fb808a58852679` (6 relations: 4 Tanakh, 2 New Testament)
 - TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5`
 - Checks: no rows in books where the shape equals English; no Daniel rows; no Numbers 17 or 1 Kings 5 chapter-boundary rows. bcv-query's shape check: 67 defects against `orgw.vrs`, as predicted. Text evidence: Louis Segond (`fra/FRNTLS`) numbers Psalm 51's title as verses 1–2 and keeps English chapters (Malachi 4), checked 2026-10-08.
-- Fixed 2026-10-12: 70 rows removed from four chapters orgw numbers as English (EXO 22, 1SA 21, 2CH 2, HOS 14; org's renumbering doesn't apply there), checked against fra_lsg, swe_fol and nld_nbg. Old Testament multi-verse relations added: org's where orgw's shape and rows agree (1KI 22:43-44, PSA 13:6, ISA 63:19), plus 1SA 20:42-43 → 1SA 20:42 (orgw puts Hebrew 21:1 at 20:43; fra_lsg). Hosea 13–14 isn't uniform among orgw editions: swe_fol and nld_nbg use Hebrew chapters there (15/10), fra_lsg and `orgw.vrs` English ones (16/9).
+- Fixed 2026-10-12: 70 rows removed from four chapters orgw numbers as English (EXO 22, 1SA 21, 2CH 2, HOS 14; org's renumbering doesn't apply there), checked against fra_lsg, swe_fol and nld_nbg. Tanakh multi-verse relations added: org's where orgw's shape and rows agree (1KI 22:43-44, PSA 13:6, ISA 63:19), plus 1SA 20:42-43 → 1SA 20:42 (orgw puts Hebrew 21:1 at 20:43; fra_lsg). Hosea 13–14 isn't uniform among orgw editions: swe_fol and nld_nbg use Hebrew chapters there (15/10), fra_lsg and `orgw.vrs` English ones (16/9).
 - Job 38–41, Ecclesiastes 11–12, Hosea 13–14 (2026-10-16): orgw editions disagree in these blocks (all 35 probed; lexeme-aligner's audit raised it): five Job layouts, two of Ecclesiastes, two of Hosea. `orgw.vrs` and the map follow the majority in each: Job the Louis Segond layout (38/38/28/25, 19 editions; rows text-checked against fra_lsg), Ecclesiastes English (10/14), Hosea Hebrew (15/10). Every other layout is a per-edition variant in `_vrs/map/ot-variants.json` `95dd7d89ca23f2dddb8e0ce1b90a67fb6f69737a9ac75186855fa2138278614a` (10 variants, each text-checked), listed in the index's `ot` entries; see `doc/vrs-index.md`. `generate_vrs.py` keeps these majority values when it regenerates `orgw.vrs` from fra_lsg (`FAMILY_LAYOUT`).
 
 ## catm (Catholic Masoretic)
 
 - Shape: `_vrs/catm.vrs` `9c76c19ed695b65704d81b6d7eca285e98961ce8c90c372543ecf9223da5bf68`
 - Map: `_vrs/map/catm-to-eng.json` `ebefc0af68d678ab1f60836671f96be3cd23a84fd86d125d1f293032c7d8a724` (1,992 rows)
-- Multi-verse: `_vrs/map/catm-to-eng.multiverse.json` `693634e6475faaac0107343448b72013bd8aca079a7e2619401eae972d9de2e0` (7 relations: 5 Old Testament, 2 New Testament)
+- Multi-verse: `_vrs/map/catm-to-eng.multiverse.json` `693634e6475faaac0107343448b72013bd8aca079a7e2619401eae972d9de2e0` (7 relations: 5 Tanakh, 2 New Testament)
 - Built from org's derived rows minus the chapters catm numbers as English (`data/vrs/tvtms-catm-to-eng.derived.tsv`), compared against `org.vrs`: 51 shape exceptions recorded in the map file (chapter-level divergences from org).
-- Fixed 2026-10-12: 41 rows removed from 1CH 12 and NEH 7, which catm numbers as English (fra_ncl). Old Testament multi-verse relations added where catm's shape and rows agree with org's: NUM 25:19-26:1, 1SA 20:42-21:1, 1KI 22:43-44, PSA 13:6, ISA 63:19.
+- Fixed 2026-10-12: 41 rows removed from 1CH 12 and NEH 7, which catm numbers as English (fra_ncl). Tanakh multi-verse relations added where catm's shape and rows agree with org's: NUM 25:19-26:1, 1SA 20:42-21:1, 1KI 22:43-44, PSA 13:6, ISA 63:19.
 
 ## vul (Vulgate)
 
 - Shape: `_vrs/vul.vrs` `0b8f8ea8d07e5f3bf990434b070aa50e3870fde224c4d440daa142af6c40706b`
 - Map: `_vrs/map/vul-to-eng.json` `938063ad61bdb5023077078cee7abf16769bfbd004e5b0639298e64fe7c225e7` (4,101 rows, 0 shape exceptions)
 - Multi-verse: `_vrs/map/vul-to-eng.multiverse.json` `80846a13fdbc3208e21d2ddcb6c8475a589844ea015b2f21367fb6daa2fab7fa` (355 relations: several Vulgate verses in one English verse, e.g. SIR 1:17-20 → SIR 1:16, or one in several). They cover 340 of the 346 Vulgate verses that have no row in the single-verse map but whose own number is another row's target. 13 TVTMS relations are flagged in the file, not published (outside our shapes, or range-to-range).
-- TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's Latin sections: Old Testament and deuterocanon, every source valid in `vul.vrs`, every target valid in `eng.vrs`, one-to-one (no source or target used twice).
+- TVTMS: `902681f77a4a2975b809555ff3c35ffe3c48a1d5` (pinned 2026-10-09). Derived by `pipeline/core/derive_tvtms_org_eng.py` from TVTMS's Latin sections: Tanakh and deuterocanon, every source valid in `vul.vrs`, every target valid in `eng.vrs`, one-to-one (no source or target used twice).
 - Replaces the unpinned strongs-aligner baseline: all 2,845 of its rows are kept with the same target. Added: 1,253 rows, nearly all deuterocanon (SIR, DAN additions, TOB, JDT, WIS, BAR, 2MA).
 - Added 2026-10-12: PSA 42:5 → 43:5, 125:6 → 126:6, 135:26 → 136:26. TVTMS's Latin column has one verse more at the end of these Psalms than `vul.vrs` and maps the pair to one English verse, so the relation fell outside our shape and the verse had no row; in `vul.vrs` (lat_clv) the last verse holds the whole English verse (checked against lat_clv's text). Same-shaped deuterocanon cases (SIR, 1ES, 2ES) stay flagged.
 - Editions: helloAO `lat_clv`, `eng_dra`.
-- Old Testament only; no New Testament rows.
+- Tanakh only; no New Testament rows.
 
 ## lxx (Septuagint)
 
@@ -87,7 +87,7 @@ Old Testament only.
 
 ## Maps to the Hebrew numbering: `<scheme>-to-org` (added 2026-10-12)
 
-One per scheme, for a client whose reference text is the Hebrew Old Testament. Same
+One per scheme, for a client whose reference text is the Hebrew Tanakh. Same
 shape as the `-to-eng` maps (`map` rows, identity elsewhere, plus a `.multiverse.json`),
 and a `no_org_counterpart` list: verses with no Hebrew counterpart (Greek additions,
 NEH 7:68). Scope: the 39 books of the Hebrew Bible; New Testament numbering is in

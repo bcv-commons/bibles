@@ -51,7 +51,7 @@ collection is listed under `collections[].pkf` in
 ## Output
 
 One `<NN>-<BOOKCODE>.usfm` file per book, standard USFM markup (`\c`, `\v`,
-etc.) — the file number prefix keeps multi-book output sortable (OT 01-39,
+etc.) — the file number prefix keeps multi-book output sortable (Genesis–Malachi 01–39,
 NT 41-67, deuterocanon 68-87, peripherals after that).
 
 ## Python and Rust siblings

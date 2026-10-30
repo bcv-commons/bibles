@@ -25,8 +25,8 @@ stories or apps, starts from here and is coordinated through here.
   | audio-sync | verse timing for audio | `cdn.bibel.wiki/align/` |
   | video-sync | timing for Open Bible Stories videos | `cdn.bibel.wiki/obs-video/` |
   | lexeme-aligner | word alignments, keyed on our text fingerprints | its own datasets |
-  | bsb-add-books | new BSB-based editions; contributed written tokens to `tools/verse-text` | `b/` (not yet published) |
-  | bible-story-builder | story apps built on the catalog | uses the catalog |
+  | make-tanakh | drafts of new translations from the Hebrew and Greek, the BSB assisting; contributed written tokens to `tools/verse-text` | its own repo |
+  | demo-bibel-wiki | reading, listening and story app ([demo.bibel.wiki](https://demo.bibel.wiki/)) | uses the catalog |
 
 ## Sources
 

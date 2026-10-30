@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Script, direction, word spacing and Unicode normalization per edition (bcv-commons/bibles
-issue #2, asked by bsb-add-books and lexeme-aligner, 2026-10-26). Folded into
+issue #2, asked by bsb-add-books, now make-tanakh, and lexeme-aligner, 2026-10-26). Folded into
 catalog/edition-struct.json by edition_struct.py; see doc/catalog-edition-struct.md.
 
 Every edition with a text route (catalog/text-route.json) is read from text we already cache,

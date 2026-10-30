@@ -202,7 +202,7 @@ tokenize_written("Mø̀ndæ qá")      # ['Mø̀ndæ', 'qá']; tokenize() gives 
 import { tokenizeWritten } from './js/tokenize_written.js';
 ```
 
-Contributed by bcv-commons/bsb-add-books. On 2026-10-28 the invariant held for every verse
+Contributed by bcv-commons/make-tanakh (then named bsb-add-books). On 2026-10-28 the invariant held for every verse
 we publish (9,806 books, 4,051,985 verses; 10.9% of tokens get a mark back), and Python and
 JS agree on all 47,655 Myanmar-script verses. Tests: `python/test_written.py`,
 `js/test_written.mjs` (both on `conformance/written.expected.json`).

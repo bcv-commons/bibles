@@ -12,7 +12,7 @@ leave every existing output unchanged are minor versions.
   Myanmar-script text only: of the 9,806 books we publish, 121 (KswSKMB 66, NTRKB 27,
   SANBUR 27, SPBT 1); helloAO's `mya_ojv` in the conformance suite. Alignments keyed on
   those fingerprints must be regenerated.
-- **Written tokens v1** (new, from bcv-commons/bsb-add-books): `tokenize_written` /
+- **Written tokens v1** (new, from bcv-commons/make-tanakh, then named bsb-add-books): `tokenize_written` /
   `tokenizeWritten`, the tokens with the combining marks the tokenizer drops put back,
   same count and positions. Tests on `conformance/written.expected.json`.
 

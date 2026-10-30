@@ -579,7 +579,7 @@ def write_scheme_ot_multiverse(scheme: str, vrs: Path, tsv: Path) -> None:
     doc["map"] = [{"s": r["s"], "t": r["t"]} for r in new] + [r for r in doc["map"] if nt(r)]
     doc["evidence"] = new + [r for r in doc["evidence"] if nt(r)]
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"[tvtms] {scheme} multi-verse: {len(new)} Old Testament relations -> {path.relative_to(REPO_ROOT)}")
+    print(f"[tvtms] {scheme} multi-verse: {len(new)} Tanakh relations -> {path.relative_to(REPO_ROOT)}")
 
 
 RSO_VRS = REPO_ROOT / "data" / "vrs" / "rso.vrs"
@@ -768,7 +768,7 @@ def write_vul(path: Path) -> None:
         raise SystemExit(f"[vul] not one-to-one: {report}; refusing to write")
     VUL_OUT.write_text(
         f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
-        f"pipeline/core/derive_tvtms_org_eng.py (vul: Latin sections; Old Testament and "
+        f"pipeline/core/derive_tvtms_org_eng.py (vul: Latin sections; Tanakh and "
         f"deuterocanon only, New Testament excluded by decision 2026-10-05). "
         f"TVTMS is CC BY 4.0, STEPBible.org.\n"
         "source_ref\tstandard_ref\taction\n"
@@ -894,7 +894,7 @@ def write_lxx(path: Path) -> None:
     LXX_OUT.write_text(
         f"# DERIVED from TVTMS at {TVTMS_COMMIT} (sha256 {TVTMS_SHA256}) by "
         f"pipeline/core/derive_tvtms_org_eng.py (lxx: Greek sections, Greek2 for "
-        f"{', '.join(f'{b} {c}' for b, c in sorted(LXX_GREEK2_CHAPTERS))}; Old Testament and "
+        f"{', '.join(f'{b} {c}' for b, c in sorted(LXX_GREEK2_CHAPTERS))}; Tanakh and "
         f"deuterocanon; TVTMS book codes, mapped by crosswalk-lxx.toml). TVTMS is CC BY 4.0, STEPBible.org.\n"
         "source_ref\tstandard_ref\taction\n"
         + "".join(f"{a}\t{b}\t{action_for(a, b)}\n" for a, b in rows),

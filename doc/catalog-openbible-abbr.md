@@ -35,12 +35,14 @@ All enabled Biblica projects are listed (942 on 2026-10-28): text, audio and vid
    `h:`, so ids of different sources can't collide anyway.)
 3. Where that's taken, a number is appended: `KFFobNTA`, `KFFobNTA2`.
 
+The scopes are Biblica's own `scope` values, as its API gives them.
+
 | scope | code | | type | code |
 |---|---|---|---|---|
 | Bible | `BIB` | | text | (none) |
 | Bible with Deuterocanon | `DC` | | audio | `A` |
 | New Testament | `NT` | | video | `V` |
-| New Testament+ (with OT portions) | `NTP` | | | |
+| New Testament+ (with Tanakh portions) | `NTP` | | | |
 | Old Testament | `OT` | | | |
 | Portions | `P` | | | |
 | Selections | `S` | | | |

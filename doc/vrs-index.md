@@ -40,7 +40,7 @@ on partial evidence, each with a reason explained in `assumed_reasons`:
 
 | Reason | Meaning |
 |---|---|
-| `nt_only` | New Testament only; labelled `eng`, Old Testament numbering unknown |
+| `nt_only` | New Testament only; labelled `eng`, Tanakh numbering unknown |
 | `no_psalm_evidence` | no Psalm probe data; labelled `eng` by default |
 | `ebible_direct` | eBible text not mirrored in helloAO; labelled `eng` by default |
 | `tiebreaker_unconfirmed` | family known from the Psalms, deciding chapter (MAL 4, HAG 1) not confirmed |
@@ -54,7 +54,7 @@ were 2,717 assumed entries (2,576 `nt_only`, 98 `no_psalm_evidence`, 36 `near_ma
 
 ## New Testament: `nt` and `nt-variants.json` (added 2026-10-09)
 
-`l` describes the Old Testament and, unless the key has an `nt` entry, the New Testament
+`l` describes the Tanakh and, unless the key has an `nt` entry, the New Testament
 too. New Testament numbering varies on its own, so an edition can have an `nt` entry:
 
 ```json
@@ -86,7 +86,7 @@ too. New Testament numbering varies on its own, so an edition can have an `nt` e
 
 Client rule: for a key with an `nt` entry, take New Testament rows from its variants
 (identity elsewhere) and ignore the New Testament rows of the `l` scheme's map. A key
-without one has an `eng` New Testament, or none we could test (an Old Testament-only text
+without one has an `eng` New Testament, or none we could test (a Tanakh-only text
 or an edition we couldn't probe).
 
 Since 2026-10-12 every edition whose New Testament differs from `eng` has an entry, even
@@ -105,7 +105,7 @@ chapters (a partial New Testament) gets none; 53 DBT editions couldn't be probed
 (44 refused with 403, 9 failing on a chapter). Chapters outside the 15 tested ones aren't probed
 for DBT and helloAO, so their `unexplained` lists are from those chapters only.
 
-## Old Testament: `ot` and `ot-variants.json` (added 2026-10-16)
+## Tanakh: `ot` and `ot-variants.json` (added 2026-10-16)
 
 A scheme's map holds one layout per chapter, but in a few blocks the editions sharing a
 scheme disagree, so any single choice is wrong for some of them. Probing all 35 `orgw`

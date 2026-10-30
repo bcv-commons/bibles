@@ -223,7 +223,7 @@ def main():
     sources: dict = {} if force else load_json(ALIGN_SOURCES_FILE, {})
 
     r = subprocess.run(["rclone", "lsf", f"R2:{bucket}/{RUNS_PREFIX}/", "--files-only"],
-                        capture_output=True, text=True, env=env, timeout=120)
+                        capture_output=True, text=True, env=env, timeout=600)   # 13,000+ manifests
     if r.returncode != 0:
         sys.exit(f"[pull-align-manifests] listing {RUNS_PREFIX} failed: {r.stderr.strip()}")
     manifest_files = [ln for ln in r.stdout.splitlines() if ln.strip()]

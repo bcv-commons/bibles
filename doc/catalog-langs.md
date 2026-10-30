@@ -5,7 +5,7 @@
 
 Per-language display names (`langs.json`) and per-language canon coverage
 (both files) — "what languages exist, with what name, and what
-NT/OT/OBS coverage." Answers the same questions
+NT, Tanakh and OBS coverage." Answers the same questions
 [`catalog-index.json`](catalog-index.md) +
 [`catalog-audio-index.json`](catalog-audio-index.md) +
 `/dbt/<iso>/media.json`'s `timingBooks` already answer *separately*, plus
@@ -87,7 +87,7 @@ the same category structure with plain iso-code arrays instead — smaller,
 no names, for a coverage-only check.
 
 A language can appear in multiple canon/category combinations (e.g. NT
-`with-timecode`, OT `audio-only`, and OBS `text-only` all at once — real,
+`with-timecode`, Tanakh `audio-only`, and OBS `text-only` all at once — real,
 not hypothetical, e.g. `amh`).
 
 ## Language names (`n`/`v`/`s`)

@@ -94,7 +94,7 @@ hand-curated, hand-verified list (`data/helloao-audio.toml`), the same
 
 As of this file's first build (2026-08-14), that list has exactly **one
 real entry: `BSB`** (Berean Standard Bible), three narrators
-(`david`/`hays`/`souer`), both NT and OT. Checked directly against a random
+(`david`/`hays`/`souer`), both NT and Tanakh. Checked directly against a random
 sample of ~40 other translations (English and non-English) and found audio
 on none of them — this is not an underscan, helloAO audio genuinely is
 that narrow today. (`AAB`, helloAO's own edition, also *reports* audio

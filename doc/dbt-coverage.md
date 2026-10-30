@@ -11,7 +11,7 @@ users have moved.
 
 Real per-fileset book/chapter coverage — companion file to
 `/dbt/<iso>/media.json`, for editions that don't cover the full canon
-(e.g. `PORALM` — Portuguese, only 4 NT books + 1 OT book). Don't assume
+(e.g. `PORALM` — Portuguese, only 4 NT books + 1 Tanakh book). Don't assume
 full-canon coverage from an `"nt"`/`"ot"` label and 404 on a book a partial
 translation doesn't have; check this file first.
 
@@ -37,6 +37,6 @@ they usually are).
 Source: DBT's own `GET bibles/{abbr}?key=...&v=4` — bible-level, not
 per-fileset (an audio/text-fileset-suffix id like `ENGBERN1DA` 404s on that
 endpoint; only the bible abbr works). Filtered per fileset to that
-fileset's own testament, so an NT-only audio fileset doesn't inherit OT
+fileset's own testament, so an NT-only audio fileset doesn't inherit Tanakh
 books from its bible's aggregate response. Refreshed the same way
 `media.json` is — no separate polling needed on your end.

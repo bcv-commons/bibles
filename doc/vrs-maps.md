@@ -94,7 +94,7 @@ and collide with org `21:2 → 21:1`. A verse can also have a `map` row (org `PS
 PSA 13:5`): that row gives the first verse of the range only, for a client that wants
 a single verse; the multiverse relation is the full answer.
 
-For `org`, these are the six Old Testament places where Hebrew and English split a
+For `org`, these are the six Tanakh places where Hebrew and English split a
 verse differently: NUM 25:19 / 26:1, 1SA 20:42 / 21:1, 1KI 22:43-44, 1CH 12:4-5,
 PSA 13:5-6 and ISA 63:19 / 64:1, plus two in the New Testament (ACT 19:40-41,
 2CO 13:12-13). `orgw`, `catm` and `rso` have the ones that hold in their own
@@ -109,7 +109,7 @@ in this repo are the single-verse rows only: use the published JSON.
 
 `https://cdn.bibel.wiki/_vrs/map/<scheme>-to-org.json` and `.multiverse.json`, for
 `eng`, `orgw`, `catm`, `rso`, `vul` and `lxx`: a scheme's verse in the Hebrew (`org`)
-numbering, for a client whose reference text is the Hebrew Old Testament. Read them like
+numbering, for a client whose reference text is the Hebrew Tanakh. Read them like
 the `-to-eng` maps: a `map` row where the number changes, identity elsewhere, merged and
 split verses in the multiverse file.
 

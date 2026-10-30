@@ -34,13 +34,24 @@ and no verse had zero length; audio-sync's had 37 zero-length verses of
 218. This order holds until there's evidence for another.
 
 PKF timing is per chapter of one audio fileset: `info.json` →
-`media.audio.items[]` with `hasTiming`, `src` starting with `h` (streamed
-from DBT) and `timingFile` containing `-<book>-<chapter:02d>-` (any case:
-`des` writes `-Heb-`). The fileset is in `filename`, in one of four forms:
-`B01___01_Matthew_____ACAWBTP2DA.mp3`, `B07___01_1CorinthiansADETBLN2DA.mp3`,
-`BSNWBTN2DA_B03_LUK_001.mp3`, or an old DAM id, `…_N1IZZTBL.mp3` =
-`IZZTBLN1DA`. No such item: no PKF timing for that fileset. Other `src`
-values are PKF's own audio, below.
+`media.audio.items[]` with `bookCode`, `chapter`, `hasTiming`, and a `src`
+whose `media.audio.sources` entry has `type` `"fcbh"`: DBT audio, streamed
+from DBT (se-regional-pwa's
+[client-data-spec](https://github.com/larsgson/se-regional-data/blob/main/docs/client-data-spec.md) §8).
+The fileset: the item's `damId` where `filename` contains it or is a
+new-style name (`BSNWBTN2DA_B03_LUK_001.mp3` is in `BSNTBLN2DA`); otherwise
+the one an old-style `filename` names, `B01___01_Matthew_____ACAWBTP2DA.mp3`
+or an old DAM id, `…_N1IZZTBL.mp3` = `IZZTBLN1DA`. Since 2026-10-29 an item's
+`damId` is that fileset; `media.audio.sources` keeps the source's default,
+which can differ (in 9 languages, e.g. ame: source `AMETBLN2DA`, files and
+items `AMETBLN1DA`; PKF's `size` matches that file byte for byte). No such
+item: no PKF timing for that fileset. Other sources are PKF's own audio,
+below.
+
+`info.json` published before 2026-10-29 has no `sources`, `damId` or
+`bookCode`: there DBT audio is a `src` starting with `h`, the book and
+chapter are in `timingFile` (`-<book>-<chapter:02d>-`, any case: `des`
+writes `-Heb-`), and the fileset only in `filename`.
 
 PKF's timing counts in `media.json` (`"at"`, `timingOnly`/`timingExcept`)
 like the other two, and an edition's `a` lists the filesets PKF uses first:
@@ -50,8 +61,8 @@ choice is usually reviewed by hand. Play the first one that has audio.
 ## PKF's own audio: no key needed
 
 Besides DBT's audio, PKF's apps play audio they get elsewhere, mostly from
-scriptureearth.org: `info.json` items whose `src` doesn't start with `h`
-(`d1`, `d2`, `a1`). On 2026-10-28 that's 115 languages, 111 of them with
+scriptureearth.org: `info.json` items of the other sources (`download`
+`d1`, `d2`; `assets` `a1`, files inside the app). On 2026-10-28 that's 115 languages, 111 of them with
 PKF's verse timing, playable without any key. `media.json` lists it as the
 language's PKF edition, the same id `catalog/text-route.json` gives PKF's
 text:
@@ -64,16 +75,19 @@ text:
 }
 ```
 
-For a chapter, take the `info.json` item with that book and chapter (in
-`timingFile`, else in `bookCode` and `chapter`) and a `src` not starting
-with `h`:
+For a chapter, take the `info.json` item with that `bookCode` and `chapter`
+from a source that isn't `fcbh`, and a Bible book: trc also has a hymnal
+(`B001`), Genesis summaries (`XXA`) and a radio programme (`XXB`). bibles
+leaves out books and chapters that don't exist.
 
-- **Audio**: the item's `url`, else `media.audio.base_url` + `/` +
-  `filename`, else `https://www.scriptureearth.org/data/<iso>/audio/<filename>`,
+- **Audio**: the item's `url`, already percent-encoded; `null` where PKF
+  can't tell where an app-bundled (`a1`) file is (huv, maj, nhw, poe), and
+  bibles leaves those out. In `info.json` before 2026-10-29, often no `url`:
+  then `media.audio.base_url` + `/` + `filename`, else
+  `https://www.scriptureearth.org/data/<iso>/audio/<filename>`,
   percent-encoded (file names can have spaces: `ded_01_01-Gen 01.mp3`).
   scriptureearth.org allows cross-origin requests. bibles checks one file
-  per language and `src` before listing it (5 languages' `a1` audio answers
-  404 and is left out).
+  per language and source before listing it.
 - **Timing**, where the item has `hasTiming`:
   `https://cdn.bibel.wiki/pkf/<iso>/timing/<book>-<chapter>.json`, made
   against PKF's own text (`textSource`: the language's `.pkf` collection,
@@ -157,7 +171,7 @@ per audio fileset, is published only where it isn't the whole testament
 ```
 
 - An audio fileset in **neither** map has timing for every book of the
-  testament (27 NT / 39 OT), like `ARZVDVN1DA` in the example.
+  testament (27 NT / 39 Tanakh), like `ARZVDVN1DA` in the example.
 - **`timingOnly`**: the books **with** timing; `[]` means none at all
   (this audio fileset has none, another in `a[]` does).
 - **`timingExcept`**: the books **without** timing.
@@ -169,7 +183,7 @@ else every book. A book in that set still 404s for a chapter whose
 alignment failed; treat a 404 as "no timing for this chapter".
 
 DBT's timing is checked once per testament (REV 15, else MRK 1 for the NT;
-PSA 117, else GEN 1 for the OT), so a fileset with DBT timing counts as
+PSA 117, else GEN 1 for the Tanakh), so a fileset with DBT timing counts as
 timed for its whole testament: DBT may still answer empty for a book it
 never timed.
 

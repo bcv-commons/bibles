@@ -21,9 +21,9 @@ dependencies (`get_audio.mjs`; browsers and Node >= 18).
 4. **Timing**, in this order:
    1. PKF's (se-regional-pwa), no key. For a `<ISO>PKF` edition, the timing of PKF's own audio;
       for DBT audio, where `https://cdn.bibel.wiki/pkf/<iso>/info.json`
-      has an item in `media.audio.items` with `hasTiming`, `src` `h…`, the audio fileset in its
-      `filename` (four forms, [dbt-timing.md](../../doc/dbt-timing.md)) and a `timingFile`
-      containing `-<BOOK>-<chapter, 2 digits>-`, the timing is
+      has an item in `media.audio.items` with `hasTiming`, that `bookCode` and `chapter`, a DBT
+      source (`fcbh`) and that audio fileset (its `damId`, or the fileset its file name names:
+      [dbt-timing.md](../../doc/dbt-timing.md)), the timing is
       `https://cdn.bibel.wiki/pkf/<iso>/timing/<BOOK>-<chapter>.json`, `[[start, end, "1a"], ...]`
       per verse part. PKF comes first: its timing is often checked by hand
       ([dbt-timing.md](../../doc/dbt-timing.md));
@@ -68,10 +68,10 @@ node get_audio.mjs tee nt TEEPKF MAT 1                     # PKF's own audio and
 
 Checked 2026-10-28: ACAWBT MAT 1, ACUTBL ACT 1, ZAATBL MRK 3 (DBT audio, PKF timing), ENGKJV
 JHN 18 (DBT audio, align timing), ENGBSBHAY JHN 3 (helloAO audio, align timing), SPAPDT GEN 1
-(OT, align), AAAMLT JHN 3 (DBT audio, DBT timing); PKF timing for the other file-name forms:
+(Tanakh, align), AAAMLT JHN 3 (DBT audio, DBT timing); PKF timing for the other file-name forms:
 ADETBL 1CO 1, IZZTBL MAT 1 (old DAM id), DESWBT HEB 1 (`-Heb-`), and CULWBT JHN 6 (PKF's drama
 recording N2DA, played instead of N1DA). PKF's own audio and timing, no key (against the
-regenerated media.json, before publishing): TEEPKF MAT 1, ZAIPKF PSA 1 (OT), DEDPKF GEN 1 and
+regenerated media.json, before publishing): TEEPKF MAT 1, ZAIPKF PSA 1 (Tanakh), DEDPKF GEN 1 and
 GVSPKF MAT 1 (spaces in the file name), APSPKF MRK 1 (`url` given), AGGPKF MRK 1 (`base_url`),
 IFAPKF GEN 1, TRCPKF MAT 1.
 

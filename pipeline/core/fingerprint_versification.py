@@ -315,7 +315,7 @@ def helloao_ot_ids() -> list[str]:
 ASSUMED: dict = {}
 ASSUMED_REASONS = {
     "no_psalm_evidence": "no Psalm probe data; defaulted to eng",
-    "nt_only": "New Testament only; defaulted to eng (Old Testament numbering unknown)",
+    "nt_only": "New Testament only; defaulted to eng (Tanakh numbering unknown)",
     "ebible_direct": "eBible text not mirrored in helloAO; defaulted to eng",
     "tiebreaker_unconfirmed": "family known from the Psalms, deciding chapter not "
                               "confirmed (org vs orgw: MAL 4; vul vs rso: HAG 1)",
@@ -718,7 +718,7 @@ def main():
             otc = OtClassifier(schemes, json.loads(ot_variants_file.read_text()))
             ot_index = ot_probes.ot_entries(dict(index), otc)
             ot_index.update(pkf_ot_entries(json.loads(pkf_manifest.read_text())["languages"], index, API_CACHE / "pkf-vrs", otc))
-            print(f"[v11n] {len(ot_index)} editions with Old Testament variants (ot_probes.py cache + PKF .vrs)")
+            print(f"[v11n] {len(ot_index)} editions with Tanakh variants (ot_probes.py cache + PKF .vrs)")
         print(f"[v11n] PKF: {len(pkf_labels)} collections {dict(Counter(pkf_labels.values()))}; "
               f"{len(nt_index)} editions in all with New Testament variants")
     else:

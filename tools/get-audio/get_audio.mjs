@@ -65,22 +65,35 @@ export async function getAudioUrl(edition, audioFileset, book, chapter, { dbtKey
   return r?.data?.[0]?.path ?? null;
 }
 
-// The DBT audio fileset of a PKF audio item, or null. PKF's apps stream DBT's audio (src "h1",
-// "h2", ...); its file names carry the fileset: B01___01_Matthew_____ACAWBTP2DA.mp3,
-// B07___01_1CorinthiansADETBLN2DA.mp3, BSNWBTN2DA_B03_LUK_001.mp3, or an old DAM id,
-// ..._N1IZZTBL.mp3 = IZZTBLN1DA. Other src values are audio PKF gets elsewhere.
+// Whether a PKF audio item is DBT audio, which PKF's apps stream from DBT: its src's type in
+// media.audio.sources is "fcbh" (src "h1", "h2", ...). Other sources are audio PKF gets elsewhere.
+function pkfIsDbt(audio, item) {
+  const type = audio.sources?.[item.src]?.type;
+  return type ? type === 'fcbh' : String(item.src ?? '').startsWith('h');
+}
+
+// The DBT audio fileset of a PKF DBT audio item. damId is the source's setting, not always the
+// file's: an old-style file name names the fileset the file is in (B01___01_Matthew_____
+// ACAWBTP2DA.mp3, B07___01_1CorinthiansADETBLN2DA.mp3, or an old DAM id, ..._N1IZZTBL.mp3 =
+// IZZTBLN1DA). Since 2026-10-29 PKF sets each item's damId to that fileset; before, in 9
+// languages it was the source's (ame: AMETBLN2DA for AMETBLN1DA files), and older info.json has
+// none. So damId is used when the file name contains it or is new-style
+// (BSNWBTN2DA_B03_LUK_001.mp3 is in BSNTBLN2DA), else the file name's fileset.
 function pkfFileset(item) {
-  if (!String(item.src ?? '').startsWith('h')) return null;
   const f = item.filename ?? '';
+  if (item.damId && f.includes(item.damId)) return item.damId;
   let m = /_([NOP][12])([A-Z0-9]{6})\.mp3$/.exec(f);
   if (m) return m[2] + m[1] + 'DA';
-  m = /^([A-Z0-9]{10})_[AB]\d\d_/.exec(f) ?? /([A-Z0-9]{10})\.mp3$/.exec(f);
-  return m?.[1] ?? null;
+  m = /([A-Z0-9]{10})\.mp3$/.exec(f);
+  if (m) return m[1];
+  return item.damId ?? /^([A-Z0-9]{10})_[AB]\d\d_/.exec(f)?.[1] ?? null;
 }
 
 // PKF's audio items for one chapter of a language, from pkf/<iso>/info.json (cached per
-// language): the book and chapter are in timingFile ("C01-02-MAT-01-timing.txt", any case), else
-// in bookCode and chapter.
+// language): the book and chapter are in bookCode and chapter. In older info.json (no
+// media.audio.sources) bookCode can be missing or wrong, so timingFile goes first there
+// ("C01-02-MAT-01-timing.txt", any case). Items whose timingFile names this chapter come first
+// (until 2026-10-29 trc's hymns were labelled REV 1-31 next to its real REV chapters).
 const pkfInfo = new Map();
 async function pkfItems(iso, book, chapter) {
   if (!pkfInfo.has(iso)) pkfInfo.set(iso, getJson(`${CDN}/pkf/${iso}/info.json`).catch(() => null));
@@ -88,25 +101,31 @@ async function pkfItems(iso, book, chapter) {
   if (!info) pkfInfo.delete(iso);                          // a failed fetch is retried next time
   const audio = info?.media?.audio ?? {};
   const cc = String(chapter).padStart(2, '0');
-  const items = (audio.items ?? []).filter((i) => i.timingFile
+  const items = (audio.items ?? []).filter((i) => i.timingFile && !audio.sources
     ? i.timingFile.toUpperCase().includes(`-${book}-${cc}-`)
     : String(i.bookCode ?? '').toUpperCase() === book && Number(i.chapter) === Number(chapter));
+  const named = (i) => (i.timingFile ?? '').toUpperCase().includes(`-${book}-${cc}-`);
+  items.sort((a, b) => named(b) - named(a));
   return { audio, items };
 }
 
 // The DBT audio filesets PKF timed for one chapter (usually one: the recording PKF's app uses).
 export async function pkfFilesets(iso, book, chapter) {
-  const { items } = await pkfItems(iso, book, chapter);
-  return items.filter((i) => i.hasTiming).map(pkfFileset).filter(Boolean);
+  const { audio, items } = await pkfItems(iso, book, chapter);
+  return items.filter((i) => i.hasTiming && pkfIsDbt(audio, i)).map(pkfFileset).filter(Boolean);
 }
 
 // PKF's own audio for one chapter (an edition with audioSource {source: "pkf"}, id <ISO>PKF):
-// {audio: URL, hasTiming} or null. The URL is the item's url, else base_url + "/" + filename,
-// else scriptureearth.org's folder for the language, percent-encoded (some names have spaces).
+// {audio: URL, hasTiming} or null. The URL is the item's url, already percent-encoded. Older
+// info.json (no media.audio.sources) often has none: then base_url + "/" + filename, else
+// scriptureearth.org's folder for the language, percent-encoded (some names have spaces).
 async function pkfOwnItem(iso, book, chapter) {
   const { audio, items } = await pkfItems(iso, book, chapter);
-  const item = items.find((i) => !String(i.src ?? '').startsWith('h'));
+  const item = items.find((i) => !pkfIsDbt(audio, i));
   if (!item) return null;
+  if (audio.sources) {                // the location of a few app-bundled files is unknown
+    return item.url ? { audio: item.url, hasTiming: !!item.hasTiming } : null;
+  }
   const url = item.url ?? (audio.base_url
     ? `${audio.base_url.replace(/\/+$/, '')}/${item.filename}`
     : `https://www.scriptureearth.org/data/${iso}/audio/${item.filename}`);

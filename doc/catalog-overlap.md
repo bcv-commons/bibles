@@ -219,21 +219,21 @@ published (unlike the never-attempted case above) precisely because both
 carry real, positively-confirmed information: one edition is broken, the
 other is confirmed real and fetchable.
 
-## Why NT and OT can disagree about the same-looking editions
+## Why the NT and the Tanakh can disagree about the same-looking editions
 
 A client flagged what looked like a bug: `BSB`/`AAB`/`eng_msb` cluster
-together in NT but not in OT (this specific case is now fixed — see below),
+together in the NT but not in the Tanakh (this specific case is now fixed — see below),
 and asked why other same-named-looking groups (WEB, Wycliffe Modern) don't
 always merge consistently across both canons either. Two of the three
 patterns behind that report are permanent, by-design behavior, not bugs —
 worth knowing before assuming a mismatch is an error:
 
-- **NT and OT are separately probed and separately clustered.** Every
+- **The NT and the Tanakh are separately probed and separately clustered.** Every
   relationship in this file comes from comparing one specific chapter
-  (`probes` above) — a real match in NT says nothing about OT, and vice
-  versa. Two ids can be an exact NT duplicate and a genuinely different OT
+  (`probes` above) — a real match in the NT says nothing about the Tanakh, and vice
+  versa. Two ids can be an exact NT duplicate and a genuinely different Tanakh
   edition at the same time (e.g. `arb`: DBT's `ARBVDV` and helloAO's
-  `arb_vdv` are one cluster in NT but score 0.9995 in OT — a real
+  `arb_vdv` are one cluster in the NT but score 0.9995 in the Tanakh — a real
   difference in the underlying editions, not a comparison error). Don't
   assume a merge (or a `likely`/`closest` value) in one canon implies
   anything about the other.
@@ -254,7 +254,7 @@ worth knowing before assuming a mismatch is an error:
   found everywhere, not a data error.
 
 The `BSB`/`AAB`/`eng_msb` case itself *was* a real, now-fixed gap: the
-helloAO-vs-helloAO same-source leg had never been run for OT at all, so OT
+helloAO-vs-helloAO same-source leg had never been run for the Tanakh at all, so Tanakh
 singletons fell back to weaker cross-source signals instead of the direct
 same-source comparison. All helloAO-vs-helloAO and DBT-vs-DBT comparisons
 now cover both canons.
@@ -262,7 +262,7 @@ now cover both canons.
 ## Two shades of `r: false`
 
 A catalog-known DBT id that's never been positively confirmed reachable
-(e.g. `AUSWBT` in the OT, which 404s every time it's tried) gets a bare placeholder
+(e.g. `AUSWBT` in the Tanakh, which 404s every time it's tried) gets a bare placeholder
 row with `r: false` and no `confirmed_removed` — "we know the catalog
 lists this, but we've never gotten real content from it, and this run
 failed too." A different case, caught by a client (2026-07-23): `BENBIB`
@@ -282,17 +282,17 @@ vanishing a once-real id is just as uninformative as an unmarked bare row,
 for the same reason. Run `verify_samples.py --id <ID>` to (re-)check
 whether a specific id has gone offline.
 
-## Why an OT comparison might use PSA 51 instead of PSA 117
+## Why a Tanakh comparison might use PSA 51 instead of PSA 117
 
 A client (2026-07-28) reported `cpy_wbt` (helloAO) as a false-positive
-unreachable id for OT — checked directly, its PSA 117 endpoint returns a
+unreachable id for the Tanakh — checked directly, its PSA 117 endpoint returns a
 real 200 response with `"content": [], "numberOfVerses": 0`: this specific
 translation genuinely has an empty PSA 117 chapter, not a broken endpoint.
 PKF's own manifest for `cpy` independently confirms the same pattern — its
-OT coverage lists PSA verses "5,22,40,51,89,91,103,119,148" (no 117, but
+Tanakh coverage lists PSA verses "5,22,40,51,89,91,103,119,148" (no 117, but
 51 is there). PSA 117 (2 verses) has always been documented as having weak
 discriminating power; `compare_all.py` now automatically retries an entire
-OT `(iso, canon)` group with PSA 51 whenever the primary PSA 117 probe
+Tanakh `(iso, canon)` group with PSA 51 whenever the primary PSA 117 probe
 leaves any id unfetched, and adopts the PSA 51 result only if it fetches
 strictly more ids than PSA 117 did — always for the WHOLE group at once,
 never per-id, since comparing one id's PSA 117 text against another id's
@@ -322,7 +322,7 @@ compared again.
   detect the change short of diffing this doc. Check this field before
   parsing if you want to fail loudly on a future shape change instead.
 - **`probes`** — which chapter(s) each comparison was actually based on.
-  OT has two: `PSA117` (short, 2 verses, the default) and `PSA51` (longer,
+  The Tanakh has two: `PSA117` (short, 2 verses, the default) and `PSA51` (longer,
   used automatically whenever PSA117 leaves any id in a group unfetched —
   see above; a 2-verse chapter has weak discriminating power and, as
   discovered 2026-07-28, sometimes genuinely has zero verses in a specific
@@ -338,7 +338,7 @@ compared again.
 
 A cluster (score 1.0) used to rest on one probe chapter per testament. One chapter isn't
 enough: the Open English Bible's US and Commonwealth spelling editions are identical on
-Jonah 1 but differ in 180 Old Testament verses (savor/savour, plow/plough); the KJV
+Jonah 1 but differ in 180 Tanakh verses (savor/savour, plow/plough); the KJV
 printings ENGKJV / eng_kjv / eng_cpb were identical on Revelation 15 but differ on Mark 1.
 So every pair scoring 1.0 is now compared on further chapters both editions have
 (`pipeline/comparison/confirm_identical.py`: GEN 1, PSA 51, RUT 1 / MRK 1, JHN 3, REV 15)
@@ -347,7 +347,7 @@ diagnosed on the chapter where it differs. In the 2026-10-16 run: 1,527 pairs co
 269 not identical after all (177 published clusters split), 94 with no further chapter in
 common (kept, since nothing contradicts them).
 
-Known mislabel: the Open English Bible's two editions in the Old Testament are labelled
+Known mislabel: the Open English Bible's two editions in the Tanakh are labelled
 `phonemic_distinction`. Their probe chapter (Jonah 1) differs only in quote style ("…"
 vs ‘…’), and a single quote can't be told from an apostrophe letter. They are correctly
 separate entries; the label should read `orthography_convention`, as in the New Testament.

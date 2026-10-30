@@ -35,7 +35,7 @@ system.
 
 ## Writing system
 
-Added 2026-10-26 (bcv-commons/bibles issue #2, for bsb-add-books and lexeme-aligner), so that
+Added 2026-10-26 (bcv-commons/bibles issue #2, for bsb-add-books, now make-tanakh, and lexeme-aligner), so that
 tools read an edition's script from here instead of each detecting it.
 
 | field | value |

@@ -60,7 +60,7 @@ was removed. `verseList(extractEntries(doc))` on the Sofria chapter gives the sa
 Checked 2026-10-06 across all 1,305 `-json` filesets, for John 3:
 
 - **1,015 return a Sofria document** for John 3.
-- **286 return 404** for John. Most have no John at all: 160 have Genesis (so they're likely Old Testament only), and 126 have neither Genesis nor John.
+- **286 return 404** for John. Most have no John at all: 160 have Genesis (so they're likely Tanakh only), and 126 have neither Genesis nor John.
 - **3 are blocked by key permissions**, and one more lets its plain text through but refuses the Sofria download.
 
 So a 404 means the book is absent from that fileset, and a 403 means the key can't read it. Neither means the Sofria format is missing. Check the book first, and handle a 403 as a permission issue, not a format issue. The check covered one chapter of each fileset, not every chapter.

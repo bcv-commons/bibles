@@ -24,6 +24,19 @@ media.audio.items[] with the file name, `src`, `hasTiming` and `timingFile` (e.g
   huv's and poe's "a1", copies of DBT files that aren't on scriptureearth.org). Items with no
   book and chapter (trc's "d3" summaries) are left out too.
 
+Since 2026-10-29 (se-regional-pwa's client-data-spec §8) every item has bookCode and chapter,
+DBT items a damId, media.audio.sources maps each src to its type ("fcbh" = DBT, "download",
+"assets" = bundled in the app), and every non-DBT item its percent-encoded url, or null where
+the app doesn't reveal it (huv, maj, nhw, poe "a1"). Those fields are used when present; the
+file-name and URL rules above remain for info.json published before that. Two exceptions:
+- An old-style file name names the fileset the file is in; damId is used when the file name
+  contains it or is a new-style one (bsn: BSNWBTN2DA_B03_LUK_001.mp3 is in BSNTBLN2DA), else
+  the file name's fileset. Since 2026-10-29 PKF sets damId per item to that fileset; until
+  then, in 9 languages (ame, fab, icr, kmu, kqe, kxf, maj, moa, plu) it was the source's, and
+  PKF's `size` matched the file name's fileset byte for byte.
+- Items whose book isn't a Bible book, or whose chapter the book doesn't have, are left out
+  (trc: a hymnal B001, Genesis summaries XXA, a radio programme XXB; enq's INT 0).
+
 A book counts as timed when PKF timed any of its chapters, as for align-index.json.
 
     {"checked_at": "...", "languages": 334,
@@ -46,7 +59,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from paths import INTERNAL_DATA  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from paths import DATA, INTERNAL_DATA  # noqa: E402
+from generate_vrs_map import load_vrs  # noqa: E402
+
+CHAPTERS = {book: max(chs) for book, chs in load_vrs(DATA / "vrs" / "eng.vrs").items()}
 
 OUT = INTERNAL_DATA / "pkf-audio-index.json"
 PKF = "https://cdn.bibel.wiki/pkf"
@@ -89,28 +106,49 @@ def audio_status(url: str, tries: int = 3) -> str:
     return "no answer"
 
 
-def dbt_fileset(filename: str) -> str | None:
+def is_dbt(audio: dict, item: dict) -> bool:
+    kind = ((audio.get("sources") or {}).get(item.get("src")) or {}).get("type")
+    return kind == "fcbh" if kind else str(item.get("src", "")).startswith("h")
+
+
+def dbt_fileset(item: dict) -> str | None:
+    filename = item.get("filename") or ""
+    dam_id = item.get("damId")
+    if dam_id and dam_id in filename:
+        return dam_id
     m = OLD_DAM_RE.search(filename)
     if m:
         return m.group(2) + m.group(1) + "DA"
-    for pattern in FILESET_RE:
-        m = pattern.search(filename)
-        if m:
-            return m.group(1)
-    return None
+    m = FILESET_RE[1].search(filename)          # old-style name: its fileset, not damId
+    if m:
+        return m.group(1)
+    if dam_id:
+        return dam_id
+    m = FILESET_RE[0].search(filename)
+    return m.group(1) if m else None
 
 
-def book_chapter(item: dict) -> tuple[str, int] | None:
-    m = TIMING_FILE_RE.search(item.get("timingFile") or "")
+def book_chapter(audio: dict, item: dict) -> tuple[str, int] | None:
+    """bookCode and chapter; in older info.json (no sources) timingFile goes first, as its
+    bookCode could be wrong (ztp's Ruth was "RTH")."""
+    m = None if audio.get("sources") else TIMING_FILE_RE.search(item.get("timingFile") or "")
     if m:
         return m.group(1).upper(), int(m.group(2))
     if item.get("bookCode") and item.get("chapter"):
         return str(item["bookCode"]).upper(), int(item["chapter"])
-    return None
+    m = TIMING_FILE_RE.search(item.get("timingFile") or "")
+    return (m.group(1).upper(), int(m.group(2))) if m else None
 
 
-def own_url(iso: str, audio: dict, item: dict) -> str:
+def is_chapter(bc: tuple[str, int] | None) -> bool:
+    """A Bible book and one of its chapters (0: an introduction)."""
+    return bool(bc) and bc[0] in CHAPTERS and 0 <= bc[1] <= CHAPTERS[bc[0]]
+
+
+def own_url(iso: str, audio: dict, item: dict) -> str | None:
     """Percent-encoded: some file names have spaces and parentheses (ded, gvs)."""
+    if audio.get("sources"):          # PKF's own url, already encoded; None where unknown
+        return item.get("url")
     if item.get("url"):
         url = item["url"]
     elif audio.get("base_url"):
@@ -131,15 +169,15 @@ def main():
     for iso, info in infos.items():
         audio = ((info or {}).get("media") or {}).get("audio") or {}
         for item in audio.get("items", []):
-            bc = book_chapter(item)
-            if not bc:
+            bc = book_chapter(audio, item)
+            if not is_chapter(bc):
                 continue
             src = str(item.get("src", ""))
-            if src.startswith("h"):
-                fs = dbt_fileset(item.get("filename") or "")
+            if is_dbt(audio, item):
+                fs = dbt_fileset(item)
                 if fs and item.get("hasTiming"):
                     filesets[iso][fs].add(bc[0])
-            else:
+            elif own_url(iso, audio, item):
                 own_items[iso][src].append((*bc, item))
 
     checks = [(iso, src, own_url(iso, infos[iso]["media"]["audio"], items[0][2]))
