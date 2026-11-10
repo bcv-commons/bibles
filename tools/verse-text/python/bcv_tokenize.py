@@ -60,8 +60,12 @@ def _is_variation_selector(o: int) -> bool:   # also used by bcv_written.py
 
 def strip_marks(text: str) -> str:
     """NFC, then drop combining marks (non-zero combining class) — Arabic harakat, Hebrew points, etc.
-    Otherwise the word regex shatters a diacritized word at every mark (فِي → ف, ي). Precomposed Latin
-    accents (é, å) survive NFC as single code points, so French/Swedish are unaffected.
+    Otherwise the word regex shatters a diacritized word at every mark (فِي → ف, ي). This applies to every
+    script: precomposed accents (é, å) survive NFC as single code points and are kept, but a mark on a
+    letter without a precomposed form, or a second mark, is dropped (ɛ́ → ɛ, ndø̀goát → ndøgoát, U+1DC4
+    always). So a tone language in Latin script loses tone on some vowels and keeps it on others; the
+    tokens are match keys, not the word as written. bcv_written.tokenize_written gives the written form
+    at the same positions.
 
     Myanmar virama/asat are EXEMPT. They share the virama combining class (9) with the Indic marks this
     is meant to drop, but they are not optional diacritics: the virama stacks a consonant and the asat
@@ -78,8 +82,8 @@ def tokenize(text: str) -> list[str]:
     letters + their combining marks (a grapheme cluster), so Indic/diacritized scripts tokenize by WORD,
     not shatter at every vowel sign — दाऊद stays one token, not द+ऊद (the old `[^\\W\\d_]+` regex broke at
     spacing marks like the Mc matra ा). `strip_marks` still drops nonspacing marks (Arabic harakat, Hebrew
-    points, Indic viramas) for match-normalisation; spacing marks stay inside the cluster. Latin/Cyrillic
-    unaffected (no combining marks after NFC)."""
+    points, Indic viramas) for match-normalisation; spacing marks stay inside the cluster. In Latin and
+    Cyrillic only marks with no precomposed form are dropped (ɛ́ → ɛ, é kept); see strip_marks."""
     toks: list[str] = []
     cur: list[str] = []
     stripped = strip_marks(text)

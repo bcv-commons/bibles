@@ -42,9 +42,14 @@ Output:
 Usage:
     python3 pipeline/core/fetch_openbible_cache.py             # all phases
     python3 pipeline/core/fetch_openbible_cache.py --projects-only
-    python3 pipeline/core/fetch_openbible_cache.py --force     # re-fetch phases 2+3 even if cached
+    python3 pipeline/core/fetch_openbible_cache.py --force     # re-fetch all phases even if cached
+
+Book codes: many audio projects name their books `p_01-book-1ch` instead of `1CH` (164 of 357
+on 2026-11-09); they are stored as the standard code. A few name none (`p_01-division_0001-`,
+`release`); those are kept as given. The timing artifact's format is "Timing" or "TIMING".
 """
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -64,6 +69,12 @@ TEXT_DIR = API_CACHE / "openbible" / "text"
 USER_AGENT = "bibles-cdn-bibel-wiki-research/1.0 (+https://cdn.bibel.wiki; catalog research, low-rate)"
 REQUEST_DELAY = 0.25  # seconds between requests — conservative default, no published limit found
 MAX_RETRIES = 4
+PREFIXED_BOOK = re.compile(r"^p_\d+-book-([0-9a-z]{3})$", re.IGNORECASE)   # p_01-book-1ch -> 1CH
+
+
+def book_code(code: str) -> str:
+    m = PREFIXED_BOOK.match(code)
+    return m.group(1).upper() if m else code
 
 
 def fetch_json(url: str) -> dict:
@@ -104,8 +115,8 @@ def fetch_all_pages(path: str, embedded_key: str) -> list:
     return items
 
 
-def fetch_projects():
-    if PROJECTS_FILE.exists():
+def fetch_projects(force: bool):
+    if PROJECTS_FILE.exists() and not force:
         print(f"[fetch-openbible] {PROJECTS_FILE} already exists, skipping phase 1 (delete to re-fetch)")
         return json.loads(PROJECTS_FILE.read_text())
     print("[fetch-openbible] phase 1: fetching all projects...")
@@ -144,8 +155,8 @@ def fetch_project_detail(project: dict, kind: str) -> dict:
             "licenses": v.get("licenses"),
         }
         if kind == "audio":
-            books = sorted({a["bookCode"] for a in artifacts if a.get("bookCode") and a.get("format") == "MP3"})
-            has_timing = any(a.get("format") == "Timing" for a in artifacts)
+            books = sorted({book_code(a["bookCode"]) for a in artifacts if a.get("bookCode") and a.get("format") == "MP3"})
+            has_timing = any((a.get("format") or "").lower() == "timing" for a in artifacts)
             entry["audioBooks"] = books
             entry["hasTiming"] = has_timing
         else:
@@ -190,7 +201,7 @@ def main():
     force = "--force" in sys.argv
     projects_only = "--projects-only" in sys.argv
 
-    projects = fetch_projects()
+    projects = fetch_projects(force)
     if not projects_only:
         fetch_details(projects, "audio", AUDIO_DIR, force)
         fetch_details(projects, "text", TEXT_DIR, force)

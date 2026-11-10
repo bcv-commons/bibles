@@ -345,7 +345,8 @@ def add_pkf_editions(lang_filesets: dict, lang_sources: dict, audio_books_set_ma
 
 
 def count_audio_books() -> dict[tuple[str, str], set[str]]:
-    """Book codes with audio per (canon, iso) from sorted metadata."""
+    """Book codes with audio per (canon, iso) from sorted metadata: audio filesets only (a text
+    fileset's books are not audio)."""
     sorted_dir = SORTED_DIR
     if not sorted_dir.is_dir():
         return {}
@@ -364,17 +365,21 @@ def count_audio_books() -> dict[tuple[str, str], set[str]]:
             try:
                 with open(meta_path) as f:
                     meta = json.load(f)
-                canon_raw = meta.get("canon", "")
-                canon = "nt" if "nt" in canon_raw.lower() else "ot" if "ot" in canon_raw.lower() else ""
-                if not canon:
+                if not (meta.get("fileset") or {}).get("type", "").startswith("audio"):
+                    continue
+                # STORY filesets are story selections, not Bible books.
+                if meta.get("canon", "") == "STORY":
                     continue
                 iso = meta.get("language", {}).get("iso", "")
                 if not iso:
                     continue
+                # Each book under its own testament: an audio fileset's canon is often
+                # "PARTIAL" (1,487 of 8,569), which names neither.
                 book_list = meta.get("books", [])
                 for book in book_list:
                     book_id = book.get("book_id", "") if isinstance(book, dict) else str(book)
-                    if book_id:
+                    canon = "nt" if book_id in NT_BOOKS else "ot" if book_id in OT_BOOKS else ""
+                    if canon:
                         books_by_lang[(canon, iso)].add(book_id)
             except Exception:
                 continue
